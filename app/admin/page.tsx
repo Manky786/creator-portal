@@ -27,9 +27,6 @@ const sampleSubmissions = [
     productionPOC: '',
     contentPOC: '',
 
-    // POC (Point of Contact)
-    productionPOC: '',
-    contentPOC: '',
 
     // Activity Log
     activityLog: [
