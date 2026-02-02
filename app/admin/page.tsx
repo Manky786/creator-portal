@@ -2546,8 +2546,8 @@ export default function AdminDashboard() {
                                 acc[project.culture].push(project);
                                 return acc;
                               }, {} as Record<string, any[]>)
-                            ).map(([culture, cultureProjects]) => {
-                              const cultureBudget = cultureProjects.reduce((sum, p) => sum + p.totalBudget, 0);
+                            ).map(([culture, cultureProjects]: [string, any[]]) => {
+                              const cultureBudget = cultureProjects.reduce((sum: number, p: any) => sum + p.totalBudget, 0);
 
                               return (
                                 <div key={culture} className="bg-white rounded-xl border-2 border-gray-300 overflow-hidden shadow-md">
