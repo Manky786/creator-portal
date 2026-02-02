@@ -2547,7 +2547,8 @@ export default function AdminDashboard() {
                                 return acc;
                               }, {} as Record<string, any[]>)
                             ).map(([culture, cultureProjects]) => {
-                              const cultureBudget = (cultureProjects as any[]).reduce((sum: number, p: any) => sum + p.totalBudget, 0);
+                              const projects = cultureProjects as any[];
+                              const cultureBudget = projects.reduce((sum: number, p: any) => sum + p.totalBudget, 0);
 
                               return (
                                 <div key={culture} className="bg-white rounded-xl border-2 border-gray-300 overflow-hidden shadow-md">
@@ -2559,7 +2560,7 @@ export default function AdminDashboard() {
                                         <div>
                                           <div className="text-lg font-black text-gray-900">{culture}</div>
                                           <div className="text-xs font-bold text-gray-600">
-                                            {cultureProjects.length} project{cultureProjects.length !== 1 ? 's' : ''}
+                                            {projects.length} project{projects.length !== 1 ? 's' : ''}
                                           </div>
                                         </div>
                                       </div>
@@ -2572,13 +2573,14 @@ export default function AdminDashboard() {
                                   {/* Group by Format within Culture */}
                                   <div className="p-3 space-y-3">
                                     {Object.entries(
-                                      cultureProjects.reduce((acc, project) => {
+                                      projects.reduce((acc, project) => {
                                         if (!acc[project.format]) acc[project.format] = [];
                                         acc[project.format].push(project);
                                         return acc;
                                       }, {} as Record<string, any[]>)
                                     ).map(([format, formatProjects]) => {
-                                      const formatBudget = formatProjects.reduce((sum, p) => sum + p.totalBudget, 0);
+                                      const fProjects = formatProjects as any[];
+                                      const formatBudget = fProjects.reduce((sum: number, p: any) => sum + p.totalBudget, 0);
                                       const formatIcons: Record<string, string> = {
                                         'Feature Film': '🎬',
                                         'Mini Film': '🎞️',
@@ -2597,7 +2599,7 @@ export default function AdminDashboard() {
                                                 <div>
                                                   <div className="text-sm font-bold text-gray-900">{format}</div>
                                                   <div className="text-xs font-semibold text-purple-700">
-                                                    {formatProjects.length} project{formatProjects.length !== 1 ? 's' : ''}
+                                                    {fProjects.length} project{fProjects.length !== 1 ? 's' : ''}
                                                   </div>
                                                 </div>
                                               </div>
@@ -2609,7 +2611,7 @@ export default function AdminDashboard() {
 
                                           {/* Individual Projects */}
                                           <div className="p-2 space-y-2">
-                                            {formatProjects.map((project) => (
+                                            {fProjects.map((project: any) => (
                                               <div
                                                 key={project.id}
                                                 className="bg-white rounded-lg p-4 hover:shadow-md transition-all cursor-pointer border border-gray-200 hover:border-purple-300"
