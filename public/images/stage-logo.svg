@@ -1,0 +1,32 @@
+<svg width="220" height="60" viewBox="0 0 220 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#EF4444;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#DC2626;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- STAGE Logo Icon - Red Arc/Circle Design -->
+  <g>
+    <!-- Left arc -->
+    <path d="M 15 10 Q 5 10 5 30 Q 5 50 15 50"
+          stroke="url(#redGradient)"
+          stroke-width="8"
+          stroke-linecap="round"
+          fill="none"/>
+    <!-- Right arc -->
+    <path d="M 35 10 Q 45 10 45 30 Q 45 50 35 50"
+          stroke="url(#redGradient)"
+          stroke-width="8"
+          stroke-linecap="round"
+          fill="none"/>
+  </g>
+
+  <!-- STAGE Text -->
+  <text x="65" y="42"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="38"
+        font-weight="900"
+        fill="white"
+        letter-spacing="2">STAGE</text>
+</svg>
