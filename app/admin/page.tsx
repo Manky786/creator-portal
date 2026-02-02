@@ -2013,7 +2013,7 @@ export default function AdminDashboard() {
                           <div
                             className="fixed bg-gray-900 border-2 border-white/20 rounded-xl shadow-2xl z-[9999] min-w-[220px] max-h-[400px] overflow-y-auto"
                             style={{
-                              top: `${document.getElementById(`status-button-${submission.id}`)?.getBoundingClientRect().bottom + 8}px`,
+                              top: `${(document.getElementById(`status-button-${submission.id}`)?.getBoundingClientRect().bottom || 0) + 8}px`,
                               left: `${(document.getElementById(`status-button-${submission.id}`)?.getBoundingClientRect().right || 0) - 220}px`,
                             }}
                           >
