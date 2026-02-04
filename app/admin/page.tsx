@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import * as XLSX from 'xlsx';
 
 // Sample data - in production would come from Supabase with full creator onboarding data
 const sampleSubmissions = [
@@ -815,7 +816,7 @@ export default function AdminDashboard() {
   const [filterFormat, setFilterFormat] = useState<string>('all');
   const [filterCulture, setFilterCulture] = useState<string>('all');
   const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
-  const [detailView, setDetailView] = useState<'overview' | 'budget' | 'crew' | 'timeline' | 'activity' | 'files'>('overview');
+  const [detailView, setDetailView] = useState<'overview' | 'budget' | 'crew' | 'timeline' | 'activity' | 'files' | 'agreement'>('overview');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
   const [showStatusMenu, setShowStatusMenu] = useState<number | null>(null);
   const [submissions, setSubmissions] = useState<any[]>(sampleSubmissions);
@@ -995,6 +996,249 @@ export default function AdminDashboard() {
 
     setShowDeleteConfirm(null);
     console.log(`Deleted submission ${submissionId}`);
+  };
+
+  // Export to Excel function
+  const exportToExcel = (submission: any) => {
+    const agreementDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: Agreement Summary
+    const summaryData = [
+      ['STAGE OTT - PROJECT AGREEMENT DETAILS'],
+      [''],
+      ['1. AGREEMENT DATE', agreementDate],
+      [''],
+      ['2. CONTENT NAME', submission.projectName || 'N/A'],
+      ['   Culture', submission.culture || 'N/A'],
+      ['   Format', submission.format || 'N/A'],
+      ['   Genre', submission.genre || 'N/A'],
+      [''],
+      ['3. CREATOR / COMPANY DETAILS'],
+      ['   Name', submission.creatorName || submission.creator || 'N/A'],
+      ['   Company', submission.productionCompany || 'N/A'],
+      ['   Father\'s Name', submission.fatherName || 'N/A'],
+      ['   Authorized Signatory', submission.authorizedSignatory || 'N/A'],
+      ['   Address', submission.permanentAddress || submission.currentAddress || 'N/A'],
+      ['   PAN Number', submission.panNumber || 'N/A'],
+      ['   GST Number', submission.gstNumber || 'N/A'],
+      ['   Email', submission.officialEmail || 'N/A'],
+      ['   Phone', submission.phone || 'N/A'],
+      [''],
+      ['4. TOTAL BUDGET', formatBudgetInWords(submission.totalBudget || parseFloat(submission.estimatedBudget) || 0)],
+      ['   In Figures', `₹${(submission.totalBudget || parseFloat(submission.estimatedBudget) || 0).toLocaleString('en-IN')}`],
+      [''],
+      ['5. DIRECTOR & WRITER'],
+      ['   Director', submission.director || 'N/A'],
+      ['   Story By', submission.storyBy || 'N/A'],
+      ['   Screenplay By', submission.screenplayBy || 'N/A'],
+      ['   Dialogues By', submission.dialoguesBy || 'N/A'],
+      [''],
+      ['6. CONTENT DURATION & EPISODES'],
+      ['   Total Duration (mins)', submission.totalDuration || 'N/A'],
+      ['   Number of Episodes', submission.episodes || submission.episodesPerSeason || 'N/A'],
+      ['   Format', submission.format || 'N/A'],
+      [''],
+      ['7. PROJECT DELIVERY DATE'],
+      ['   Final Delivery', submission.contentTimeline?.finalDeliveryDate || 'N/A'],
+      ['   Shoot Start Date', submission.shootStartDate || 'N/A'],
+      ['   Shoot End Date', submission.shootEndDate || 'N/A'],
+      ['   Total Shoot Days', submission.shootDays || 'N/A'],
+      [''],
+      ['8. CONTENT CREATION SCHEDULE'],
+      ['   Pre-Production Start', submission.contentTimeline?.preProductionStart || 'N/A'],
+      ['   Pre-Production End', submission.contentTimeline?.preProductionEnd || 'N/A'],
+      ['   Principal Photography', `${submission.shootStartDate || 'N/A'} to ${submission.shootEndDate || 'N/A'}`],
+      ['   Post-Production Start', submission.contentTimeline?.postProductionStart || 'N/A'],
+      ['   Post-Production End', submission.contentTimeline?.postProductionEnd || 'N/A'],
+      [''],
+      ['9. TECHNICAL SPECIFICATIONS'],
+      ['   Camera Model', submission.technicalSpecs?.cameraModel || 'N/A'],
+      ['   Camera Setup', submission.technicalSpecs?.cameraSetupType || 'N/A'],
+      ['   Number of Lens Types', submission.technicalSpecs?.lensTypes?.length || 0],
+      ['   Lighting Equipment', submission.technicalSpecs?.lightingEquipment?.length || 0],
+      ['   Sound Equipment', submission.technicalSpecs?.soundEquipment?.length || 0],
+      ['   Drones', submission.technicalSpecs?.droneModels?.length || 0],
+    ];
+
+    const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
+    ws1['!cols'] = [{ wch: 30 }, { wch: 50 }];
+    XLSX.utils.book_append_sheet(wb, ws1, 'Agreement Summary');
+
+    // Sheet 2: Cash Flow / Payment Terms
+    const cashFlowData = [
+      ['CASH FLOW - PAYMENT TERMS'],
+      [''],
+      ['Tranche', 'Milestone', 'Percentage', 'Amount', 'Date'],
+    ];
+    if (submission.cashFlowTranches && submission.cashFlowTranches.length > 0) {
+      submission.cashFlowTranches.forEach((tranche: any, idx: number) => {
+        cashFlowData.push([
+          `Tranche ${idx + 1}`,
+          tranche.milestone || '',
+          tranche.percentage ? `${tranche.percentage}%` : '',
+          tranche.amount ? `₹${tranche.amount.toLocaleString('en-IN')}` : '',
+          tranche.date || ''
+        ]);
+      });
+    } else {
+      cashFlowData.push(['No cash flow tranches defined', '', '', '', '']);
+    }
+    const ws2 = XLSX.utils.aoa_to_sheet(cashFlowData);
+    ws2['!cols'] = [{ wch: 15 }, { wch: 30 }, { wch: 15 }, { wch: 20 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(wb, ws2, 'Cash Flow');
+
+    // Sheet 3: Budget Breakdown
+    const budgetData = [
+      ['BUDGET SHEET - CATEGORY WISE BREAKDOWN'],
+      [''],
+      ['Category', 'Amount (₹)', 'Percentage'],
+    ];
+    if (submission.budgetBreakdown && submission.budgetBreakdown.length > 0) {
+      submission.budgetBreakdown.forEach((item: any) => {
+        budgetData.push([
+          item.category || '',
+          item.amount ? `₹${item.amount.toLocaleString('en-IN')}` : '₹0',
+          item.percentage ? `${item.percentage}%` : ''
+        ]);
+      });
+    }
+    budgetData.push(['']);
+    budgetData.push(['TOTAL BUDGET', formatBudgetInWords(submission.totalBudget || 0), '100%']);
+    const ws3 = XLSX.utils.aoa_to_sheet(budgetData);
+    ws3['!cols'] = [{ wch: 35 }, { wch: 25 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(wb, ws3, 'Budget Sheet');
+
+    // Sheet 4: Key Crew
+    const crewData = [
+      ['KEY CREW DETAILS'],
+      [''],
+      ['Department', 'Role', 'Name'],
+      ['Direction', 'Director', submission.director || 'N/A'],
+      ['Direction', 'Associate Director', submission.associateDirector || 'N/A'],
+      ['Direction', 'Assistant Director', submission.assistantDirector1 || 'N/A'],
+      ['Production', 'Head of Production', submission.headOfProduction || 'N/A'],
+      ['Production', 'Executive Producer', submission.executiveProducer || 'N/A'],
+      ['Production', 'Line Producer', submission.lineProducer || 'N/A'],
+      ['Writing', 'Story', submission.storyBy || 'N/A'],
+      ['Writing', 'Screenplay', submission.screenplayBy || 'N/A'],
+      ['Writing', 'Dialogues', submission.dialoguesBy || 'N/A'],
+      ['Camera', 'DOP', submission.dop || 'N/A'],
+      ['Camera', 'Camera Operator', submission.cameraOperator || 'N/A'],
+      ['Post-Production', 'Editor', submission.editor || 'N/A'],
+      ['Post-Production', 'Colorist', submission.colorist || 'N/A'],
+      ['Sound', 'Sound Designer', submission.soundDesigner || 'N/A'],
+      ['Sound', 'Sound Recordist', submission.soundRecordist || 'N/A'],
+      ['Music', 'Music Composer', submission.musicComposer || 'N/A'],
+      ['Art', 'Production Designer', submission.productionDesigner || 'N/A'],
+      ['Costume', 'Costume Designer', submission.costumeDesigner || 'N/A'],
+      ['VFX', 'VFX Supervisor', submission.vfxSupervisor || 'N/A'],
+    ];
+    const ws4 = XLSX.utils.aoa_to_sheet(crewData);
+    ws4['!cols'] = [{ wch: 20 }, { wch: 25 }, { wch: 30 }];
+    XLSX.utils.book_append_sheet(wb, ws4, 'Key Crew');
+
+    // Download
+    const fileName = `Agreement_${submission.projectName?.replace(/[^a-zA-Z0-9]/g, '_') || 'Project'}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
+  // Export to PDF function (generates printable HTML)
+  const exportToPDF = (submission: any) => {
+    const agreementDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Agreement - ${submission.projectName || 'Project'}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
+          h1 { text-align: center; border-bottom: 3px solid #333; padding-bottom: 10px; }
+          h2 { background: #f5f5f5; padding: 10px; margin-top: 30px; border-left: 4px solid #e53e3e; }
+          .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+          .label { font-weight: bold; color: #555; }
+          .value { text-align: right; }
+          .highlight { font-size: 24px; color: #16a34a; font-weight: bold; }
+          table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+          th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+          th { background: #f5f5f5; }
+          .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #888; }
+          @media print { body { padding: 20px; } }
+        </style>
+      </head>
+      <body>
+        <h1>STAGE OTT - PROJECT AGREEMENT</h1>
+
+        <h2>1. Agreement Date</h2>
+        <div class="row"><span class="label">Date:</span><span class="value">${agreementDate}</span></div>
+
+        <h2>2. Content Name</h2>
+        <div class="row"><span class="label">Project Name:</span><span class="value">${submission.projectName || 'N/A'}</span></div>
+        <div class="row"><span class="label">Culture:</span><span class="value">${submission.culture || 'N/A'}</span></div>
+        <div class="row"><span class="label">Format:</span><span class="value">${submission.format || 'N/A'}</span></div>
+
+        <h2>3. Creator / Company Details</h2>
+        <div class="row"><span class="label">Name:</span><span class="value">${submission.creatorName || submission.creator || 'N/A'}</span></div>
+        <div class="row"><span class="label">Company:</span><span class="value">${submission.productionCompany || 'N/A'}</span></div>
+        <div class="row"><span class="label">Father's Name:</span><span class="value">${submission.fatherName || 'N/A'}</span></div>
+        <div class="row"><span class="label">Authorized Signatory:</span><span class="value">${submission.authorizedSignatory || 'N/A'}</span></div>
+        <div class="row"><span class="label">Address:</span><span class="value">${submission.permanentAddress || submission.currentAddress || 'N/A'}</span></div>
+        <div class="row"><span class="label">PAN Number:</span><span class="value">${submission.panNumber || 'N/A'}</span></div>
+        <div class="row"><span class="label">GST Number:</span><span class="value">${submission.gstNumber || 'N/A'}</span></div>
+        <div class="row"><span class="label">Email:</span><span class="value">${submission.officialEmail || 'N/A'}</span></div>
+        <div class="row"><span class="label">Phone:</span><span class="value">${submission.phone || 'N/A'}</span></div>
+
+        <h2>4. Total Budget</h2>
+        <div class="row"><span class="label">Amount:</span><span class="value highlight">${formatBudgetInWords(submission.totalBudget || parseFloat(submission.estimatedBudget) || 0)}</span></div>
+
+        <h2>5. Director & Writer</h2>
+        <div class="row"><span class="label">Director:</span><span class="value">${submission.director || 'N/A'}</span></div>
+        <div class="row"><span class="label">Story By:</span><span class="value">${submission.storyBy || 'N/A'}</span></div>
+        <div class="row"><span class="label">Screenplay:</span><span class="value">${submission.screenplayBy || 'N/A'}</span></div>
+        <div class="row"><span class="label">Dialogues:</span><span class="value">${submission.dialoguesBy || 'N/A'}</span></div>
+
+        <h2>6. Content Duration & Episodes</h2>
+        <div class="row"><span class="label">Total Duration:</span><span class="value">${submission.totalDuration || 'N/A'} minutes</span></div>
+        <div class="row"><span class="label">Episodes:</span><span class="value">${submission.episodes || submission.episodesPerSeason || 'N/A'}</span></div>
+
+        <h2>7. Project Delivery Date</h2>
+        <div class="row"><span class="label">Final Delivery:</span><span class="value">${submission.contentTimeline?.finalDeliveryDate || 'N/A'}</span></div>
+        <div class="row"><span class="label">Shoot Period:</span><span class="value">${submission.shootStartDate || 'N/A'} to ${submission.shootEndDate || 'N/A'}</span></div>
+
+        <h2>8. Cash Flow (Payment Terms)</h2>
+        <table>
+          <tr><th>Tranche</th><th>Milestone</th><th>Percentage/Amount</th></tr>
+          ${submission.cashFlowTranches?.map((t: any, i: number) => `
+            <tr><td>Tranche ${i + 1}</td><td>${t.milestone || '-'}</td><td>${t.percentage ? t.percentage + '%' : formatBudget(t.amount || 0)}</td></tr>
+          `).join('') || '<tr><td colspan="3">No tranches defined</td></tr>'}
+        </table>
+
+        <h2>9. Content Creation Schedule</h2>
+        <div class="row"><span class="label">Pre-Production:</span><span class="value">${submission.contentTimeline?.preProductionStart || 'N/A'} - ${submission.contentTimeline?.preProductionEnd || 'N/A'}</span></div>
+        <div class="row"><span class="label">Principal Photography:</span><span class="value">${submission.shootStartDate || 'N/A'} - ${submission.shootEndDate || 'N/A'} (${submission.shootDays || 'N/A'} days)</span></div>
+        <div class="row"><span class="label">Post-Production:</span><span class="value">${submission.contentTimeline?.postProductionStart || 'N/A'} - ${submission.contentTimeline?.postProductionEnd || 'N/A'}</span></div>
+
+        <h2>10. Technical Specifications</h2>
+        <div class="row"><span class="label">Camera:</span><span class="value">${submission.technicalSpecs?.cameraModel || 'N/A'} (${submission.technicalSpecs?.cameraSetupType || 'N/A'})</span></div>
+
+        <div class="footer">
+          <p>Generated on ${agreementDate} | STAGE OTT Creator Portal</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
   };
 
   const handleStartEditPOC = (submissionId: number, field: 'productionPOC' | 'contentPOC', currentValue: string) => {
@@ -2768,7 +3012,7 @@ export default function AdminDashboard() {
 
                 {/* Tabs */}
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-                  {['overview', 'budget', 'crew', 'timeline', 'activity', 'files'].map((tab) => (
+                  {['overview', 'budget', 'crew', 'timeline', 'activity', 'files', 'agreement'].map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setDetailView(tab as any)}
@@ -4218,6 +4462,178 @@ export default function AdminDashboard() {
                           <div className="text-sm text-gray-500 mt-2 font-semibold">Files will appear here once uploaded</div>
                         </div>
                       )}
+                  </div>
+                )}
+
+                {/* Agreement Tab */}
+                {detailView === 'agreement' && (
+                  <div className="space-y-6">
+                    {/* Export Header */}
+                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-8 text-white shadow-xl">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h2 className="text-3xl font-black mb-2">Agreement Export</h2>
+                          <p className="text-green-100 font-semibold">Export all project details for agreement documentation</p>
+                        </div>
+                        <div className="text-6xl">📋</div>
+                      </div>
+                    </div>
+
+                    {/* Export Buttons */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <button
+                        onClick={() => exportToExcel(selectedSubmission)}
+                        className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl font-black text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3"
+                      >
+                        <span className="text-3xl">📊</span>
+                        <div className="text-left">
+                          <div>Export to Excel</div>
+                          <div className="text-sm font-semibold text-green-100">Download .xlsx file</div>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => exportToPDF(selectedSubmission)}
+                        className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white p-6 rounded-2xl font-black text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3"
+                      >
+                        <span className="text-3xl">📄</span>
+                        <div className="text-left">
+                          <div>Export to PDF</div>
+                          <div className="text-sm font-semibold text-red-100">Download .pdf file</div>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Agreement Preview */}
+                    <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-lg overflow-hidden">
+                      <div className="bg-gray-900 text-white p-4">
+                        <h3 className="text-xl font-black">Agreement Details Preview</h3>
+                      </div>
+                      <div className="p-6 space-y-6">
+                        {/* 1. Agreement Date */}
+                        <div className="border-b-2 border-gray-100 pb-4">
+                          <div className="text-xs font-bold text-gray-500 uppercase mb-1">1. Agreement Date</div>
+                          <div className="text-lg font-bold text-gray-900">{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                        </div>
+
+                        {/* 2. Content Name */}
+                        <div className="border-b-2 border-gray-100 pb-4">
+                          <div className="text-xs font-bold text-gray-500 uppercase mb-1">2. Content Name</div>
+                          <div className="text-lg font-bold text-gray-900">{selectedSubmission.projectName || 'N/A'}</div>
+                        </div>
+
+                        {/* 3. Creator/Company Details */}
+                        <div className="border-b-2 border-gray-100 pb-4">
+                          <div className="text-xs font-bold text-gray-500 uppercase mb-2">3. Creator / Company Details</div>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div><span className="text-gray-500">Name:</span> <span className="font-bold">{selectedSubmission.creatorName || selectedSubmission.creator || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Company:</span> <span className="font-bold">{selectedSubmission.productionCompany || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Father's Name:</span> <span className="font-bold">{selectedSubmission.fatherName || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Authorized Signatory:</span> <span className="font-bold">{selectedSubmission.authorizedSignatory || 'N/A'}</span></div>
+                            <div className="col-span-2"><span className="text-gray-500">Address:</span> <span className="font-bold">{selectedSubmission.permanentAddress || selectedSubmission.currentAddress || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">PAN:</span> <span className="font-bold">{selectedSubmission.panNumber || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">GST:</span> <span className="font-bold">{selectedSubmission.gstNumber || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Email:</span> <span className="font-bold">{selectedSubmission.officialEmail || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Phone:</span> <span className="font-bold">{selectedSubmission.phone || 'N/A'}</span></div>
+                          </div>
+                        </div>
+
+                        {/* 4. Budget */}
+                        <div className="border-b-2 border-gray-100 pb-4">
+                          <div className="text-xs font-bold text-gray-500 uppercase mb-1">4. Total Budget</div>
+                          <div className="text-2xl font-black text-green-600">{formatBudget(selectedSubmission.totalBudget || selectedSubmission.estimatedBudget || 0)}</div>
+                        </div>
+
+                        {/* 5. Director & Writer */}
+                        <div className="border-b-2 border-gray-100 pb-4">
+                          <div className="text-xs font-bold text-gray-500 uppercase mb-2">5. Director & Writer</div>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div><span className="text-gray-500">Director:</span> <span className="font-bold">{selectedSubmission.director || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Story By:</span> <span className="font-bold">{selectedSubmission.storyBy || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Screenplay:</span> <span className="font-bold">{selectedSubmission.screenplayBy || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Dialogues:</span> <span className="font-bold">{selectedSubmission.dialoguesBy || 'N/A'}</span></div>
+                          </div>
+                        </div>
+
+                        {/* 6. Content Duration & Episodes */}
+                        <div className="border-b-2 border-gray-100 pb-4">
+                          <div className="text-xs font-bold text-gray-500 uppercase mb-2">6. Total Minutes of Content & Episodes</div>
+                          <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div><span className="text-gray-500">Total Duration:</span> <span className="font-bold">{selectedSubmission.totalDuration || 'N/A'} mins</span></div>
+                            <div><span className="text-gray-500">Episodes:</span> <span className="font-bold">{selectedSubmission.episodes || selectedSubmission.episodesPerSeason || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Format:</span> <span className="font-bold">{selectedSubmission.format || 'N/A'}</span></div>
+                          </div>
+                        </div>
+
+                        {/* 7. Project Delivery Date */}
+                        <div className="border-b-2 border-gray-100 pb-4">
+                          <div className="text-xs font-bold text-gray-500 uppercase mb-2">7. Project Delivery Date</div>
+                          <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div><span className="text-gray-500">Final Delivery:</span> <span className="font-bold">{selectedSubmission.contentTimeline?.finalDeliveryDate || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Shoot Start:</span> <span className="font-bold">{selectedSubmission.shootStartDate || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Shoot End:</span> <span className="font-bold">{selectedSubmission.shootEndDate || 'N/A'}</span></div>
+                          </div>
+                        </div>
+
+                        {/* 8. Cash Flow / Payment Terms */}
+                        <div className="border-b-2 border-gray-100 pb-4">
+                          <div className="text-xs font-bold text-gray-500 uppercase mb-2">8. Cash Flow (Payment Terms)</div>
+                          {selectedSubmission.cashFlowTranches && selectedSubmission.cashFlowTranches.length > 0 ? (
+                            <div className="space-y-2">
+                              {selectedSubmission.cashFlowTranches.map((tranche: any, idx: number) => (
+                                <div key={idx} className="flex justify-between bg-gray-50 p-3 rounded-lg">
+                                  <span className="font-semibold">{tranche.milestone || `Tranche ${idx + 1}`}</span>
+                                  <span className="font-bold text-green-600">{tranche.percentage ? `${tranche.percentage}%` : formatBudget(tranche.amount || 0)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-gray-500">No cash flow tranches defined</div>
+                          )}
+                        </div>
+
+                        {/* 9. Content Creation Schedule */}
+                        <div className="border-b-2 border-gray-100 pb-4">
+                          <div className="text-xs font-bold text-gray-500 uppercase mb-2">9. Content Creation Schedule</div>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div><span className="text-gray-500">Pre-Production:</span> <span className="font-bold">{selectedSubmission.contentTimeline?.preProductionStart || 'N/A'} - {selectedSubmission.contentTimeline?.preProductionEnd || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Principal Photography:</span> <span className="font-bold">{selectedSubmission.shootStartDate || 'N/A'} - {selectedSubmission.shootEndDate || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Post-Production:</span> <span className="font-bold">{selectedSubmission.contentTimeline?.postProductionStart || 'N/A'} - {selectedSubmission.contentTimeline?.postProductionEnd || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Shoot Days:</span> <span className="font-bold">{selectedSubmission.shootDays || 'N/A'} days</span></div>
+                          </div>
+                        </div>
+
+                        {/* 10. Technical Specifications */}
+                        <div className="border-b-2 border-gray-100 pb-4">
+                          <div className="text-xs font-bold text-gray-500 uppercase mb-2">10. Technical Specifications</div>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div><span className="text-gray-500">Camera:</span> <span className="font-bold">{selectedSubmission.technicalSpecs?.cameraModel || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Setup:</span> <span className="font-bold">{selectedSubmission.technicalSpecs?.cameraSetupType || 'N/A'}</span></div>
+                            <div><span className="text-gray-500">Lenses:</span> <span className="font-bold">{selectedSubmission.technicalSpecs?.lensTypes?.length || 0} types</span></div>
+                            <div><span className="text-gray-500">Lighting:</span> <span className="font-bold">{selectedSubmission.technicalSpecs?.lightingEquipment?.length || 0} items</span></div>
+                          </div>
+                        </div>
+
+                        {/* 11. Budget Sheet Summary */}
+                        <div>
+                          <div className="text-xs font-bold text-gray-500 uppercase mb-2">11. Budget Sheet (Category-wise)</div>
+                          {selectedSubmission.budgetBreakdown && selectedSubmission.budgetBreakdown.length > 0 ? (
+                            <div className="space-y-2">
+                              {selectedSubmission.budgetBreakdown.slice(0, 5).map((item: any, idx: number) => (
+                                <div key={idx} className="flex justify-between bg-gray-50 p-3 rounded-lg">
+                                  <span className="font-semibold">{item.category}</span>
+                                  <span className="font-bold text-blue-600">{formatBudget(item.amount || 0)}</span>
+                                </div>
+                              ))}
+                              {selectedSubmission.budgetBreakdown.length > 5 && (
+                                <div className="text-sm text-gray-500 text-center">+{selectedSubmission.budgetBreakdown.length - 5} more categories in Excel export</div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-gray-500">Budget breakdown will be included in full export</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
