@@ -231,8 +231,14 @@ export default function CreatorPage() {
       if (savedDraft) {
         try {
           const parsed = JSON.parse(savedDraft);
-          setFormData(parsed);
-          setLastSaved(new Date(parsed._lastSaved || Date.now()));
+          // Remove internal fields before setting formData
+          const { _lastSaved, _started, ...formFields } = parsed;
+          setFormData(prev => ({ ...prev, ...formFields }));
+          setLastSaved(new Date(_lastSaved || Date.now()));
+          // Auto-resume if user was in the middle of filling form
+          if (_started) {
+            setStarted(true);
+          }
         } catch (e) {
           console.error('Failed to load saved draft:', e);
         }
@@ -241,12 +247,13 @@ export default function CreatorPage() {
   }, []);
 
   // Auto-save to localStorage whenever formData changes
-  const saveToStorage = useCallback((data: Partial<BudgetFormData>) => {
+  const saveToStorage = useCallback((data: Partial<BudgetFormData>, isStarted: boolean) => {
     if (typeof window !== 'undefined') {
       setAutoSaveStatus('saving');
       const dataWithTimestamp = {
         ...data,
         _lastSaved: new Date().toISOString(),
+        _started: isStarted,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataWithTimestamp));
       setLastSaved(new Date());
@@ -257,15 +264,22 @@ export default function CreatorPage() {
     }
   }, []);
 
-  // Debounced auto-save
+  // Debounced auto-save - runs whenever formData changes (even on first step)
   useEffect(() => {
-    if (started && mounted) {
+    if (mounted) {
       const timeoutId = setTimeout(() => {
-        saveToStorage(formData);
+        saveToStorage(formData, started);
       }, 1000); // Save 1 second after last change
       return () => clearTimeout(timeoutId);
     }
   }, [formData, started, mounted, saveToStorage]);
+
+  // Save immediately when user starts the form
+  useEffect(() => {
+    if (started && mounted) {
+      saveToStorage(formData, true);
+    }
+  }, [started]);
 
   // Wrapper for setFormData that triggers save
   const updateFormData = useCallback((newData: Partial<BudgetFormData>) => {
