@@ -972,6 +972,9 @@ export default function AdminDashboard() {
   };
 
   const handleStatusChange = (submissionId: number, newStatus: string) => {
+    // Find the submission for auto-export
+    const submission = submissions.find(s => s.id === submissionId);
+
     // Update submission status
     setSubmissions(prevSubmissions =>
       prevSubmissions.map(s =>
@@ -982,6 +985,14 @@ export default function AdminDashboard() {
     // Update selectedSubmission if it's the one being changed
     if (selectedSubmission && selectedSubmission.id === submissionId) {
       setSelectedSubmission({ ...selectedSubmission, status: newStatus });
+    }
+
+    // Auto-export agreement when moving to production
+    if (newStatus === 'in-production' && submission) {
+      setTimeout(() => {
+        exportToExcel(submission);
+        alert(`🎬 Project "${submission.projectName}" moved to Production!\n\nAgreement Excel has been automatically downloaded with all project details.`);
+      }, 300);
     }
 
     setShowStatusMenu(null);
