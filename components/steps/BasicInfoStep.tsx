@@ -26,7 +26,41 @@ export default function BasicInfoStep({ formData, setFormData, onNext }: Props) 
   const [newLink, setNewLink] = useState('');
 
   const handleChange = (field: string, value: string | number) => {
-    setFormData({ ...formData, [field]: value });
+    const updates: Partial<BudgetFormData> = { [field]: value };
+
+    // Auto-calculate shoot end date when start date or shoot days change
+    if (field === 'shootStartDate' && value && formData.shootDays) {
+      const startDate = new Date(value as string);
+      const days = parseInt(formData.shootDays as string, 10);
+      if (!isNaN(days) && days > 0) {
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + days - 1); // -1 because start day counts
+        updates.shootEndDate = endDate.toISOString().split('T')[0];
+      }
+    }
+
+    if (field === 'shootDays' && value && formData.shootStartDate) {
+      const startDate = new Date(formData.shootStartDate as string);
+      const days = parseInt(value as string, 10);
+      if (!isNaN(days) && days > 0) {
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + days - 1);
+        updates.shootEndDate = endDate.toISOString().split('T')[0];
+      }
+    }
+
+    // Auto-calculate shoot days when end date changes (if start date exists)
+    if (field === 'shootEndDate' && value && formData.shootStartDate) {
+      const startDate = new Date(formData.shootStartDate as string);
+      const endDate = new Date(value as string);
+      const diffTime = endDate.getTime() - startDate.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both days
+      if (diffDays > 0) {
+        updates.shootDays = diffDays.toString();
+      }
+    }
+
+    setFormData({ ...formData, ...updates });
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
