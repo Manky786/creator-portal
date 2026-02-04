@@ -1,35 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { BudgetFormData } from '@/types/budget';
 import BudgetWizard from '@/components/BudgetWizard';
 import FilmmakerQuote from '@/components/FilmmakerQuote';
+
+const STORAGE_KEY = 'stage_creator_draft';
 
 export default function CreatorPage() {
   const [started, setStarted] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [showSampleModal, setShowSampleModal] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle');
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Auto-save simulation
-  useEffect(() => {
-    if (started) {
-      const interval = setInterval(() => {
-        setAutoSaveStatus('saving');
-        setTimeout(() => {
-          setAutoSaveStatus('saved');
-          setTimeout(() => setAutoSaveStatus('idle'), 2000);
-        }, 1000);
-      }, 30000); // Every 30 seconds
-
-      return () => clearInterval(interval);
-    }
-  }, [started]);
   const [formData, setFormData] = useState<Partial<BudgetFormData>>({
     projectName: '',
     productionCompany: '',
@@ -235,6 +223,61 @@ export default function CreatorPage() {
       finalDeliveryComments: '',
     },
   });
+
+  // Load saved draft from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedDraft = localStorage.getItem(STORAGE_KEY);
+      if (savedDraft) {
+        try {
+          const parsed = JSON.parse(savedDraft);
+          setFormData(parsed);
+          setLastSaved(new Date(parsed._lastSaved || Date.now()));
+        } catch (e) {
+          console.error('Failed to load saved draft:', e);
+        }
+      }
+    }
+  }, []);
+
+  // Auto-save to localStorage whenever formData changes
+  const saveToStorage = useCallback((data: Partial<BudgetFormData>) => {
+    if (typeof window !== 'undefined') {
+      setAutoSaveStatus('saving');
+      const dataWithTimestamp = {
+        ...data,
+        _lastSaved: new Date().toISOString(),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataWithTimestamp));
+      setLastSaved(new Date());
+      setTimeout(() => {
+        setAutoSaveStatus('saved');
+        setTimeout(() => setAutoSaveStatus('idle'), 2000);
+      }, 500);
+    }
+  }, []);
+
+  // Debounced auto-save
+  useEffect(() => {
+    if (started && mounted) {
+      const timeoutId = setTimeout(() => {
+        saveToStorage(formData);
+      }, 1000); // Save 1 second after last change
+      return () => clearTimeout(timeoutId);
+    }
+  }, [formData, started, mounted, saveToStorage]);
+
+  // Wrapper for setFormData that triggers save
+  const updateFormData = useCallback((newData: Partial<BudgetFormData>) => {
+    setFormData(newData);
+  }, []);
+
+  // Clear draft (for after successful submit)
+  const clearDraft = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }, []);
 
   if (!started) {
     return (
@@ -501,6 +544,12 @@ export default function CreatorPage() {
   }
 
   return (
-    <BudgetWizard formData={formData} setFormData={setFormData} />
+    <BudgetWizard
+      formData={formData}
+      setFormData={updateFormData}
+      autoSaveStatus={autoSaveStatus}
+      lastSaved={lastSaved}
+      onClearDraft={clearDraft}
+    />
   );
 }

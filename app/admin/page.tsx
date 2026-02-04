@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -819,7 +819,53 @@ export default function AdminDashboard() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
   const [showStatusMenu, setShowStatusMenu] = useState<number | null>(null);
   const [submissions, setSubmissions] = useState<any[]>(sampleSubmissions);
+  const [localSubmissionsLoaded, setLocalSubmissionsLoaded] = useState(false);
   const [expandedBudgetCulture, setExpandedBudgetCulture] = useState<string | null>(null);
+
+  // Load submissions from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !localSubmissionsLoaded) {
+      const localSubmissions = JSON.parse(localStorage.getItem('stage_submissions') || '[]');
+      if (localSubmissions.length > 0) {
+        // Transform local submissions to match the format
+        const transformedSubmissions = localSubmissions.map((sub: any, idx: number) => ({
+          id: 1000 + idx,
+          projectName: sub.projectName || 'Untitled Project',
+          creator: sub.creatorName || 'Unknown Creator',
+          culture: sub.culture || 'Not Specified',
+          format: sub.format || 'Not Specified',
+          genre: sub.genre || 'Not Specified',
+          subGenre: sub.subGenre || '',
+          contentRating: sub.contentRating || 'Not Rated',
+          totalBudget: parseFloat(sub.estimatedBudget) || 0,
+          completeness: 50, // Placeholder
+          warnings: 0,
+          status: sub.status || 'pending',
+          submittedDate: sub.submitted_at ? sub.submitted_at.split('T')[0] : new Date().toISOString().split('T')[0],
+          episodes: sub.episodesPerSeason || 1,
+          thumbnail: '/api/placeholder/400/225',
+          productionPOC: '',
+          contentPOC: '',
+          activityLog: [
+            {
+              date: sub.submitted_at ? sub.submitted_at.split('T')[0] : new Date().toISOString().split('T')[0],
+              time: sub.submitted_at ? new Date(sub.submitted_at).toLocaleTimeString() : new Date().toLocaleTimeString(),
+              action: 'Project Submitted',
+              description: 'Creator submitted project for review (via local storage)',
+              user: sub.creatorName || 'Creator',
+              type: 'submit'
+            }
+          ],
+          // Include all the original data
+          ...sub,
+          isLocalSubmission: true,
+        }));
+
+        setSubmissions([...transformedSubmissions, ...sampleSubmissions]);
+      }
+      setLocalSubmissionsLoaded(true);
+    }
+  }, [localSubmissionsLoaded]);
   const [expandedBudgetStatus, setExpandedBudgetStatus] = useState<string | null>(null);
   const [editingPOC, setEditingPOC] = useState<{ submissionId: number; field: 'productionPOC' | 'contentPOC' } | null>(null);
   const [tempPOCValue, setTempPOCValue] = useState<string>('');
