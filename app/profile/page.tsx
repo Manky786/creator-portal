@@ -113,14 +113,19 @@ export default function ProfilePage() {
           </Link>
 
           {/* My Projects */}
-          <div className="bg-gradient-to-br from-blue-600/20 via-cyan-600/20 to-teal-600/20 border border-white/20 rounded-2xl p-8 opacity-60 cursor-not-allowed">
+          <Link
+            href="/my-projects"
+            className="group bg-gradient-to-br from-blue-600/20 via-cyan-600/20 to-teal-600/20 hover:from-blue-600/30 hover:via-cyan-600/30 hover:to-teal-600/30 border border-white/20 rounded-2xl p-8 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-2xl"
+          >
             <div className="text-5xl mb-4">📂</div>
             <h2 className="text-2xl font-black text-white mb-2">My Projects</h2>
             <p className="text-gray-300 font-semibold mb-4">
               View and manage your submitted projects
             </p>
-            <div className="text-gray-500 font-bold">Coming Soon</div>
-          </div>
+            <div className="text-blue-400 font-bold group-hover:text-blue-300 flex items-center gap-2">
+              View Projects <span>→</span>
+            </div>
+          </Link>
 
           {/* Settings */}
           <div className="bg-gradient-to-br from-green-600/20 via-emerald-600/20 to-teal-600/20 border border-white/20 rounded-2xl p-8 opacity-60 cursor-not-allowed">

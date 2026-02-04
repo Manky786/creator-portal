@@ -96,13 +96,20 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
         }
       } else {
         // No Supabase - save to localStorage submissions
+        const editingId = (formData as any)._editingProjectId;
         const submissionData = {
           ...formData,
-          id: `project_${Date.now()}`,
+          id: editingId || `project_${Date.now()}`,
           submitted_at: new Date().toISOString(),
+          updated_at: editingId ? new Date().toISOString() : undefined,
           status: 'pending_review',
         };
-        saveToLocalSubmissions(submissionData);
+        // Remove internal fields
+        delete (submissionData as any)._editingProjectId;
+        delete (submissionData as any)._lastSaved;
+        delete (submissionData as any)._started;
+
+        saveToLocalSubmissions(submissionData, editingId);
       }
 
       // Clear the draft
@@ -119,9 +126,22 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
     }
   };
 
-  const saveToLocalSubmissions = (data: any) => {
+  const saveToLocalSubmissions = (data: any, editingId?: string) => {
     const existingSubmissions = JSON.parse(localStorage.getItem('stage_submissions') || '[]');
-    existingSubmissions.push(data);
+
+    if (editingId) {
+      // Update existing submission
+      const index = existingSubmissions.findIndex((s: any) => s.id === editingId);
+      if (index !== -1) {
+        existingSubmissions[index] = data;
+      } else {
+        existingSubmissions.unshift(data); // Add to beginning if not found
+      }
+    } else {
+      // New submission - add to beginning
+      existingSubmissions.unshift(data);
+    }
+
     localStorage.setItem('stage_submissions', JSON.stringify(existingSubmissions));
   };
 

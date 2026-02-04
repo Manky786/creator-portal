@@ -181,4 +181,51 @@ Future enhancements:
 
 ---
 
+## 🔐 Google OAuth Setup (Optional but Recommended)
+
+Enable "Sign in with Google" for a seamless login experience:
+
+### Step 1: Create Google OAuth Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing one
+3. Navigate to **APIs & Services** → **Credentials**
+4. Click **Create Credentials** → **OAuth client ID**
+5. Select **Web application**
+6. Add authorized redirect URI:
+   ```
+   https://YOUR_SUPABASE_PROJECT_ID.supabase.co/auth/v1/callback
+   ```
+   (Replace `YOUR_SUPABASE_PROJECT_ID` with your actual project ID)
+7. Copy the **Client ID** and **Client Secret**
+
+### Step 2: Configure Google Provider in Supabase
+
+1. Go to your Supabase dashboard
+2. Navigate to **Authentication** → **Providers**
+3. Find **Google** and click to expand
+4. Toggle **Enable Sign in with Google** to ON
+5. Paste your **Client ID** and **Client Secret**
+6. Save changes
+
+### Step 3: Configure OAuth Consent Screen (if not done)
+
+1. In Google Cloud Console → **APIs & Services** → **OAuth consent screen**
+2. Select **External** user type
+3. Fill in required fields:
+   - App name: `STAGE Creator Portal`
+   - User support email: Your email
+   - Developer contact: Your email
+4. Add scopes: `email`, `profile`, `openid`
+5. Add test users if in testing mode
+
+### Step 4: Test Google Sign-In
+
+1. Go to your login page
+2. Click **Continue with Google**
+3. Select your Google account
+4. You'll be redirected back and logged in!
+
+---
+
 **That's it! Simple, secure, creator-friendly! 🎬✨**
