@@ -3152,6 +3152,231 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     )}
+
+                    {/* Production Schedule */}
+                    {(selectedSubmission.shootStartDate || selectedSubmission.shootEndDate || selectedSubmission.totalDuration) && (
+                      <div className="bg-gradient-to-br from-cyan-50 to-teal-50 rounded-2xl p-8 border-2 border-cyan-200 shadow-lg">
+                        <h3 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+                          <span className="text-2xl">📅</span>
+                          <span>Production Schedule</span>
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {selectedSubmission.totalDuration && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-cyan-200">
+                              <div className="text-xs font-bold text-cyan-700 mb-2 uppercase tracking-wide">TOTAL DURATION</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.totalDuration} mins</div>
+                            </div>
+                          )}
+                          {selectedSubmission.shootDays && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-cyan-200">
+                              <div className="text-xs font-bold text-cyan-700 mb-2 uppercase tracking-wide">SHOOT DAYS</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.shootDays} days</div>
+                            </div>
+                          )}
+                          {selectedSubmission.shootStartDate && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-cyan-200">
+                              <div className="text-xs font-bold text-cyan-700 mb-2 uppercase tracking-wide">SHOOT START</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.shootStartDate}</div>
+                            </div>
+                          )}
+                          {selectedSubmission.shootEndDate && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-cyan-200">
+                              <div className="text-xs font-bold text-cyan-700 mb-2 uppercase tracking-wide">SHOOT END</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.shootEndDate}</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Address & Contact */}
+                    {(selectedSubmission.permanentAddress || selectedSubmission.currentAddress || selectedSubmission.emergencyContactName) && (
+                      <div className="bg-gradient-to-br from-slate-50 to-gray-50 rounded-2xl p-8 border-2 border-slate-200 shadow-lg">
+                        <h3 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+                          <span className="text-2xl">📍</span>
+                          <span>Address & Emergency Contact</span>
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {selectedSubmission.permanentAddress && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-slate-200">
+                              <div className="text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">PERMANENT ADDRESS</div>
+                              <div className="text-base font-semibold text-gray-900">{selectedSubmission.permanentAddress}</div>
+                            </div>
+                          )}
+                          {selectedSubmission.currentAddress && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-slate-200">
+                              <div className="text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">CURRENT ADDRESS</div>
+                              <div className="text-base font-semibold text-gray-900">{selectedSubmission.currentAddress}</div>
+                            </div>
+                          )}
+                          {selectedSubmission.emergencyContactName && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-slate-200">
+                              <div className="text-xs font-bold text-slate-700 mb-2 uppercase tracking-wide">EMERGENCY CONTACT</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.emergencyContactName}</div>
+                              {selectedSubmission.emergencyContactRelation && (
+                                <div className="text-sm text-gray-600">({selectedSubmission.emergencyContactRelation})</div>
+                              )}
+                              {selectedSubmission.emergencyContactPhone && (
+                                <div className="text-sm text-blue-600 font-semibold mt-1">{selectedSubmission.emergencyContactPhone}</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Key Crew Quick View */}
+                    {(selectedSubmission.director || selectedSubmission.dop || selectedSubmission.editor || selectedSubmission.musicComposer) && (
+                      <div className="bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl p-8 border-2 border-indigo-200 shadow-lg">
+                        <h3 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+                          <span className="text-2xl">🎬</span>
+                          <span>Key Crew (Quick View)</span>
+                        </h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {selectedSubmission.director && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-indigo-200">
+                              <div className="text-xs font-bold text-indigo-700 mb-2 uppercase tracking-wide">DIRECTOR</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.director}</div>
+                            </div>
+                          )}
+                          {selectedSubmission.dop && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-indigo-200">
+                              <div className="text-xs font-bold text-indigo-700 mb-2 uppercase tracking-wide">DOP</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.dop}</div>
+                            </div>
+                          )}
+                          {selectedSubmission.editor && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-indigo-200">
+                              <div className="text-xs font-bold text-indigo-700 mb-2 uppercase tracking-wide">EDITOR</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.editor}</div>
+                            </div>
+                          )}
+                          {selectedSubmission.musicComposer && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-indigo-200">
+                              <div className="text-xs font-bold text-indigo-700 mb-2 uppercase tracking-wide">MUSIC</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.musicComposer}</div>
+                            </div>
+                          )}
+                          {selectedSubmission.soundDesigner && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-indigo-200">
+                              <div className="text-xs font-bold text-indigo-700 mb-2 uppercase tracking-wide">SOUND DESIGNER</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.soundDesigner}</div>
+                            </div>
+                          )}
+                          {selectedSubmission.productionDesigner && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-indigo-200">
+                              <div className="text-xs font-bold text-indigo-700 mb-2 uppercase tracking-wide">PRODUCTION DESIGN</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.productionDesigner}</div>
+                            </div>
+                          )}
+                          {selectedSubmission.costumeDesigner && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-indigo-200">
+                              <div className="text-xs font-bold text-indigo-700 mb-2 uppercase tracking-wide">COSTUME</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.costumeDesigner}</div>
+                            </div>
+                          )}
+                          {selectedSubmission.vfxSupervisor && (
+                            <div className="bg-white rounded-lg p-4 border-2 border-indigo-200">
+                              <div className="text-xs font-bold text-indigo-700 mb-2 uppercase tracking-wide">VFX</div>
+                              <div className="text-base font-bold text-gray-900">{selectedSubmission.vfxSupervisor}</div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="mt-4 text-center">
+                          <button
+                            onClick={() => setDetailView('crew')}
+                            className="text-indigo-600 font-bold hover:text-indigo-800 transition-colors"
+                          >
+                            View Full Crew Details →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Cash Flow / Budget Tranches */}
+                    {selectedSubmission.cashFlowTranches && selectedSubmission.cashFlowTranches.length > 0 && (
+                      <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-8 border-2 border-emerald-200 shadow-lg">
+                        <h3 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+                          <span className="text-2xl">💰</span>
+                          <span>Cash Flow Tranches</span>
+                        </h3>
+                        <div className="space-y-3">
+                          {selectedSubmission.cashFlowTranches.map((tranche: any, idx: number) => (
+                            <div key={idx} className="bg-white rounded-lg p-4 border-2 border-emerald-200 flex justify-between items-center">
+                              <div>
+                                <div className="text-sm font-bold text-gray-900">{tranche.milestone || `Tranche ${idx + 1}`}</div>
+                                {tranche.date && <div className="text-xs text-gray-500">{tranche.date}</div>}
+                              </div>
+                              <div className="text-lg font-black text-emerald-700">
+                                {tranche.percentage ? `${tranche.percentage}%` : formatBudget(tranche.amount || 0)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Documents & Links */}
+                    {(selectedSubmission.cloudLinks?.length > 0 || selectedSubmission.uploadedFiles?.length > 0) && (
+                      <div className="bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl p-8 border-2 border-rose-200 shadow-lg">
+                        <h3 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+                          <span className="text-2xl">📁</span>
+                          <span>Documents & Links</span>
+                        </h3>
+                        {selectedSubmission.cloudLinks?.length > 0 && (
+                          <div className="mb-4">
+                            <div className="text-sm font-bold text-rose-700 mb-2 uppercase">Cloud Links</div>
+                            <div className="space-y-2">
+                              {selectedSubmission.cloudLinks.map((link: string, idx: number) => (
+                                <a
+                                  key={idx}
+                                  href={link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block bg-white rounded-lg p-3 border border-rose-200 text-blue-600 hover:text-blue-800 font-semibold truncate"
+                                >
+                                  🔗 {link}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {selectedSubmission.uploadedFiles?.length > 0 && (
+                          <div>
+                            <div className="text-sm font-bold text-rose-700 mb-2 uppercase">Uploaded Files ({selectedSubmission.uploadedFiles.length})</div>
+                            <div className="grid grid-cols-2 gap-2">
+                              {selectedSubmission.uploadedFiles.map((file: any, idx: number) => (
+                                <div key={idx} className="bg-white rounded-lg p-3 border border-rose-200">
+                                  <div className="text-sm font-semibold text-gray-900 truncate">{file.name}</div>
+                                  <div className="text-xs text-gray-500">{file.type}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Submission Info */}
+                    <div className="bg-gradient-to-br from-gray-100 to-slate-100 rounded-2xl p-6 border-2 border-gray-300">
+                      <div className="flex items-center justify-between text-sm">
+                        <div>
+                          <span className="text-gray-600 font-semibold">Submitted: </span>
+                          <span className="text-gray-900 font-bold">{selectedSubmission.submittedDate || selectedSubmission.submitted_at?.split('T')[0]}</span>
+                        </div>
+                        {selectedSubmission.updated_at && (
+                          <div>
+                            <span className="text-gray-600 font-semibold">Last Updated: </span>
+                            <span className="text-gray-900 font-bold">{selectedSubmission.updated_at.split('T')[0]}</span>
+                          </div>
+                        )}
+                        {selectedSubmission.isLocalSubmission && (
+                          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-bold">
+                            Local Submission
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
 
