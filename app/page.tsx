@@ -53,7 +53,7 @@ export default function Home() {
               <a href="#process" className="text-gray-400 hover:text-white transition-colors">Process</a>
               <a href="/admin" className="text-gray-400 hover:text-white transition-colors">Admin</a>
             </div>
-            <Link href="/creator" className="px-8 py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+            <Link href="/welcome" className="px-8 py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
               <span>🚀</span>
               <span>Get Started</span>
             </Link>
@@ -93,7 +93,7 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <Link href="/creator">
+              <Link href="/welcome">
                 <button className="group px-6 py-3 bg-white text-black rounded-md font-bold text-sm md:text-base hover:bg-gray-200 transition-all duration-300 shadow-lg flex items-center justify-center gap-2">
                   <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z"/>
@@ -251,7 +251,7 @@ export default function Home() {
           <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
             Join hundreds of creators bringing their stories to life on STAGE
           </p>
-          <Link href="/creator">
+          <Link href="/welcome">
             <button className="px-12 py-6 bg-white text-red-600 rounded-xl font-black text-xl hover:bg-gray-100 transition-all duration-300 hover:scale-105 shadow-2xl">
               Start Your Project Now →
             </button>

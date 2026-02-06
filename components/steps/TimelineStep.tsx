@@ -37,12 +37,13 @@ export default function TimelineStep({ formData, setFormData, onNext, onBack }: 
     finalDeliveryComments: '',
   };
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: string, extraFields?: Record<string, string>) => {
     setFormData({
       ...formData,
       contentTimeline: {
         ...contentTimeline,
         [field]: value,
+        ...extraFields,
       },
     });
   };
@@ -84,21 +85,24 @@ export default function TimelineStep({ formData, setFormData, onNext, onBack }: 
     if (!startDate || !endDate) return '';
     const start = new Date(startDate);
     const end = new Date(endDate);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (end < start) return 'invalid';
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end day
     return `${diffDays} days`;
   };
 
   // Auto-calculate durations
   const handleDateChange = (field: string, value: string) => {
-    handleChange(field, value);
+    let extraFields: Record<string, string> = {};
 
     // Auto-calculate pre-production duration
     if (field === 'preProductionStart' || field === 'preProductionEnd') {
       const start = field === 'preProductionStart' ? value : contentTimeline.preProductionStart;
       const end = field === 'preProductionEnd' ? value : contentTimeline.preProductionEnd;
       if (start && end) {
-        handleChange('preProductionDuration', calculateDuration(start, end));
+        extraFields.preProductionDuration = calculateDuration(start, end);
+      } else {
+        extraFields.preProductionDuration = '';
       }
     }
 
@@ -107,7 +111,9 @@ export default function TimelineStep({ formData, setFormData, onNext, onBack }: 
       const start = field === 'postProductionStart' ? value : contentTimeline.postProductionStart;
       const end = field === 'postProductionEnd' ? value : contentTimeline.postProductionEnd;
       if (start && end) {
-        handleChange('postProductionDuration', calculateDuration(start, end));
+        extraFields.postProductionDuration = calculateDuration(start, end);
+      } else {
+        extraFields.postProductionDuration = '';
       }
     }
 
@@ -116,9 +122,13 @@ export default function TimelineStep({ formData, setFormData, onNext, onBack }: 
       const start = field === 'shootStartDate' ? value : contentTimeline.shootStartDate;
       const end = field === 'shootEndDate' ? value : contentTimeline.shootEndDate;
       if (start && end) {
-        handleChange('shootDays', calculateDuration(start, end));
+        extraFields.shootDays = calculateDuration(start, end);
+      } else {
+        extraFields.shootDays = '';
       }
     }
+
+    handleChange(field, value, extraFields);
   };
 
   return (
@@ -241,7 +251,7 @@ export default function TimelineStep({ formData, setFormData, onNext, onBack }: 
                   type="date"
                   value={contentTimeline.preProductionStart}
                   onChange={(e) => handleDateChange('preProductionStart', e.target.value)}
-                  className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-semibold bg-white hover:border-purple-400 transition-colors"
+                  className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-semibold bg-white hover:border-blue-400 transition-colors cursor-pointer"
                 />
               </div>
               <div>
@@ -252,17 +262,26 @@ export default function TimelineStep({ formData, setFormData, onNext, onBack }: 
                   type="date"
                   value={contentTimeline.preProductionEnd}
                   onChange={(e) => handleDateChange('preProductionEnd', e.target.value)}
-                  className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-semibold bg-white hover:border-purple-400 transition-colors"
+                  min={contentTimeline.preProductionStart || undefined}
+                  className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 font-semibold bg-white hover:border-blue-400 transition-colors cursor-pointer"
                 />
               </div>
             </div>
 
             {contentTimeline.preProductionDuration && (
-              <div className="bg-gradient-to-r from-blue-100 to-indigo-100 border-2 border-blue-300 rounded-lg px-5 py-3 shadow-sm">
+              <div className={`border-2 rounded-lg px-5 py-3 shadow-sm ${
+                contentTimeline.preProductionDuration === 'invalid'
+                  ? 'bg-gradient-to-r from-red-100 to-pink-100 border-red-300'
+                  : 'bg-gradient-to-r from-blue-100 to-indigo-100 border-blue-300'
+              }`}>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">⏱️</span>
-                  <span className="text-base font-bold text-blue-900">
-                    Duration: {contentTimeline.preProductionDuration}
+                  <span className="text-2xl">{contentTimeline.preProductionDuration === 'invalid' ? '⚠️' : '⏱️'}</span>
+                  <span className={`text-base font-bold ${
+                    contentTimeline.preProductionDuration === 'invalid' ? 'text-red-700' : 'text-blue-900'
+                  }`}>
+                    {contentTimeline.preProductionDuration === 'invalid'
+                      ? 'End date must be after start date!'
+                      : `Duration: ${contentTimeline.preProductionDuration}`}
                   </span>
                 </div>
               </div>
@@ -303,7 +322,7 @@ export default function TimelineStep({ formData, setFormData, onNext, onBack }: 
                   type="date"
                   value={contentTimeline.shootStartDate}
                   onChange={(e) => handleDateChange('shootStartDate', e.target.value)}
-                  className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none text-gray-900 font-semibold bg-white hover:border-purple-400 transition-colors"
+                  className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900 font-semibold bg-white hover:border-green-400 transition-colors cursor-pointer"
                 />
               </div>
               <div>
@@ -314,17 +333,26 @@ export default function TimelineStep({ formData, setFormData, onNext, onBack }: 
                   type="date"
                   value={contentTimeline.shootEndDate}
                   onChange={(e) => handleDateChange('shootEndDate', e.target.value)}
-                  className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none text-gray-900 font-semibold bg-white hover:border-purple-400 transition-colors"
+                  min={contentTimeline.shootStartDate || undefined}
+                  className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900 font-semibold bg-white hover:border-green-400 transition-colors cursor-pointer"
                 />
               </div>
             </div>
 
             {contentTimeline.shootDays && (
-              <div className="bg-gradient-to-r from-green-100 to-emerald-100 border-2 border-green-300 rounded-lg px-5 py-3 shadow-sm">
+              <div className={`border-2 rounded-lg px-5 py-3 shadow-sm ${
+                contentTimeline.shootDays === 'invalid'
+                  ? 'bg-gradient-to-r from-red-100 to-pink-100 border-red-300'
+                  : 'bg-gradient-to-r from-green-100 to-emerald-100 border-green-300'
+              }`}>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl">🎬</span>
-                  <span className="text-base font-bold text-green-900">
-                    Total Shoot Days: {contentTimeline.shootDays}
+                  <span className="text-2xl">{contentTimeline.shootDays === 'invalid' ? '⚠️' : '🎬'}</span>
+                  <span className={`text-base font-bold ${
+                    contentTimeline.shootDays === 'invalid' ? 'text-red-700' : 'text-green-900'
+                  }`}>
+                    {contentTimeline.shootDays === 'invalid'
+                      ? 'End date must be after start date!'
+                      : `Total Shoot Days: ${contentTimeline.shootDays}`}
                   </span>
                 </div>
               </div>
@@ -382,7 +410,7 @@ export default function TimelineStep({ formData, setFormData, onNext, onBack }: 
             </div>
 
             {/* Post-Production Duration */}
-            <div className="pt-4 border-t border-green-200">
+            <div className="pt-4 border-t border-amber-200">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-900 mb-3 uppercase tracking-wide">
@@ -392,7 +420,7 @@ export default function TimelineStep({ formData, setFormData, onNext, onBack }: 
                     type="date"
                     value={contentTimeline.postProductionStart}
                     onChange={(e) => handleDateChange('postProductionStart', e.target.value)}
-                    className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900 font-semibold bg-white hover:border-purple-400 transition-colors"
+                    className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-gray-900 font-semibold bg-white hover:border-amber-400 transition-colors cursor-pointer"
                   />
                 </div>
                 <div>
@@ -403,17 +431,26 @@ export default function TimelineStep({ formData, setFormData, onNext, onBack }: 
                     type="date"
                     value={contentTimeline.postProductionEnd}
                     onChange={(e) => handleDateChange('postProductionEnd', e.target.value)}
-                    className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none text-gray-900 font-semibold bg-white hover:border-purple-400 transition-colors"
+                    min={contentTimeline.postProductionStart || undefined}
+                    className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-gray-900 font-semibold bg-white hover:border-amber-400 transition-colors cursor-pointer"
                   />
                 </div>
               </div>
 
               {contentTimeline.postProductionDuration && (
-                <div className="bg-gradient-to-r from-amber-100 to-orange-100 border-2 border-amber-300 rounded-lg px-5 py-3 shadow-sm mt-4">
+                <div className={`border-2 rounded-lg px-5 py-3 shadow-sm mt-4 ${
+                  contentTimeline.postProductionDuration === 'invalid'
+                    ? 'bg-gradient-to-r from-red-100 to-pink-100 border-red-300'
+                    : 'bg-gradient-to-r from-amber-100 to-orange-100 border-amber-300'
+                }`}>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">⏱️</span>
-                    <span className="text-base font-bold text-amber-900">
-                      Duration: {contentTimeline.postProductionDuration}
+                    <span className="text-2xl">{contentTimeline.postProductionDuration === 'invalid' ? '⚠️' : '⏱️'}</span>
+                    <span className={`text-base font-bold ${
+                      contentTimeline.postProductionDuration === 'invalid' ? 'text-red-700' : 'text-amber-900'
+                    }`}>
+                      {contentTimeline.postProductionDuration === 'invalid'
+                        ? 'End date must be after start date!'
+                        : `Duration: ${contentTimeline.postProductionDuration}`}
                     </span>
                   </div>
                 </div>

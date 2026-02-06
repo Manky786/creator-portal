@@ -46,20 +46,27 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleNext = () => {
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
+      scrollToTop();
     }
   };
 
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+      scrollToTop();
     }
   };
 
   const handleStepClick = (stepId: number) => {
     setCurrentStep(stepId);
+    scrollToTop();
   };
 
   const handleSubmit = async () => {
@@ -146,10 +153,30 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
   };
 
   const CurrentStepComponent = steps[currentStep - 1].component;
+  const isEditing = !!(formData as any)._editingProjectId;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 max-w-7xl py-8">
+        {/* Editing Banner */}
+        {isEditing && (
+          <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl p-4 mb-6 flex items-center justify-between shadow-lg">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">✏️</span>
+              <div>
+                <div className="font-black text-lg">Editing Project: {formData.projectName || 'Untitled'}</div>
+                <div className="text-blue-100 text-sm font-semibold">Changes will update your existing submission</div>
+              </div>
+            </div>
+            <button
+              onClick={() => router.push('/my-projects')}
+              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-bold transition-all"
+            >
+              Cancel Edit
+            </button>
+          </div>
+        )}
+
         {/* Progress Bar */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <ProgressBar
@@ -168,6 +195,7 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
             onNext={handleNext}
             onBack={handleBack}
             onSubmit={handleSubmit}
+            onGoToStep={handleStepClick}
             isFirstStep={currentStep === 1}
             isLastStep={currentStep === steps.length}
           />
@@ -200,36 +228,95 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
         </div>
       </div>
 
-      {/* Success Modal */}
+      {/* Success Modal - OTT Industry Standard */}
       {submitSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center">
-            <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-black text-gray-900 mb-2">Submission Successful!</h2>
-            <p className="text-gray-600 font-semibold mb-6">
-              Your project "{formData.projectName || 'Untitled'}" has been submitted for review.
-            </p>
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-              <p className="text-green-800 font-semibold text-sm">
-                Our team will review your submission and get back to you within 24-48 hours.
-              </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gradient-to-br from-black/90 via-gray-900/90 to-black/90 backdrop-blur-md">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-white/10">
+            {/* Success Header */}
+            <div className={`p-6 text-center ${isEditing ? 'bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500' : 'bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500'}`}>
+              <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
+                <span className="text-5xl">{isEditing ? '✏️' : '✓'}</span>
+              </div>
+              <h2 className="text-3xl font-black text-white mb-1">{isEditing ? 'Project Updated!' : 'Project Submitted!'}</h2>
+              <p className="text-white/80 font-semibold text-sm">{isEditing ? 'Your changes have been saved' : 'Successfully sent for review'}</p>
             </div>
-            <div className="space-y-3">
-              <button
-                onClick={() => router.push('/profile')}
-                className="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
-              >
-                Go to Dashboard
-              </button>
-              <button
-                onClick={() => {
-                  setSubmitSuccess(false);
-                  router.push('/creator');
-                }}
-                className="w-full py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all"
-              >
-                Submit Another Project
-              </button>
+
+            {/* Project Info */}
+            <div className="p-6">
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center text-white text-2xl font-black">
+                    {(formData.projectName || 'U')[0].toUpperCase()}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-black text-white">{formData.projectName || 'Untitled Project'}</h3>
+                    <p className="text-gray-400 text-sm font-semibold">
+                      {formData.format?.replace('-', ' ').toUpperCase() || 'Format'} • {formData.culture || 'Culture'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status Timeline */}
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm">✓</span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-white font-bold text-sm">Submitted</div>
+                    <div className="text-gray-500 text-xs">Just now</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 mb-3 opacity-50">
+                  <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                    <span className="text-gray-400 text-sm">2</span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-gray-400 font-bold text-sm">Under Review</div>
+                    <div className="text-gray-600 text-xs">24-48 hours</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 opacity-30">
+                  <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center">
+                    <span className="text-gray-500 text-sm">3</span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-gray-500 font-bold text-sm">Decision</div>
+                    <div className="text-gray-600 text-xs">You'll be notified</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <button
+                  onClick={() => router.push('/my-projects')}
+                  className="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-black rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3"
+                >
+                  <span>📂</span>
+                  <span>View My Projects</span>
+                  <span className="text-white/60">Edit & Manage</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setSubmitSuccess(false);
+                    setCurrentStep(1);
+                    onClearDraft?.();
+                    scrollToTop();
+                  }}
+                  className="w-full py-4 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-black rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3"
+                >
+                  <span>➕</span>
+                  <span>Submit Another Project</span>
+                </button>
+                <button
+                  onClick={() => router.push('/profile')}
+                  className="w-full py-3 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white font-bold rounded-xl transition-all border border-white/10"
+                >
+                  Go to Dashboard
+                </button>
+              </div>
             </div>
           </div>
         </div>
