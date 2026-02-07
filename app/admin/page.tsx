@@ -866,66 +866,77 @@ export default function AdminDashboard() {
   // Extract talents from a project and add to library
   const extractTalentsFromProject = (project: any) => {
     const talents: any[] = [];
-    const addTalent = (name: string | undefined, role: string, department: string, email?: string, phone?: string) => {
+    const addTalent = (name: string | undefined, role: string, department: string, email?: string, phone?: string, workLink?: string) => {
       if (name && name.trim()) {
         talents.push({
           id: `talent_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           name: name.trim(),
           role,
           department,
-          phone: phone || project.phone || '',
-          email: email || project.officialEmail || '',
-          workLink: '',
+          phone: phone || '',
+          email: email || '',
+          workLink: workLink || '',
           culture: project.culture || 'Not Specified',
           projects: [{ id: project.id, name: project.projectName, status: project.status }],
           addedFrom: project.projectName,
           addedAt: new Date().toISOString(),
-          notes: ''
+          notes: '',
+          projectCulture: project.culture,
+          previousProjects: project.previousProjects || ''
         });
       }
     };
 
-    // Direction
+    // Direction Team
     addTalent(project.director, 'Director', 'direction');
     addTalent(project.associateDirector, 'Associate Director', 'direction');
-    addTalent(project.assistantDirector1, 'Assistant Director', 'direction');
+    addTalent(project.assistantDirector1, 'Assistant Director 1', 'direction');
+    addTalent(project.assistantDirector2, 'Assistant Director 2', 'direction');
     addTalent(project.showRunner, 'Show Runner', 'direction');
     addTalent(project.creativeDirector, 'Creative Director', 'direction');
+    addTalent(project.castingDirector, 'Casting Director', 'direction');
 
-    // Production
+    // Production Team
     addTalent(project.headOfProduction, 'Head of Production', 'production');
     addTalent(project.executiveProducer, 'Executive Producer', 'production');
     addTalent(project.lineProducer, 'Line Producer', 'production');
     addTalent(project.projectHead, 'Project Head', 'production');
-    addTalent(project.creator, 'Creator/Producer', 'production', project.officialEmail, project.phone);
+    addTalent(project.productionManager, 'Production Manager', 'production');
+    addTalent(project.productionController, 'Production Controller', 'production');
+    // Creator/Producer with their contact details
+    addTalent(project.creator || project.creatorName, 'Creator/Producer', 'production', project.officialEmail, project.phone);
 
-    // Writing
+    // Writing Team
     addTalent(project.writer, 'Writer', 'writing');
     addTalent(project.storyBy, 'Story Writer', 'writing');
     addTalent(project.screenplayBy, 'Screenplay Writer', 'writing');
     addTalent(project.dialoguesBy, 'Dialogue Writer', 'writing');
 
-    // Camera
-    addTalent(project.dop, 'DOP', 'camera');
+    // Camera Department
+    addTalent(project.dop, 'DOP (Director of Photography)', 'camera');
     addTalent(project.firstCameraOperator, 'Camera Operator', 'camera');
     addTalent(project.steadicamOperator, 'Steadicam Operator', 'camera');
+    addTalent(project.stillPhotographer, 'Still Photographer', 'camera');
+    addTalent(project.btsVideographer, 'BTS Videographer', 'camera');
 
-    // Editing
+    // Editing / Post-Production
     addTalent(project.editor, 'Editor', 'editing');
     addTalent(project.colorist, 'Colorist', 'editing');
     addTalent(project.onLocationEditor, 'On-Location Editor', 'editing');
 
-    // Sound
+    // Sound Department
     addTalent(project.soundRecordist, 'Sound Recordist', 'sound');
     addTalent(project.soundDesigner, 'Sound Designer', 'sound');
     addTalent(project.foleyArtist, 'Foley Artist', 'sound');
+    addTalent(project.reRecordingMixer, 'Re-Recording Mixer', 'sound');
 
-    // Music
+    // Music Team
     addTalent(project.musicComposer, 'Music Composer', 'music');
     addTalent(project.bgmComposer, 'BGM Composer', 'music');
     addTalent(project.playbackSinger, 'Playback Singer', 'music');
+    addTalent(project.lyricist, 'Lyricist', 'music');
 
-    // Art
+    // Art Department
     addTalent(project.productionDesigner, 'Production Designer', 'art');
     addTalent(project.artDirector, 'Art Director', 'art');
     addTalent(project.setDesigner, 'Set Designer', 'art');
@@ -935,14 +946,63 @@ export default function AdminDashboard() {
     addTalent(project.makeupArtist, 'Makeup Artist', 'costume');
     addTalent(project.hairStylist, 'Hair Stylist', 'costume');
 
-    // VFX
+    // VFX & Post
     addTalent(project.vfxSupervisor, 'VFX Supervisor', 'vfx');
     addTalent(project.diArtist, 'DI Artist', 'vfx');
 
-    // Cast
+    // Cast from castData (with social media links)
+    if (project.castData) {
+      // Primary Cast
+      if (project.castData.primaryCast && Array.isArray(project.castData.primaryCast)) {
+        project.castData.primaryCast.forEach((castMember: any) => {
+          if (castMember.artistName) {
+            addTalent(
+              castMember.artistName,
+              `Lead Actor (${castMember.characterName || 'Character'})`,
+              'cast',
+              '',
+              '',
+              castMember.socialMediaLink || ''
+            );
+          }
+        });
+      }
+      // Secondary Cast
+      if (project.castData.secondaryCast && Array.isArray(project.castData.secondaryCast)) {
+        project.castData.secondaryCast.forEach((castMember: any) => {
+          if (castMember.artistName) {
+            addTalent(
+              castMember.artistName,
+              `Supporting Actor (${castMember.characterName || 'Character'})`,
+              'cast',
+              '',
+              '',
+              castMember.socialMediaLink || ''
+            );
+          }
+        });
+      }
+      // Tertiary Cast
+      if (project.castData.tertiaryCast && Array.isArray(project.castData.tertiaryCast)) {
+        project.castData.tertiaryCast.forEach((castMember: any) => {
+          if (castMember.artistName) {
+            addTalent(
+              castMember.artistName,
+              `Actor (${castMember.characterName || 'Character'})`,
+              'cast',
+              '',
+              '',
+              castMember.socialMediaLink || ''
+            );
+          }
+        });
+      }
+    }
+
+    // Legacy cast array support
     if (project.cast && Array.isArray(project.cast)) {
       project.cast.forEach((castMember: any) => {
-        addTalent(castMember.name, castMember.role || 'Actor', 'cast');
+        addTalent(castMember.name || castMember.artistName, castMember.role || 'Actor', 'cast');
       });
     }
 
@@ -960,13 +1020,16 @@ export default function AdminDashboard() {
         );
         if (existing) {
           // Merge projects
-          const projectExists = existing.projects.some((p: any) => p.id === talent.projects[0].id);
-          if (!projectExists) {
+          const projectExists = existing.projects.some((p: any) => p.id === talent.projects[0]?.id);
+          if (!projectExists && talent.projects[0]) {
             existing.projects.push(talent.projects[0]);
           }
-          // Update contact if missing
+          // Update contact info if missing
           if (!existing.phone && talent.phone) existing.phone = talent.phone;
           if (!existing.email && talent.email) existing.email = talent.email;
+          if (!existing.workLink && talent.workLink) existing.workLink = talent.workLink;
+          if (!existing.culture && talent.culture) existing.culture = talent.culture;
+          if (!existing.previousProjects && talent.previousProjects) existing.previousProjects = talent.previousProjects;
         } else {
           updated.push(talent);
         }
@@ -1085,6 +1148,35 @@ export default function AdminDashboard() {
       setLocalSubmissionsLoaded(true);
     }
   }, [localSubmissionsLoaded]);
+
+  // Auto-sync talents from approved/in-production projects
+  useEffect(() => {
+    if (localSubmissionsLoaded && submissions.length > 0) {
+      const approvedProjects = submissions.filter(s =>
+        s.status === 'approved' || s.status === 'in-production'
+      );
+
+      if (approvedProjects.length > 0) {
+        // Check which projects are already synced
+        const syncedProjectIds = new Set(
+          talentLibrary.flatMap(t => t.projects?.map((p: any) => p.id) || [])
+        );
+
+        const projectsToSync = approvedProjects.filter(p => !syncedProjectIds.has(p.id));
+
+        if (projectsToSync.length > 0) {
+          console.log(`Auto-syncing talents from ${projectsToSync.length} approved projects...`);
+          projectsToSync.forEach(project => {
+            const talents = extractTalentsFromProject(project);
+            if (talents.length > 0) {
+              addTalentsToLibrary(talents);
+            }
+          });
+        }
+      }
+    }
+  }, [localSubmissionsLoaded, submissions]);
+
   const [expandedBudgetStatus, setExpandedBudgetStatus] = useState<string | null>(null);
   const [expandedDepartment, setExpandedDepartment] = useState<string | null>(null);
   const [expandedTranche, setExpandedTranche] = useState<number | null>(null);
