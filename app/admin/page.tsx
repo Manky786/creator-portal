@@ -837,6 +837,16 @@ export default function AdminDashboard() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showAnalytics, setShowAnalytics] = useState(false);
 
+  // Talent Library states
+  const [talentLibrary, setTalentLibrary] = useState<any[]>([]);
+  const [selectedTalent, setSelectedTalent] = useState<any>(null);
+  const [showAddTalentModal, setShowAddTalentModal] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
+  const [librarySearchQuery, setLibrarySearchQuery] = useState('');
+  const [newTalent, setNewTalent] = useState({
+    name: '', role: '', department: 'direction', phone: '', email: '', workLink: '', culture: 'Haryanvi', notes: ''
+  });
+
   // Load viewed projects from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -846,8 +856,177 @@ export default function AdminDashboard() {
       // Load edit access requests
       const editRequests = JSON.parse(localStorage.getItem('stage_edit_requests') || '[]');
       setEditAccessRequests(editRequests);
+
+      // Load talent library
+      const savedTalents = JSON.parse(localStorage.getItem('stage_talent_library') || '[]');
+      setTalentLibrary(savedTalents);
     }
   }, []);
+
+  // Extract talents from a project and add to library
+  const extractTalentsFromProject = (project: any) => {
+    const talents: any[] = [];
+    const addTalent = (name: string | undefined, role: string, department: string, email?: string, phone?: string) => {
+      if (name && name.trim()) {
+        talents.push({
+          id: `talent_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          name: name.trim(),
+          role,
+          department,
+          phone: phone || project.phone || '',
+          email: email || project.officialEmail || '',
+          workLink: '',
+          culture: project.culture || 'Not Specified',
+          projects: [{ id: project.id, name: project.projectName, status: project.status }],
+          addedFrom: project.projectName,
+          addedAt: new Date().toISOString(),
+          notes: ''
+        });
+      }
+    };
+
+    // Direction
+    addTalent(project.director, 'Director', 'direction');
+    addTalent(project.associateDirector, 'Associate Director', 'direction');
+    addTalent(project.assistantDirector1, 'Assistant Director', 'direction');
+    addTalent(project.showRunner, 'Show Runner', 'direction');
+    addTalent(project.creativeDirector, 'Creative Director', 'direction');
+
+    // Production
+    addTalent(project.headOfProduction, 'Head of Production', 'production');
+    addTalent(project.executiveProducer, 'Executive Producer', 'production');
+    addTalent(project.lineProducer, 'Line Producer', 'production');
+    addTalent(project.projectHead, 'Project Head', 'production');
+    addTalent(project.creator, 'Creator/Producer', 'production', project.officialEmail, project.phone);
+
+    // Writing
+    addTalent(project.writer, 'Writer', 'writing');
+    addTalent(project.storyBy, 'Story Writer', 'writing');
+    addTalent(project.screenplayBy, 'Screenplay Writer', 'writing');
+    addTalent(project.dialoguesBy, 'Dialogue Writer', 'writing');
+
+    // Camera
+    addTalent(project.dop, 'DOP', 'camera');
+    addTalent(project.firstCameraOperator, 'Camera Operator', 'camera');
+    addTalent(project.steadicamOperator, 'Steadicam Operator', 'camera');
+
+    // Editing
+    addTalent(project.editor, 'Editor', 'editing');
+    addTalent(project.colorist, 'Colorist', 'editing');
+    addTalent(project.onLocationEditor, 'On-Location Editor', 'editing');
+
+    // Sound
+    addTalent(project.soundRecordist, 'Sound Recordist', 'sound');
+    addTalent(project.soundDesigner, 'Sound Designer', 'sound');
+    addTalent(project.foleyArtist, 'Foley Artist', 'sound');
+
+    // Music
+    addTalent(project.musicComposer, 'Music Composer', 'music');
+    addTalent(project.bgmComposer, 'BGM Composer', 'music');
+    addTalent(project.playbackSinger, 'Playback Singer', 'music');
+
+    // Art
+    addTalent(project.productionDesigner, 'Production Designer', 'art');
+    addTalent(project.artDirector, 'Art Director', 'art');
+    addTalent(project.setDesigner, 'Set Designer', 'art');
+
+    // Costume & Makeup
+    addTalent(project.costumeDesigner, 'Costume Designer', 'costume');
+    addTalent(project.makeupArtist, 'Makeup Artist', 'costume');
+    addTalent(project.hairStylist, 'Hair Stylist', 'costume');
+
+    // VFX
+    addTalent(project.vfxSupervisor, 'VFX Supervisor', 'vfx');
+    addTalent(project.diArtist, 'DI Artist', 'vfx');
+
+    // Cast
+    if (project.cast && Array.isArray(project.cast)) {
+      project.cast.forEach((castMember: any) => {
+        addTalent(castMember.name, castMember.role || 'Actor', 'cast');
+      });
+    }
+
+    return talents;
+  };
+
+  // Add talents to library (merging duplicates)
+  const addTalentsToLibrary = (newTalents: any[]) => {
+    setTalentLibrary(prev => {
+      const updated = [...prev];
+      newTalents.forEach(talent => {
+        const existing = updated.find(t =>
+          t.name.toLowerCase() === talent.name.toLowerCase() &&
+          t.role.toLowerCase() === talent.role.toLowerCase()
+        );
+        if (existing) {
+          // Merge projects
+          const projectExists = existing.projects.some((p: any) => p.id === talent.projects[0].id);
+          if (!projectExists) {
+            existing.projects.push(talent.projects[0]);
+          }
+          // Update contact if missing
+          if (!existing.phone && talent.phone) existing.phone = talent.phone;
+          if (!existing.email && talent.email) existing.email = talent.email;
+        } else {
+          updated.push(talent);
+        }
+      });
+      // Save to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('stage_talent_library', JSON.stringify(updated));
+      }
+      return updated;
+    });
+  };
+
+  // Add single talent manually
+  const handleAddTalent = () => {
+    if (!newTalent.name.trim() || !newTalent.role.trim()) {
+      alert('Name and Role are required!');
+      return;
+    }
+    const talent = {
+      id: `talent_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...newTalent,
+      projects: [],
+      addedFrom: 'Manual Entry',
+      addedAt: new Date().toISOString()
+    };
+    setTalentLibrary(prev => {
+      const updated = [...prev, talent];
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('stage_talent_library', JSON.stringify(updated));
+      }
+      return updated;
+    });
+    setNewTalent({ name: '', role: '', department: 'direction', phone: '', email: '', workLink: '', culture: 'Haryanvi', notes: '' });
+    setShowAddTalentModal(false);
+  };
+
+  // Update talent
+  const handleUpdateTalent = (updatedTalent: any) => {
+    setTalentLibrary(prev => {
+      const updated = prev.map(t => t.id === updatedTalent.id ? updatedTalent : t);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('stage_talent_library', JSON.stringify(updated));
+      }
+      return updated;
+    });
+    setSelectedTalent(updatedTalent);
+  };
+
+  // Delete talent
+  const handleDeleteTalent = (talentId: string) => {
+    if (!confirm('Are you sure you want to delete this talent from the library?')) return;
+    setTalentLibrary(prev => {
+      const updated = prev.filter(t => t.id !== talentId);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('stage_talent_library', JSON.stringify(updated));
+      }
+      return updated;
+    });
+    setSelectedTalent(null);
+  };
 
   // Mark project as viewed
   const markAsViewed = (projectId: number) => {
@@ -1139,6 +1318,15 @@ export default function AdminDashboard() {
         exportToExcel(submission);
         alert(`🎬 Project "${submission.projectName}" moved to Production!\n\nAgreement Excel has been automatically downloaded with all project details.\n\n📧 Creator has been notified via email at ${submission.officialEmail || 'their registered email'}.`);
       }, 300);
+    }
+
+    // Auto-add talents to library when approved or in-production
+    if ((newStatus === 'approved' || newStatus === 'in-production') && submission) {
+      const talents = extractTalentsFromProject(submission);
+      if (talents.length > 0) {
+        addTalentsToLibrary(talents);
+        console.log(`Added ${talents.length} talents to library from project: ${submission.projectName}`);
+      }
     }
 
     setShowStatusMenu(null);
@@ -4001,9 +4189,16 @@ export default function AdminDashboard() {
                   <div>
                     <h2 className="text-lg font-bold opacity-90 mb-1">Talent Library</h2>
                     <div className="text-3xl font-black">Crew & Cast Database</div>
-                    <p className="text-sm font-semibold opacity-80 mt-2">All talent from submitted projects</p>
+                    <p className="text-sm font-semibold opacity-80 mt-2">
+                      {talentLibrary.length} talents • Auto-synced from approved projects
+                    </p>
                   </div>
-                  <div className="text-6xl">📚</div>
+                  <button
+                    onClick={() => setShowAddTalentModal(true)}
+                    className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl font-black transition-all flex items-center gap-2"
+                  >
+                    <span>➕</span> Add Talent
+                  </button>
                 </div>
               </div>
 
@@ -4013,14 +4208,16 @@ export default function AdminDashboard() {
                   <div className="flex-1">
                     <input
                       type="text"
+                      value={librarySearchQuery}
+                      onChange={(e) => setLibrarySearchQuery(e.target.value)}
                       placeholder="🔍 Search by name, role, culture..."
                       className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-                      id="library-search"
                     />
                   </div>
                   <select
+                    value={selectedDepartment}
+                    onChange={(e) => setSelectedDepartment(e.target.value)}
                     className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:border-purple-500"
-                    id="library-department"
                   >
                     <option value="all">All Departments</option>
                     <option value="direction">Direction</option>
@@ -4035,306 +4232,383 @@ export default function AdminDashboard() {
                     <option value="vfx">VFX & Post</option>
                     <option value="cast">Cast</option>
                   </select>
-                  <select
-                    className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:border-purple-500"
-                    id="library-culture"
-                  >
-                    <option value="all">All Cultures</option>
-                    <option value="haryanvi">Haryanvi</option>
-                    <option value="rajasthani">Rajasthani</option>
-                    <option value="bhojpuri">Bhojpuri</option>
-                    <option value="gujarati">Gujarati</option>
-                  </select>
                 </div>
               </div>
 
-              {/* Library Stats */}
+              {/* Department Stats - Clickable */}
               <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-                {(() => {
-                  // Calculate unique crew members from all projects
-                  const allCrew: { name: string; role: string; department: string; projects: string[]; culture: string; contact?: string }[] = [];
-
-                  submissions.forEach(project => {
-                    const addCrewMember = (name: string | undefined, role: string, department: string) => {
-                      if (name && name.trim()) {
-                        const existing = allCrew.find(c => c.name.toLowerCase() === name.toLowerCase() && c.role === role);
-                        if (existing) {
-                          if (!existing.projects.includes(project.projectName)) {
-                            existing.projects.push(project.projectName);
-                          }
-                        } else {
-                          allCrew.push({
-                            name: name.trim(),
-                            role,
-                            department,
-                            projects: [project.projectName],
-                            culture: project.culture,
-                            contact: project.phone || project.officialEmail || ''
-                          });
-                        }
-                      }
-                    };
-
-                    // Direction
-                    addCrewMember(project.director, 'Director', 'direction');
-                    addCrewMember(project.associateDirector, 'Associate Director', 'direction');
-                    addCrewMember(project.assistantDirector1, 'Assistant Director', 'direction');
-                    addCrewMember(project.showRunner, 'Show Runner', 'direction');
-                    addCrewMember(project.creativeDirector, 'Creative Director', 'direction');
-
-                    // Production
-                    addCrewMember(project.headOfProduction, 'Head of Production', 'production');
-                    addCrewMember(project.executiveProducer, 'Executive Producer', 'production');
-                    addCrewMember(project.lineProducer, 'Line Producer', 'production');
-                    addCrewMember(project.projectHead, 'Project Head', 'production');
-                    addCrewMember(project.creator, 'Creator', 'production');
-
-                    // Writing
-                    addCrewMember(project.writer, 'Writer', 'writing');
-                    addCrewMember(project.storyBy, 'Story Writer', 'writing');
-                    addCrewMember(project.screenplayBy, 'Screenplay Writer', 'writing');
-                    addCrewMember(project.dialoguesBy, 'Dialogue Writer', 'writing');
-
-                    // Camera
-                    addCrewMember(project.dop, 'DOP', 'camera');
-                    addCrewMember(project.firstCameraOperator, 'Camera Operator', 'camera');
-                    addCrewMember(project.steadicamOperator, 'Steadicam Operator', 'camera');
-
-                    // Editing
-                    addCrewMember(project.editor, 'Editor', 'editing');
-                    addCrewMember(project.colorist, 'Colorist', 'editing');
-                    addCrewMember(project.onLocationEditor, 'On-Location Editor', 'editing');
-
-                    // Sound
-                    addCrewMember(project.soundRecordist, 'Sound Recordist', 'sound');
-                    addCrewMember(project.soundDesigner, 'Sound Designer', 'sound');
-                    addCrewMember(project.foleyArtist, 'Foley Artist', 'sound');
-
-                    // Music
-                    addCrewMember(project.musicComposer, 'Music Composer', 'music');
-                    addCrewMember(project.bgmComposer, 'BGM Composer', 'music');
-                    addCrewMember(project.playbackSinger, 'Playback Singer', 'music');
-
-                    // Art
-                    addCrewMember(project.productionDesigner, 'Production Designer', 'art');
-                    addCrewMember(project.artDirector, 'Art Director', 'art');
-                    addCrewMember(project.setDesigner, 'Set Designer', 'art');
-
-                    // Costume & Makeup
-                    addCrewMember(project.costumeDesigner, 'Costume Designer', 'costume');
-                    addCrewMember(project.makeupArtist, 'Makeup Artist', 'costume');
-                    addCrewMember(project.hairStylist, 'Hair Stylist', 'costume');
-
-                    // VFX
-                    addCrewMember(project.vfxSupervisor, 'VFX Supervisor', 'vfx');
-                    addCrewMember(project.diArtist, 'DI Artist', 'vfx');
-
-                    // Cast
-                    if (project.cast && Array.isArray(project.cast)) {
-                      project.cast.forEach((castMember: any) => {
-                        addCrewMember(castMember.name, castMember.role || 'Actor', 'cast');
-                      });
-                    }
-                  });
-
-                  const stats = [
-                    { label: 'Directors', count: allCrew.filter(c => c.department === 'direction').length, icon: '🎬', color: 'bg-red-500' },
-                    { label: 'Producers', count: allCrew.filter(c => c.department === 'production').length, icon: '🎥', color: 'bg-blue-500' },
-                    { label: 'Writers', count: allCrew.filter(c => c.department === 'writing').length, icon: '✍️', color: 'bg-green-500' },
-                    { label: 'Camera', count: allCrew.filter(c => c.department === 'camera').length, icon: '📷', color: 'bg-yellow-500' },
-                    { label: 'Music', count: allCrew.filter(c => c.department === 'music').length, icon: '🎵', color: 'bg-purple-500' },
-                    { label: 'Cast', count: allCrew.filter(c => c.department === 'cast').length, icon: '🎭', color: 'bg-pink-500' },
-                  ];
-
-                  return stats.map((stat) => (
-                    <div key={stat.label} className="bg-white border-2 border-gray-200 rounded-xl p-4 shadow-md text-center">
-                      <div className={`w-10 h-10 ${stat.color} rounded-full flex items-center justify-center mx-auto mb-2`}>
-                        <span className="text-xl">{stat.icon}</span>
+                {[
+                  { id: 'all', label: 'All', icon: '📚', color: 'bg-gray-600' },
+                  { id: 'direction', label: 'Direction', icon: '🎬', color: 'bg-red-500' },
+                  { id: 'production', label: 'Production', icon: '🎥', color: 'bg-blue-500' },
+                  { id: 'writing', label: 'Writing', icon: '✍️', color: 'bg-green-500' },
+                  { id: 'camera', label: 'Camera', icon: '📷', color: 'bg-yellow-500' },
+                  { id: 'cast', label: 'Cast', icon: '🎭', color: 'bg-pink-500' },
+                ].map((dept) => {
+                  const count = dept.id === 'all' ? talentLibrary.length : talentLibrary.filter(t => t.department === dept.id).length;
+                  return (
+                    <button
+                      key={dept.id}
+                      onClick={() => setSelectedDepartment(dept.id)}
+                      className={`bg-white border-2 rounded-xl p-4 shadow-md text-center transition-all hover:scale-105 ${
+                        selectedDepartment === dept.id ? 'border-purple-500 ring-2 ring-purple-500/30' : 'border-gray-200'
+                      }`}
+                    >
+                      <div className={`w-10 h-10 ${dept.color} rounded-full flex items-center justify-center mx-auto mb-2`}>
+                        <span className="text-xl">{dept.icon}</span>
                       </div>
-                      <div className="text-2xl font-black text-gray-900">{stat.count}</div>
-                      <div className="text-xs font-bold text-gray-500">{stat.label}</div>
-                    </div>
-                  ));
-                })()}
+                      <div className="text-2xl font-black text-gray-900">{count}</div>
+                      <div className="text-xs font-bold text-gray-500">{dept.label}</div>
+                    </button>
+                  );
+                })}
+
               </div>
 
-              {/* Crew List by Department */}
-              {(() => {
-                // Build the full crew list
-                const allCrew: { name: string; role: string; department: string; projects: string[]; culture: string; contact?: string; email?: string; projectCount: number }[] = [];
-
-                submissions.forEach(project => {
-                  const addCrewMember = (name: string | undefined, role: string, department: string, email?: string, phone?: string) => {
-                    if (name && name.trim()) {
-                      const existing = allCrew.find(c => c.name.toLowerCase() === name.toLowerCase() && c.role === role);
-                      if (existing) {
-                        if (!existing.projects.includes(project.projectName)) {
-                          existing.projects.push(project.projectName);
-                          existing.projectCount++;
-                        }
-                      } else {
-                        allCrew.push({
-                          name: name.trim(),
-                          role,
-                          department,
-                          projects: [project.projectName],
-                          culture: project.culture,
-                          contact: phone || '',
-                          email: email || '',
-                          projectCount: 1
-                        });
-                      }
-                    }
-                  };
-
-                  // Direction
-                  addCrewMember(project.director, 'Director', 'direction');
-                  addCrewMember(project.associateDirector, 'Associate Director', 'direction');
-                  addCrewMember(project.assistantDirector1, 'Assistant Director', 'direction');
-                  addCrewMember(project.showRunner, 'Show Runner', 'direction');
-                  addCrewMember(project.creativeDirector, 'Creative Director', 'direction');
-
-                  // Production
-                  addCrewMember(project.headOfProduction, 'Head of Production', 'production');
-                  addCrewMember(project.executiveProducer, 'Executive Producer', 'production');
-                  addCrewMember(project.lineProducer, 'Line Producer', 'production');
-                  addCrewMember(project.projectHead, 'Project Head', 'production');
-                  addCrewMember(project.creator, 'Creator/Producer', 'production', project.officialEmail, project.phone);
-
-                  // Writing
-                  addCrewMember(project.writer, 'Writer', 'writing');
-                  addCrewMember(project.storyBy, 'Story Writer', 'writing');
-                  addCrewMember(project.screenplayBy, 'Screenplay Writer', 'writing');
-                  addCrewMember(project.dialoguesBy, 'Dialogue Writer', 'writing');
-
-                  // Camera
-                  addCrewMember(project.dop, 'DOP', 'camera');
-                  addCrewMember(project.firstCameraOperator, 'Camera Operator', 'camera');
-                  addCrewMember(project.steadicamOperator, 'Steadicam Operator', 'camera');
-
-                  // Editing
-                  addCrewMember(project.editor, 'Editor', 'editing');
-                  addCrewMember(project.colorist, 'Colorist', 'editing');
-                  addCrewMember(project.onLocationEditor, 'On-Location Editor', 'editing');
-
-                  // Sound
-                  addCrewMember(project.soundRecordist, 'Sound Recordist', 'sound');
-                  addCrewMember(project.soundDesigner, 'Sound Designer', 'sound');
-                  addCrewMember(project.foleyArtist, 'Foley Artist', 'sound');
-
-                  // Music
-                  addCrewMember(project.musicComposer, 'Music Composer', 'music');
-                  addCrewMember(project.bgmComposer, 'BGM Composer', 'music');
-                  addCrewMember(project.playbackSinger, 'Playback Singer', 'music');
-
-                  // Art
-                  addCrewMember(project.productionDesigner, 'Production Designer', 'art');
-                  addCrewMember(project.artDirector, 'Art Director', 'art');
-                  addCrewMember(project.setDesigner, 'Set Designer', 'art');
-
-                  // Costume & Makeup
-                  addCrewMember(project.costumeDesigner, 'Costume Designer', 'costume');
-                  addCrewMember(project.makeupArtist, 'Makeup Artist', 'costume');
-                  addCrewMember(project.hairStylist, 'Hair Stylist', 'costume');
-
-                  // VFX
-                  addCrewMember(project.vfxSupervisor, 'VFX Supervisor', 'vfx');
-                  addCrewMember(project.diArtist, 'DI Artist', 'vfx');
-
-                  // Cast
-                  if (project.cast && Array.isArray(project.cast)) {
-                    project.cast.forEach((castMember: any) => {
-                      addCrewMember(castMember.name, castMember.role || 'Actor', 'cast');
-                    });
-                  }
-                });
-
-                const departments = [
-                  { id: 'direction', label: 'Direction Team', icon: '🎬', color: 'from-red-500 to-rose-600' },
-                  { id: 'production', label: 'Production Team', icon: '🎥', color: 'from-blue-500 to-indigo-600' },
-                  { id: 'writing', label: 'Writing Team', icon: '✍️', color: 'from-green-500 to-emerald-600' },
-                  { id: 'camera', label: 'Camera Department', icon: '📷', color: 'from-yellow-500 to-orange-600' },
-                  { id: 'editing', label: 'Post Production', icon: '🎞️', color: 'from-cyan-500 to-teal-600' },
-                  { id: 'sound', label: 'Sound Department', icon: '🔊', color: 'from-indigo-500 to-violet-600' },
-                  { id: 'music', label: 'Music Team', icon: '🎵', color: 'from-purple-500 to-fuchsia-600' },
-                  { id: 'art', label: 'Art Department', icon: '🎨', color: 'from-amber-500 to-yellow-600' },
-                  { id: 'costume', label: 'Costume & Makeup', icon: '👗', color: 'from-pink-500 to-rose-600' },
-                  { id: 'vfx', label: 'VFX & DI', icon: '✨', color: 'from-slate-500 to-gray-600' },
-                  { id: 'cast', label: 'Cast Members', icon: '🎭', color: 'from-red-600 to-pink-600' },
-                ];
-
-                return (
-                  <div className="space-y-4">
-                    {departments.map((dept) => {
-                      const deptCrew = allCrew.filter(c => c.department === dept.id);
-                      if (deptCrew.length === 0) return null;
-
-                      return (
-                        <div key={dept.id} className="bg-white rounded-2xl border-2 border-gray-200 shadow-lg overflow-hidden">
-                          <div className={`bg-gradient-to-r ${dept.color} text-white p-4`}>
-                            <div className="flex items-center gap-3">
-                              <span className="text-3xl">{dept.icon}</span>
-                              <div>
-                                <h3 className="text-xl font-black">{dept.label}</h3>
-                                <p className="text-sm opacity-80 font-semibold">{deptCrew.length} members</p>
+              {/* Talent Grid - From Library */}
+              <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-4">
+                  <h3 className="text-xl font-black">
+                    {selectedDepartment === 'all' ? 'All Talents' : selectedDepartment.charAt(0).toUpperCase() + selectedDepartment.slice(1) + ' Team'}
+                  </h3>
+                  <p className="text-sm opacity-80 font-semibold">
+                    {talentLibrary.filter(t =>
+                      (selectedDepartment === 'all' || t.department === selectedDepartment) &&
+                      (librarySearchQuery === '' ||
+                        t.name.toLowerCase().includes(librarySearchQuery.toLowerCase()) ||
+                        t.role.toLowerCase().includes(librarySearchQuery.toLowerCase()) ||
+                        t.culture?.toLowerCase().includes(librarySearchQuery.toLowerCase()))
+                    ).length} members
+                  </p>
+                </div>
+                <div className="p-4">
+                  {talentLibrary.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="text-6xl mb-4">📚</div>
+                      <h4 className="text-xl font-black text-gray-700 mb-2">No Talents Yet</h4>
+                      <p className="text-gray-500 mb-4">Talents are auto-added when projects are approved or go to production</p>
+                      <button
+                        onClick={() => setShowAddTalentModal(true)}
+                        className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg transition-all"
+                      >
+                        ➕ Add Talent Manually
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {talentLibrary
+                        .filter(t =>
+                          (selectedDepartment === 'all' || t.department === selectedDepartment) &&
+                          (librarySearchQuery === '' ||
+                            t.name.toLowerCase().includes(librarySearchQuery.toLowerCase()) ||
+                            t.role.toLowerCase().includes(librarySearchQuery.toLowerCase()) ||
+                            t.culture?.toLowerCase().includes(librarySearchQuery.toLowerCase()))
+                        )
+                        .map((talent) => (
+                          <div
+                            key={talent.id}
+                            onClick={() => setSelectedTalent(talent)}
+                            className="bg-gray-50 rounded-xl p-4 border-2 border-gray-200 hover:border-purple-400 hover:shadow-lg transition-all cursor-pointer group"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-black text-xl flex-shrink-0 group-hover:scale-110 transition-transform">
+                                {talent.name.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-black text-gray-900 truncate text-lg">{talent.name}</h4>
+                                <p className="text-sm text-purple-600 font-bold">{talent.role}</p>
+                                <div className="flex flex-wrap items-center gap-2 mt-2">
+                                  <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
+                                    {talent.projects?.length || 0} projects
+                                  </span>
+                                  <span className="px-2 py-0.5 bg-gray-200 text-gray-600 text-xs font-bold rounded-full">
+                                    {talent.culture}
+                                  </span>
+                                </div>
+                                {talent.workLink && (
+                                  <div className="mt-2 text-xs text-blue-500 truncate">
+                                    🔗 {talent.workLink}
+                                  </div>
+                                )}
+                                {(talent.phone || talent.email) && (
+                                  <div className="mt-1 text-xs text-gray-500">
+                                    {talent.phone && <span>📱 {talent.phone}</span>}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
-                          <div className="p-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {deptCrew.sort((a, b) => b.projectCount - a.projectCount).map((crew, index) => (
-                                <div key={`${crew.name}-${index}`} className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:shadow-md transition-all hover:border-purple-300">
-                                  <div className="flex items-start gap-3">
-                                    <div className={`w-12 h-12 bg-gradient-to-br ${dept.color} rounded-full flex items-center justify-center text-white font-black text-lg flex-shrink-0`}>
-                                      {crew.name.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <h4 className="font-black text-gray-900 truncate">{crew.name}</h4>
-                                      <p className="text-sm text-gray-600 font-semibold">{crew.role}</p>
-                                      <div className="flex items-center gap-2 mt-2">
-                                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
-                                          {crew.projectCount} {crew.projectCount > 1 ? 'projects' : 'project'}
-                                        </span>
-                                        <span className="px-2 py-0.5 bg-gray-200 text-gray-600 text-xs font-bold rounded-full">
-                                          {crew.culture}
-                                        </span>
-                                      </div>
-                                      {(crew.contact || crew.email) && (
-                                        <div className="mt-2 text-xs text-gray-500">
-                                          {crew.email && <div>📧 {crew.email}</div>}
-                                          {crew.contact && <div>📱 {crew.contact}</div>}
-                                        </div>
-                                      )}
-                                      <div className="mt-2">
-                                        <div className="text-xs text-gray-400 font-semibold mb-1">STAGE Projects:</div>
-                                        <div className="flex flex-wrap gap-1">
-                                          {crew.projects.slice(0, 2).map((proj, i) => (
-                                            <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs font-semibold rounded truncate max-w-[120px]">
-                                              {proj}
-                                            </span>
-                                          ))}
-                                          {crew.projects.length > 2 && (
-                                            <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs font-semibold rounded">
-                                              +{crew.projects.length - 2}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
+
+        {/* Add Talent Modal */}
+        {showAddTalentModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-5 rounded-t-2xl">
+                <h3 className="text-2xl font-black">➕ Add New Talent</h3>
+                <p className="text-sm opacity-80">Add crew/cast member to library</p>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Name *</label>
+                  <input
+                    type="text"
+                    value={newTalent.name}
+                    onChange={(e) => setNewTalent({...newTalent, name: e.target.value})}
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                    placeholder="Full Name"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Role *</label>
+                    <input
+                      type="text"
+                      value={newTalent.role}
+                      onChange={(e) => setNewTalent({...newTalent, role: e.target.value})}
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                      placeholder="Director, DOP, etc."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Department</label>
+                    <select
+                      value={newTalent.department}
+                      onChange={(e) => setNewTalent({...newTalent, department: e.target.value})}
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                    >
+                      <option value="direction">Direction</option>
+                      <option value="production">Production</option>
+                      <option value="writing">Writing</option>
+                      <option value="camera">Camera</option>
+                      <option value="editing">Editing</option>
+                      <option value="sound">Sound</option>
+                      <option value="music">Music</option>
+                      <option value="art">Art</option>
+                      <option value="costume">Costume & Makeup</option>
+                      <option value="vfx">VFX</option>
+                      <option value="cast">Cast</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Phone</label>
+                    <input
+                      type="text"
+                      value={newTalent.phone}
+                      onChange={(e) => setNewTalent({...newTalent, phone: e.target.value})}
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                      placeholder="+91 98765 43210"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Email</label>
+                    <input
+                      type="email"
+                      value={newTalent.email}
+                      onChange={(e) => setNewTalent({...newTalent, email: e.target.value})}
+                      className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                      placeholder="email@example.com"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Work Link / Portfolio</label>
+                  <input
+                    type="url"
+                    value={newTalent.workLink}
+                    onChange={(e) => setNewTalent({...newTalent, workLink: e.target.value})}
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                    placeholder="https://portfolio.com or YouTube link"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Culture</label>
+                  <select
+                    value={newTalent.culture}
+                    onChange={(e) => setNewTalent({...newTalent, culture: e.target.value})}
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                  >
+                    <option value="Haryanvi">Haryanvi</option>
+                    <option value="Rajasthani">Rajasthani</option>
+                    <option value="Bhojpuri">Bhojpuri</option>
+                    <option value="Gujarati">Gujarati</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Notes</label>
+                  <textarea
+                    value={newTalent.notes}
+                    onChange={(e) => setNewTalent({...newTalent, notes: e.target.value})}
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none resize-none"
+                    rows={2}
+                    placeholder="Any additional notes..."
+                  />
+                </div>
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => setShowAddTalentModal(false)}
+                    className="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddTalent}
+                    className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-black rounded-xl transition-all"
+                  >
+                    Add Talent
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Talent Detail Modal */}
+        {selectedTalent && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-t-2xl">
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center text-4xl font-black">
+                    {selectedTalent.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black">{selectedTalent.name}</h3>
+                    <p className="text-lg opacity-90 font-semibold">{selectedTalent.role}</p>
+                    <span className="px-3 py-1 bg-white/20 rounded-full text-sm font-bold mt-1 inline-block">
+                      {selectedTalent.department}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
+                {/* Contact Info */}
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                  <h4 className="font-bold text-gray-700 mb-3">📞 Contact Information</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <span className="text-gray-500">📱 Phone:</span>
+                      <input
+                        type="text"
+                        value={selectedTalent.phone || ''}
+                        onChange={(e) => handleUpdateTalent({...selectedTalent, phone: e.target.value})}
+                        className="flex-1 px-3 py-1 border border-gray-300 rounded-lg text-sm"
+                        placeholder="Add phone..."
+                      />
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-gray-500">📧 Email:</span>
+                      <input
+                        type="email"
+                        value={selectedTalent.email || ''}
+                        onChange={(e) => handleUpdateTalent({...selectedTalent, email: e.target.value})}
+                        className="flex-1 px-3 py-1 border border-gray-300 rounded-lg text-sm"
+                        placeholder="Add email..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Work Link */}
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                  <h4 className="font-bold text-gray-700 mb-3">🔗 Work Link / Portfolio</h4>
+                  <input
+                    type="url"
+                    value={selectedTalent.workLink || ''}
+                    onChange={(e) => handleUpdateTalent({...selectedTalent, workLink: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    placeholder="https://portfolio.com or demo reel link"
+                  />
+                  {selectedTalent.workLink && (
+                    <a
+                      href={selectedTalent.workLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block mt-2 text-blue-500 text-sm hover:underline"
+                    >
+                      🔗 Open Link →
+                    </a>
+                  )}
+                </div>
+
+                {/* Culture */}
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                  <h4 className="font-bold text-gray-700 mb-3">🎭 Culture</h4>
+                  <span className="px-4 py-2 bg-purple-100 text-purple-700 font-bold rounded-full">
+                    {selectedTalent.culture}
+                  </span>
+                </div>
+
+                {/* STAGE Projects */}
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                  <h4 className="font-bold text-gray-700 mb-3">🎬 STAGE Projects</h4>
+                  {selectedTalent.projects && selectedTalent.projects.length > 0 ? (
+                    <div className="space-y-2">
+                      {selectedTalent.projects.map((proj: any, i: number) => (
+                        <div key={i} className="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
+                          <span className="font-semibold text-gray-800">{proj.name || proj}</span>
+                          {proj.status && (
+                            <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
+                              proj.status === 'approved' ? 'bg-green-100 text-green-700' :
+                              proj.status === 'in-production' ? 'bg-purple-100 text-purple-700' :
+                              'bg-gray-100 text-gray-600'
+                            }`}>
+                              {proj.status}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-sm">No STAGE projects yet</p>
+                  )}
+                </div>
+
+                {/* Notes */}
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                  <h4 className="font-bold text-gray-700 mb-3">📝 Notes</h4>
+                  <textarea
+                    value={selectedTalent.notes || ''}
+                    onChange={(e) => handleUpdateTalent({...selectedTalent, notes: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none"
+                    rows={3}
+                    placeholder="Add notes about this talent..."
+                  />
+                </div>
+
+                {/* Added Info */}
+                <div className="text-xs text-gray-400 text-center">
+                  Added from: {selectedTalent.addedFrom || 'Manual'} • {selectedTalent.addedAt ? new Date(selectedTalent.addedAt).toLocaleDateString() : ''}
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => setSelectedTalent(null)}
+                    className="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition-all"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={() => handleDeleteTalent(selectedTalent.id)}
+                    className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all"
+                  >
+                    🗑️ Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Delete Confirmation Modal */}
         {showDeleteConfirm && (
