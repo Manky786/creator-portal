@@ -846,6 +846,132 @@ export default function AdminDashboard() {
   const [newTalent, setNewTalent] = useState({
     name: '', role: '', department: 'direction', phone: '', email: '', workLink: '', culture: 'Haryanvi', notes: ''
   });
+  const [showTalentShareMenu, setShowTalentShareMenu] = useState(false);
+  const [showTalentDownloadMenu, setShowTalentDownloadMenu] = useState(false);
+
+  // Share individual talent profile
+  const shareTalentProfile = (talent: any, platform: string) => {
+    const profileText = `🎬 STAGE Talent: ${talent.name}\n📋 Role: ${talent.role}\n🎭 Department: ${talent.department}\n🌍 Culture: ${talent.culture}\n${talent.phone ? `📱 Phone: ${talent.phone}\n` : ''}${talent.email ? `📧 Email: ${talent.email}\n` : ''}${talent.workLink ? `🔗 Portfolio: ${talent.workLink}\n` : ''}${talent.projects?.length > 0 ? `🎬 Projects: ${talent.projects.map((p: any) => p.name || p).join(', ')}\n` : ''}\n🎯 From STAGE OTT Platform`;
+
+    switch(platform) {
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(profileText)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(profileText.substring(0, 280))}`, '_blank');
+        break;
+      case 'linkedin':
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://stage.in')}&title=${encodeURIComponent(`STAGE Talent: ${talent.name}`)}&summary=${encodeURIComponent(profileText)}`, '_blank');
+        break;
+      case 'email':
+        window.location.href = `mailto:?subject=${encodeURIComponent(`STAGE Talent Profile: ${talent.name}`)}&body=${encodeURIComponent(profileText)}`;
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(profileText);
+        alert('Profile copied to clipboard!');
+        break;
+    }
+    setShowTalentShareMenu(false);
+  };
+
+  // Download individual talent profile
+  const downloadTalentProfile = (talent: any, format: string) => {
+    switch(format) {
+      case 'pdf':
+        const pdfContent = `
+          <html>
+            <head>
+              <title>${talent.name} - STAGE Talent Profile</title>
+              <style>
+                body { font-family: Arial, sans-serif; padding: 40px; max-width: 600px; margin: 0 auto; }
+                .header { background: linear-gradient(135deg, #8B5CF6, #6366F1); color: white; padding: 30px; border-radius: 16px; margin-bottom: 24px; }
+                .avatar { width: 80px; height: 80px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; margin-bottom: 16px; }
+                .name { font-size: 28px; font-weight: bold; margin: 0; }
+                .role { font-size: 18px; opacity: 0.9; margin: 4px 0; }
+                .badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-top: 8px; }
+                .section { background: #f8f9fa; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+                .section-title { font-weight: bold; color: #374151; margin-bottom: 12px; font-size: 16px; }
+                .info-row { display: flex; margin-bottom: 8px; }
+                .info-label { color: #6b7280; width: 100px; }
+                .info-value { color: #1f2937; }
+                .footer { text-align: center; color: #9ca3af; font-size: 12px; margin-top: 32px; }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <div class="avatar">${talent.name.charAt(0).toUpperCase()}</div>
+                <p class="name">${talent.name}</p>
+                <p class="role">${talent.role}</p>
+                <span class="badge">${talent.department}</span>
+              </div>
+              <div class="section">
+                <div class="section-title">📞 Contact Information</div>
+                <div class="info-row"><span class="info-label">Phone:</span><span class="info-value">${talent.phone || 'Not provided'}</span></div>
+                <div class="info-row"><span class="info-label">Email:</span><span class="info-value">${talent.email || 'Not provided'}</span></div>
+              </div>
+              <div class="section">
+                <div class="section-title">🔗 Portfolio</div>
+                <p style="color: #3b82f6;">${talent.workLink || 'Not provided'}</p>
+              </div>
+              <div class="section">
+                <div class="section-title">🎭 Culture</div>
+                <span style="background: #f3e8ff; color: #7c3aed; padding: 4px 16px; border-radius: 20px; font-weight: bold;">${talent.culture}</span>
+              </div>
+              ${talent.projects?.length > 0 ? `
+              <div class="section">
+                <div class="section-title">🎬 STAGE Projects</div>
+                ${talent.projects.map((p: any) => `<p style="margin: 4px 0;">• ${p.name || p} ${p.status ? `(${p.status})` : ''}</p>`).join('')}
+              </div>
+              ` : ''}
+              ${talent.notes ? `
+              <div class="section">
+                <div class="section-title">📝 Notes</div>
+                <p>${talent.notes}</p>
+              </div>
+              ` : ''}
+              <div class="footer">Generated from STAGE OTT Platform • ${new Date().toLocaleDateString()}</div>
+            </body>
+          </html>
+        `;
+        const pdfWindow = window.open('', '_blank');
+        if (pdfWindow) {
+          pdfWindow.document.write(pdfContent);
+          pdfWindow.document.close();
+          pdfWindow.print();
+        }
+        break;
+      case 'vcard':
+        const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:${talent.name}
+TITLE:${talent.role}
+ORG:STAGE OTT - ${talent.department}
+TEL:${talent.phone || ''}
+EMAIL:${talent.email || ''}
+URL:${talent.workLink || ''}
+NOTE:Culture: ${talent.culture}${talent.projects?.length > 0 ? ` | Projects: ${talent.projects.map((p: any) => p.name || p).join(', ')}` : ''}
+END:VCARD`;
+        const vcardBlob = new Blob([vcard], { type: 'text/vcard' });
+        const vcardUrl = URL.createObjectURL(vcardBlob);
+        const vcardLink = document.createElement('a');
+        vcardLink.href = vcardUrl;
+        vcardLink.download = `${talent.name.replace(/\s+/g, '_')}_STAGE.vcf`;
+        vcardLink.click();
+        URL.revokeObjectURL(vcardUrl);
+        break;
+      case 'json':
+        const jsonData = JSON.stringify(talent, null, 2);
+        const jsonBlob = new Blob([jsonData], { type: 'application/json' });
+        const jsonUrl = URL.createObjectURL(jsonBlob);
+        const jsonLink = document.createElement('a');
+        jsonLink.href = jsonUrl;
+        jsonLink.download = `${talent.name.replace(/\s+/g, '_')}_STAGE.json`;
+        jsonLink.click();
+        URL.revokeObjectURL(jsonUrl);
+        break;
+    }
+    setShowTalentDownloadMenu(false);
+  };
 
   // Load viewed projects from localStorage
   useEffect(() => {
@@ -4952,19 +5078,78 @@ export default function AdminDashboard() {
                   Added from: {selectedTalent.addedFrom || 'Manual'} • {selectedTalent.addedAt ? new Date(selectedTalent.addedAt).toLocaleDateString() : ''}
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-3 pt-4 border-t border-gray-200">
+                {/* Share & Download Actions */}
+                <div className="flex gap-2 pt-4 border-t border-gray-200">
+                  {/* Share Button */}
+                  <div className="relative">
+                    <button
+                      onClick={() => { setShowTalentShareMenu(!showTalentShareMenu); setShowTalentDownloadMenu(false); }}
+                      className="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold rounded-lg transition-all flex items-center gap-2 text-sm"
+                    >
+                      <span>↗</span> Share
+                    </button>
+                    {showTalentShareMenu && (
+                      <div className="absolute bottom-full left-0 mb-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[160px] z-50">
+                        <button onClick={() => shareTalentProfile(selectedTalent, 'whatsapp')} className="w-full px-4 py-2 text-left hover:bg-green-50 text-gray-700 font-semibold text-sm flex items-center gap-2">
+                          <span className="text-green-500">💬</span> WhatsApp
+                        </button>
+                        <button onClick={() => shareTalentProfile(selectedTalent, 'twitter')} className="w-full px-4 py-2 text-left hover:bg-blue-50 text-gray-700 font-semibold text-sm flex items-center gap-2">
+                          <span className="text-blue-400">𝕏</span> Twitter
+                        </button>
+                        <button onClick={() => shareTalentProfile(selectedTalent, 'linkedin')} className="w-full px-4 py-2 text-left hover:bg-blue-50 text-gray-700 font-semibold text-sm flex items-center gap-2">
+                          <span className="text-blue-600">in</span> LinkedIn
+                        </button>
+                        <button onClick={() => shareTalentProfile(selectedTalent, 'email')} className="w-full px-4 py-2 text-left hover:bg-gray-50 text-gray-700 font-semibold text-sm flex items-center gap-2">
+                          <span>📧</span> Email
+                        </button>
+                        <div className="border-t border-gray-100 my-1"></div>
+                        <button onClick={() => shareTalentProfile(selectedTalent, 'copy')} className="w-full px-4 py-2 text-left hover:bg-gray-50 text-gray-700 font-semibold text-sm flex items-center gap-2">
+                          <span>📋</span> Copy
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Download Button */}
+                  <div className="relative">
+                    <button
+                      onClick={() => { setShowTalentDownloadMenu(!showTalentDownloadMenu); setShowTalentShareMenu(false); }}
+                      className="px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold rounded-lg transition-all flex items-center gap-2 text-sm"
+                    >
+                      <span>↓</span> Download
+                    </button>
+                    {showTalentDownloadMenu && (
+                      <div className="absolute bottom-full left-0 mb-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 min-w-[160px] z-50">
+                        <button onClick={() => downloadTalentProfile(selectedTalent, 'pdf')} className="w-full px-4 py-2 text-left hover:bg-red-50 text-gray-700 font-semibold text-sm flex items-center gap-2">
+                          <span className="text-red-500">📄</span> PDF Profile
+                        </button>
+                        <button onClick={() => downloadTalentProfile(selectedTalent, 'vcard')} className="w-full px-4 py-2 text-left hover:bg-blue-50 text-gray-700 font-semibold text-sm flex items-center gap-2">
+                          <span className="text-blue-500">👤</span> vCard (.vcf)
+                        </button>
+                        <button onClick={() => downloadTalentProfile(selectedTalent, 'json')} className="w-full px-4 py-2 text-left hover:bg-gray-50 text-gray-700 font-semibold text-sm flex items-center gap-2">
+                          <span className="text-gray-500">{ }</span> JSON Data
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Spacer */}
+                  <div className="flex-1"></div>
+
+                  {/* Close Button */}
                   <button
-                    onClick={() => setSelectedTalent(null)}
-                    className="flex-1 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition-all"
+                    onClick={() => { setSelectedTalent(null); setShowTalentShareMenu(false); setShowTalentDownloadMenu(false); }}
+                    className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold rounded-lg transition-all text-sm"
                   >
                     Close
                   </button>
+
+                  {/* Delete Button */}
                   <button
                     onClick={() => handleDeleteTalent(selectedTalent.id)}
-                    className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all"
+                    className="px-4 py-2.5 bg-red-100 hover:bg-red-200 text-red-600 font-bold rounded-lg transition-all text-sm"
                   >
-                    🗑️ Delete
+                    🗑️
                   </button>
                 </div>
               </div>
