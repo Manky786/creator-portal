@@ -300,10 +300,8 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
                 </button>
                 <button
                   onClick={() => {
-                    setSubmitSuccess(false);
-                    setCurrentStep(1);
-                    onClearDraft?.();
-                    scrollToTop();
+                    // Navigate to creator page with ?new=true to start completely fresh
+                    router.push('/creator?new=true');
                   }}
                   className="w-full py-4 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-black rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3"
                 >

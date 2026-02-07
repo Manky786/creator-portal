@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { BudgetFormData } from '@/types/budget';
 import BudgetWizard from '@/components/BudgetWizard';
@@ -8,16 +9,27 @@ import FilmmakerQuote from '@/components/FilmmakerQuote';
 
 const STORAGE_KEY = 'stage_creator_draft';
 
-export default function CreatorPage() {
+function CreatorPageContent() {
+  const searchParams = useSearchParams();
   const [started, setStarted] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [showSampleModal, setShowSampleModal] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [draftCleared, setDraftCleared] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+
+    // Check if user wants to start a new project (clear existing draft)
+    const isNewProject = searchParams.get('new') === 'true';
+    if (isNewProject && typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY);
+      setDraftCleared(true);
+      // Remove the query param from URL without reload
+      window.history.replaceState({}, '', '/creator');
+    }
+  }, [searchParams]);
   const [formData, setFormData] = useState<Partial<BudgetFormData>>({
     projectName: '',
     productionCompany: '',
@@ -224,9 +236,9 @@ export default function CreatorPage() {
     },
   });
 
-  // Load saved draft from localStorage on mount
+  // Load saved draft from localStorage on mount (skip if draft was cleared for new project)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !draftCleared) {
       const savedDraft = localStorage.getItem(STORAGE_KEY);
       if (savedDraft) {
         try {
@@ -244,7 +256,7 @@ export default function CreatorPage() {
         }
       }
     }
-  }, []);
+  }, [draftCleared]);
 
   // Auto-save to localStorage whenever formData changes
   const saveToStorage = useCallback((data: Partial<BudgetFormData>, isStarted: boolean) => {
@@ -743,4 +755,19 @@ export default function CreatorPage() {
     />
   );
 }
-// Deploy trigger: Wed Feb  4 16:17:45 IST 2026
+
+// Wrapper component with Suspense for useSearchParams
+export default function CreatorPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white font-semibold">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CreatorPageContent />
+    </Suspense>
+  );
+}

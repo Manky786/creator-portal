@@ -28,6 +28,17 @@ export default function BasicInfoStep({ formData, setFormData, onNext }: Props) 
   const handleChange = (field: string, value: string | number) => {
     const updates: Partial<BudgetFormData> = { [field]: value };
 
+    // Auto-calculate Total Duration when episode details change
+    if (field === 'numberOfSeasons' || field === 'episodesPerSeason' || field === 'episodeDuration') {
+      const seasons = field === 'numberOfSeasons' ? parseInt(value as string, 10) : parseInt(formData.numberOfSeasons as string, 10) || 0;
+      const episodes = field === 'episodesPerSeason' ? parseInt(value as string, 10) : parseInt(formData.episodesPerSeason as string, 10) || 0;
+      const duration = field === 'episodeDuration' ? parseInt(value as string, 10) : parseInt(formData.episodeDuration as string, 10) || 0;
+
+      if (seasons > 0 && episodes > 0 && duration > 0) {
+        updates.totalDuration = (seasons * episodes * duration).toString();
+      }
+    }
+
     // Auto-calculate shoot end date when start date or shoot days change
     if (field === 'shootStartDate' && value && formData.shootDays) {
       const startDate = new Date(value as string);
@@ -561,13 +572,34 @@ export default function BasicInfoStep({ formData, setFormData, onNext }: Props) 
               <label className="block text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide">
                 Total Duration (minutes)
               </label>
-              <input
-                type="number"
-                value={formData.totalDuration || ''}
-                onChange={(e) => handleChange('totalDuration', e.target.value)}
-                placeholder="e.g., 650"
-                className="w-full px-4 py-4 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-gray-900 font-semibold placeholder:text-gray-400 placeholder:font-normal hover:border-purple-400 transition-colors bg-white/60 shadow-sm hover:shadow-md"
-              />
+              {(() => {
+                const seasons = parseInt(formData.numberOfSeasons as string, 10) || 0;
+                const episodes = parseInt(formData.episodesPerSeason as string, 10) || 0;
+                const duration = parseInt(formData.episodeDuration as string, 10) || 0;
+                const isAutoCalculated = seasons > 0 && episodes > 0 && duration > 0;
+
+                return (
+                  <>
+                    <input
+                      type="number"
+                      value={formData.totalDuration || ''}
+                      onChange={(e) => handleChange('totalDuration', e.target.value)}
+                      placeholder="e.g., 650"
+                      readOnly={isAutoCalculated}
+                      className={`w-full px-4 py-4 text-base border-2 rounded-lg focus:ring-2 outline-none font-semibold placeholder:text-gray-400 placeholder:font-normal transition-colors shadow-sm hover:shadow-md ${
+                        isAutoCalculated
+                          ? 'bg-green-50 border-green-500 text-green-900 cursor-not-allowed'
+                          : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500 text-gray-900 hover:border-purple-400 bg-white/60'
+                      }`}
+                    />
+                    {isAutoCalculated && (
+                      <p className="text-xs font-bold text-green-700 mt-2">
+                        ✅ Auto-calculated: {seasons} season(s) × {episodes} episodes × {duration} mins = {seasons * episodes * duration} mins
+                      </p>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
             <div>

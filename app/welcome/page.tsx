@@ -104,7 +104,7 @@ export default function WelcomePage() {
         {/* Main Action Cards */}
         <div className={`grid md:grid-cols-2 gap-8 mb-12 ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`} style={{animationDelay: '0.3s'}}>
           {/* Submit New Project */}
-          <Link href="/creator" className="group">
+          <Link href="/creator?new=true" className="group">
             <div className="h-full bg-gradient-to-br from-red-600/20 via-pink-600/20 to-purple-600/20 backdrop-blur-xl border-2 border-white/10 hover:border-red-500/50 rounded-3xl p-8 transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl hover:shadow-red-500/20">
               <div className="flex items-start justify-between mb-6">
                 <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-red-500/50 group-hover:scale-110 transition-transform">

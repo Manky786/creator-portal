@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { BudgetFormData } from '@/types/budget';
 import { budgetTemplate, categoryNames, industryBenchmarks } from '@/data/budgetTemplate';
 import FilmmakerQuote from '@/components/FilmmakerQuote';
@@ -10,12 +11,31 @@ interface Props {
   onNext: () => void;
   onBack: () => void;
   onSubmit: () => void;
+  onGoToStep?: (step: number) => void;
   isFirstStep: boolean;
   isLastStep: boolean;
 }
 
-export default function ReviewStep({ formData, onBack, onSubmit }: Props) {
+export default function ReviewStep({ formData, setFormData, onBack, onSubmit, onGoToStep }: Props) {
+  const [backupData, setBackupData] = useState<Partial<BudgetFormData> | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showMissingModal, setShowMissingModal] = useState(false);
   const budgetData = formData.budgetData || {};
+
+  // Clear all form data
+  const handleClearAll = () => {
+    setBackupData({ ...formData });
+    setFormData({});
+    setShowClearConfirm(false);
+  };
+
+  // Restore backed up data
+  const handleRestore = () => {
+    if (backupData) {
+      setFormData(backupData);
+      setBackupData(null);
+    }
+  };
 
   // Use Total Project Cost from Budget page (already includes production + margin + insurance + celebrity)
   const getTotalProjectCost = () => {
@@ -60,47 +80,67 @@ export default function ReviewStep({ formData, onBack, onSubmit }: Props) {
   };
 
   const getWarnings = () => {
-    const warnings = [];
+    const warnings: { section: string; field: string; step: number; stepName: string }[] = [];
 
-    // Basic Info
-    if (!formData.projectName) warnings.push({ section: 'Basic Info', field: 'Project name' });
-    if (!formData.productionCompany) warnings.push({ section: 'Basic Info', field: 'Production company' });
-    if (!formData.culture) warnings.push({ section: 'Basic Info', field: 'Culture' });
-    if (!formData.format) warnings.push({ section: 'Basic Info', field: 'Format' });
-    if (!formData.genre) warnings.push({ section: 'Basic Info', field: 'Genre' });
-    if (!formData.estimatedBudget) warnings.push({ section: 'Basic Info', field: 'Estimated budget' });
+    // Basic Info (Step 1)
+    if (!formData.projectName) warnings.push({ section: 'Project', field: 'Project name', step: 1, stepName: 'Project' });
+    if (!formData.productionCompany) warnings.push({ section: 'Project', field: 'Production company', step: 1, stepName: 'Project' });
+    if (!formData.culture) warnings.push({ section: 'Project', field: 'Culture', step: 1, stepName: 'Project' });
+    if (!formData.format) warnings.push({ section: 'Project', field: 'Format', step: 1, stepName: 'Project' });
+    if (!formData.genre) warnings.push({ section: 'Project', field: 'Genre', step: 1, stepName: 'Project' });
 
-    // Creator Details
-    if (!formData.creatorName) warnings.push({ section: 'Creator Details', field: 'Creator name' });
-    if (!formData.officialEmail) warnings.push({ section: 'Creator Details', field: 'Email' });
-    if (!formData.phone) warnings.push({ section: 'Creator Details', field: 'Phone' });
-    if (!formData.yearsOfExperience) warnings.push({ section: 'Creator Details', field: 'Years of experience' });
+    // Budget (Step 3)
+    if (!formData.estimatedBudget) warnings.push({ section: 'Budget', field: 'Estimated budget', step: 3, stepName: 'Budget' });
 
-    // Crew
-    if (!formData.director) warnings.push({ section: 'Crew/Team', field: 'Director' });
-    if (!formData.dop) warnings.push({ section: 'Crew/Team', field: 'DOP' });
-    if (!formData.editor) warnings.push({ section: 'Crew/Team', field: 'Editor' });
+    // Creator Details (Step 2)
+    if (!formData.creatorName) warnings.push({ section: 'Creator', field: 'Creator name', step: 2, stepName: 'Creator' });
+    if (!formData.officialEmail) warnings.push({ section: 'Creator', field: 'Email', step: 2, stepName: 'Creator' });
+    if (!formData.phone) warnings.push({ section: 'Creator', field: 'Phone', step: 2, stepName: 'Creator' });
+    if (!formData.yearsOfExperience) warnings.push({ section: 'Creator', field: 'Years of experience', step: 2, stepName: 'Creator' });
 
-    // Budget
-    if (getGrandTotal() === 0) warnings.push({ section: 'Budget', field: 'Budget breakdown' });
+    // Crew (Step 5)
+    if (!formData.director) warnings.push({ section: 'Crew', field: 'Director', step: 5, stepName: 'Crew' });
+    if (!formData.dop) warnings.push({ section: 'Crew', field: 'DOP', step: 5, stepName: 'Crew' });
+    if (!formData.editor) warnings.push({ section: 'Crew', field: 'Editor', step: 5, stepName: 'Crew' });
 
-    // Cast
-    if (!formData.castData?.primaryCast?.length) warnings.push({ section: 'Cast & Crew', field: 'Primary cast members' });
+    // Budget breakdown (Step 9)
+    if (getGrandTotal() === 0) warnings.push({ section: 'SOPs', field: 'Budget breakdown', step: 9, stepName: 'SOPs' });
 
-    // Technical Specs
-    if (!formData.technicalSpecs?.cameraModel) warnings.push({ section: 'Technical Specs', field: 'Camera model' });
+    // Cast (Step 6)
+    if (!formData.castData?.primaryCast?.length) warnings.push({ section: 'Cast', field: 'Primary cast members', step: 6, stepName: 'Cast' });
 
-    // Timeline
-    if (!formData.shootStartDate) warnings.push({ section: 'Timeline', field: 'Shoot start date' });
-    if (!formData.shootEndDate) warnings.push({ section: 'Timeline', field: 'Shoot end date' });
-    if (!formData.contentTimeline?.finalDeliveryDate) warnings.push({ section: 'Timeline', field: 'Final delivery date' });
+    // Technical Specs (Step 7)
+    if (!formData.technicalSpecs?.cameraModel) warnings.push({ section: 'Technical', field: 'Camera model', step: 7, stepName: 'Technical' });
 
-    // Files
+    // Timeline (Step 4)
+    if (!formData.shootStartDate) warnings.push({ section: 'Timeline', field: 'Shoot start date', step: 4, stepName: 'Timeline' });
+    if (!formData.shootEndDate) warnings.push({ section: 'Timeline', field: 'Shoot end date', step: 4, stepName: 'Timeline' });
+    if (!formData.contentTimeline?.finalDeliveryDate) warnings.push({ section: 'Timeline', field: 'Final delivery date', step: 4, stepName: 'Timeline' });
+
+    // Files (Step 10)
     if (!formData.uploadedFiles?.length && !formData.cloudLinks?.length) {
-      warnings.push({ section: 'Documents', field: 'Project files (script, screenplay, etc.)' });
+      warnings.push({ section: 'Documents', field: 'Project files (script, screenplay, etc.)', step: 10, stepName: 'Documents' });
     }
 
     return warnings;
+  };
+
+  // Handle submit with missing fields check
+  const handleSubmitClick = () => {
+    const missingFields = getWarnings();
+    if (missingFields.length > 0) {
+      setShowMissingModal(true);
+    } else {
+      onSubmit();
+    }
+  };
+
+  // Navigate to step for a missing field
+  const handleGoToField = (step: number) => {
+    setShowMissingModal(false);
+    if (onGoToStep) {
+      onGoToStep(step);
+    }
   };
 
   const grandTotal = getGrandTotal();
@@ -139,6 +179,107 @@ export default function ReviewStep({ formData, onBack, onSubmit }: Props) {
           theme="light"
         />
       </div>
+
+      {/* Action Buttons - Clear/Restore and Quick Navigation */}
+      <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200 rounded-2xl p-4 mb-8 shadow-lg">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          {/* Left Side - Clear/Restore */}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowClearConfirm(true)}
+              className="px-4 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+            >
+              <span>🗑️</span>
+              <span>Clear All Data</span>
+            </button>
+            {backupData && (
+              <button
+                type="button"
+                onClick={handleRestore}
+                className="px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 animate-pulse"
+              >
+                <span>↩️</span>
+                <span>Restore Data</span>
+              </button>
+            )}
+          </div>
+
+          {/* Right Side - Quick Navigation */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-bold text-gray-600">Jump to:</span>
+            {[
+              { step: 1, label: 'Project', icon: '📋' },
+              { step: 2, label: 'Creator', icon: '👤' },
+              { step: 3, label: 'Budget', icon: '💰' },
+              { step: 4, label: 'Timeline', icon: '📅' },
+              { step: 5, label: 'Crew', icon: '👥' },
+              { step: 6, label: 'Cast', icon: '⭐' },
+              { step: 7, label: 'Technical', icon: '📹' },
+              { step: 8, label: 'Cash Flow', icon: '💳' },
+              { step: 9, label: 'SOPs', icon: '📑' },
+              { step: 10, label: 'Documents', icon: '📁' },
+            ].map((item) => (
+              <button
+                key={item.step}
+                type="button"
+                onClick={() => onGoToStep?.(item.step)}
+                className="px-3 py-1.5 bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-300 text-gray-700 hover:text-blue-700 text-xs font-bold rounded-lg transition-all flex items-center gap-1"
+              >
+                <span>{item.icon}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Clear Confirmation Modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div className="bg-gradient-to-r from-red-500 to-rose-600 p-6 text-white">
+              <div className="flex items-center gap-3">
+                <span className="text-4xl">⚠️</span>
+                <div>
+                  <h3 className="text-2xl font-black">Clear All Data?</h3>
+                  <p className="text-sm font-semibold opacity-90">This will remove all form data</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-700 font-semibold mb-4">
+                Are you sure you want to clear all the data you've entered across all 11 pages?
+              </p>
+              <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4 mb-6">
+                <div className="flex items-start gap-2">
+                  <span className="text-xl">💡</span>
+                  <p className="text-sm font-semibold text-green-800">
+                    Don't worry! You can restore the data using the "Restore Data" button after clearing.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowClearConfirm(false)}
+                  className="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClearAll}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <span>🗑️</span>
+                  <span>Yes, Clear All</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Executive Summary Card */}
       <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 rounded-2xl p-8 mb-8 text-white shadow-2xl">
@@ -231,36 +372,56 @@ export default function ReviewStep({ formData, onBack, onSubmit }: Props) {
             <div className="flex-1">
               <h4 className="text-2xl font-black text-amber-900 mb-2">Missing or Incomplete Information</h4>
               <p className="text-sm text-amber-700 font-semibold mb-4">
-                These fields are optional but recommended. You can submit now and add them later, or complete them for a stronger submission.
+                Click on any field to go directly to that section and fill in the details.
               </p>
 
-              {/* Group warnings by section */}
+              {/* Group warnings by step */}
               {(() => {
-                const grouped: { [key: string]: string[] } = {};
-                warnings.forEach((w: any) => {
-                  if (!grouped[w.section]) grouped[w.section] = [];
-                  grouped[w.section].push(w.field);
+                const grouped: { [key: number]: typeof warnings } = {};
+                warnings.forEach((w) => {
+                  if (!grouped[w.step]) grouped[w.step] = [];
+                  grouped[w.step].push(w);
                 });
 
                 return (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(grouped).map(([section, fields]) => (
-                      <div key={section} className="bg-white rounded-lg p-4 border-2 border-amber-200">
+                    {Object.entries(grouped)
+                      .sort(([a], [b]) => Number(a) - Number(b))
+                      .map(([step, fields]) => (
+                      <button
+                        type="button"
+                        key={step}
+                        onClick={() => onGoToStep?.(Number(step))}
+                        className="bg-white rounded-lg p-4 border-2 border-amber-200 hover:border-red-400 hover:bg-red-50 transition-all cursor-pointer text-left group"
+                      >
                         <div className="flex items-center justify-between mb-3">
-                          <h5 className="text-sm font-black text-amber-900">{section}</h5>
-                          <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">
-                            {fields.length} missing
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-full flex items-center justify-center text-xs font-black">
+                              {step}
+                            </span>
+                            <h5 className="text-sm font-black text-amber-900 group-hover:text-red-700">{fields[0].stepName}</h5>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">
+                              {fields.length} missing
+                            </span>
+                            <span className="text-red-500 font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                              →
+                            </span>
+                          </div>
                         </div>
                         <ul className="space-y-1">
                           {fields.map((field, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-xs text-amber-800 font-semibold">
-                              <span className="text-amber-500">•</span>
-                              {field}
+                            <li key={idx} className="flex items-start gap-2 text-xs text-amber-800 font-semibold group-hover:text-red-700">
+                              <span className="text-amber-500 group-hover:text-red-500">•</span>
+                              {field.field}
                             </li>
                           ))}
                         </ul>
-                      </div>
+                        <div className="mt-3 pt-2 border-t border-amber-100 text-xs font-bold text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                          Click to fill these details →
+                        </div>
+                      </button>
                     ))}
                   </div>
                 );
@@ -272,7 +433,7 @@ export default function ReviewStep({ formData, onBack, onSubmit }: Props) {
                   <div>
                     <h5 className="font-black text-blue-900 text-sm mb-1">You can still submit!</h5>
                     <p className="text-xs font-semibold text-blue-700">
-                      These are optional fields. Click "Submit Project" to proceed, or use the progress bar above to navigate back and fill any section you'd like to complete.
+                      These are optional fields. Click any card above to fill the details, or click "Submit Project" to proceed.
                     </p>
                   </div>
                 </div>
@@ -1231,7 +1392,8 @@ export default function ReviewStep({ formData, onBack, onSubmit }: Props) {
             </div>
           </div>
           <button
-            onClick={onSubmit}
+            type="button"
+            onClick={handleSubmitClick}
             className="px-12 py-4 rounded-xl text-lg font-black transition-all duration-200 flex items-center gap-3 bg-gradient-to-r from-green-500 via-emerald-600 to-green-600 text-white hover:from-green-600 hover:via-emerald-700 hover:to-green-700 shadow-lg hover:shadow-2xl hover:scale-105 border-2 border-white/20"
           >
             <span>🚀</span>
@@ -1239,6 +1401,126 @@ export default function ReviewStep({ formData, onBack, onSubmit }: Props) {
           </button>
         </div>
       </div>
+
+      {/* Missing Fields Modal */}
+      {showMissingModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl">⚠️</span>
+                  <div>
+                    <h3 className="text-2xl font-black">Missing Information</h3>
+                    <p className="text-sm font-semibold opacity-90">
+                      {warnings.length} field{warnings.length > 1 ? 's' : ''} need{warnings.length === 1 ? 's' : ''} your attention
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowMissingModal(false)}
+                  className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-xl font-bold transition-all"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 max-h-[50vh] overflow-y-auto">
+              <p className="text-gray-600 font-semibold mb-4">
+                Click on any field below to go directly to that section and fill in the details:
+              </p>
+
+              {/* Group warnings by step */}
+              {(() => {
+                const grouped: { [key: number]: typeof warnings } = {};
+                warnings.forEach((w) => {
+                  if (!grouped[w.step]) grouped[w.step] = [];
+                  grouped[w.step].push(w);
+                });
+
+                return (
+                  <div className="space-y-4">
+                    {Object.entries(grouped)
+                      .sort(([a], [b]) => Number(a) - Number(b))
+                      .map(([step, fields]) => (
+                        <div key={step} className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border-2 border-gray-200">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <span className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 text-white rounded-full flex items-center justify-center text-sm font-black">
+                                {step}
+                              </span>
+                              <h5 className="text-lg font-black text-gray-900">{fields[0].stepName}</h5>
+                            </div>
+                            <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">
+                              {fields.length} missing
+                            </span>
+                          </div>
+                          <div className="space-y-2">
+                            {fields.map((field, idx) => (
+                              <button
+                                type="button"
+                                key={idx}
+                                onClick={() => handleGoToField(field.step)}
+                                className="w-full flex items-center justify-between bg-white hover:bg-red-50 border-2 border-gray-200 hover:border-red-300 rounded-lg p-3 transition-all group cursor-pointer"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className="text-red-500 text-lg">•</span>
+                                  <span className="text-sm font-bold text-gray-700 group-hover:text-red-700">{field.field}</span>
+                                </div>
+                                <span className="text-red-500 font-bold text-sm group-hover:translate-x-1 transition-transform">
+                                  Go to Step →
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 bg-gradient-to-r from-gray-50 to-gray-100 border-t border-gray-200">
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <div className="flex items-start gap-2">
+                    <span className="text-2xl">💡</span>
+                    <div>
+                      <p className="text-sm font-bold text-gray-700">You can still submit!</p>
+                      <p className="text-xs text-gray-500">These fields are optional but recommended for a stronger submission.</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowMissingModal(false)}
+                    className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition-all"
+                  >
+                    Go Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowMissingModal(false);
+                      onSubmit();
+                    }}
+                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                  >
+                    <span>🚀</span>
+                    <span>Submit Anyway</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
