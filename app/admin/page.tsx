@@ -811,7 +811,7 @@ const sampleSubmissions = [
 ];
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library'>('overview');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterFormat, setFilterFormat] = useState<string>('all');
   const [filterCulture, setFilterCulture] = useState<string>('all');
@@ -2292,6 +2292,19 @@ export default function AdminDashboard() {
                       <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full"></div>
                     )}
                   </button>
+                  <button
+                    onClick={() => setActiveTab('library')}
+                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
+                      activeTab === 'library'
+                        ? 'text-white bg-red-600 shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    📚 Library
+                    {activeTab === 'library' && (
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full"></div>
+                    )}
+                  </button>
                 </nav>
               </div>
               {/* Action Buttons - Mobile Responsive */}
@@ -2337,6 +2350,7 @@ export default function AdminDashboard() {
                 { id: 'submissions', label: '📋 Submissions', badge: newSubmissionsCount },
                 { id: 'analytics', label: '📈 Analytics' },
                 { id: 'budget', label: '💰 Budget' },
+                { id: 'library', label: '📚 Library' },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -3975,6 +3989,349 @@ export default function AdminDashboard() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* LIBRARY TAB - Talent Database */}
+          {activeTab === 'library' && (
+            <div className="space-y-6">
+              {/* Library Header */}
+              <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-2xl p-6 shadow-lg text-white">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold opacity-90 mb-1">Talent Library</h2>
+                    <div className="text-3xl font-black">Crew & Cast Database</div>
+                    <p className="text-sm font-semibold opacity-80 mt-2">All talent from submitted projects</p>
+                  </div>
+                  <div className="text-6xl">📚</div>
+                </div>
+              </div>
+
+              {/* Library Search & Filters */}
+              <div className="bg-white rounded-xl border-2 border-gray-200 p-4 shadow-md">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      placeholder="🔍 Search by name, role, culture..."
+                      className="w-full px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                      id="library-search"
+                    />
+                  </div>
+                  <select
+                    className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:border-purple-500"
+                    id="library-department"
+                  >
+                    <option value="all">All Departments</option>
+                    <option value="direction">Direction</option>
+                    <option value="production">Production</option>
+                    <option value="writing">Writing</option>
+                    <option value="camera">Camera</option>
+                    <option value="editing">Editing</option>
+                    <option value="sound">Sound</option>
+                    <option value="music">Music</option>
+                    <option value="art">Art & Design</option>
+                    <option value="costume">Costume & Makeup</option>
+                    <option value="vfx">VFX & Post</option>
+                    <option value="cast">Cast</option>
+                  </select>
+                  <select
+                    className="px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:border-purple-500"
+                    id="library-culture"
+                  >
+                    <option value="all">All Cultures</option>
+                    <option value="haryanvi">Haryanvi</option>
+                    <option value="rajasthani">Rajasthani</option>
+                    <option value="bhojpuri">Bhojpuri</option>
+                    <option value="gujarati">Gujarati</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Library Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                {(() => {
+                  // Calculate unique crew members from all projects
+                  const allCrew: { name: string; role: string; department: string; projects: string[]; culture: string; contact?: string }[] = [];
+
+                  submissions.forEach(project => {
+                    const addCrewMember = (name: string | undefined, role: string, department: string) => {
+                      if (name && name.trim()) {
+                        const existing = allCrew.find(c => c.name.toLowerCase() === name.toLowerCase() && c.role === role);
+                        if (existing) {
+                          if (!existing.projects.includes(project.projectName)) {
+                            existing.projects.push(project.projectName);
+                          }
+                        } else {
+                          allCrew.push({
+                            name: name.trim(),
+                            role,
+                            department,
+                            projects: [project.projectName],
+                            culture: project.culture,
+                            contact: project.phone || project.officialEmail || ''
+                          });
+                        }
+                      }
+                    };
+
+                    // Direction
+                    addCrewMember(project.director, 'Director', 'direction');
+                    addCrewMember(project.associateDirector, 'Associate Director', 'direction');
+                    addCrewMember(project.assistantDirector1, 'Assistant Director', 'direction');
+                    addCrewMember(project.showRunner, 'Show Runner', 'direction');
+                    addCrewMember(project.creativeDirector, 'Creative Director', 'direction');
+
+                    // Production
+                    addCrewMember(project.headOfProduction, 'Head of Production', 'production');
+                    addCrewMember(project.executiveProducer, 'Executive Producer', 'production');
+                    addCrewMember(project.lineProducer, 'Line Producer', 'production');
+                    addCrewMember(project.projectHead, 'Project Head', 'production');
+                    addCrewMember(project.creator, 'Creator', 'production');
+
+                    // Writing
+                    addCrewMember(project.writer, 'Writer', 'writing');
+                    addCrewMember(project.storyBy, 'Story Writer', 'writing');
+                    addCrewMember(project.screenplayBy, 'Screenplay Writer', 'writing');
+                    addCrewMember(project.dialoguesBy, 'Dialogue Writer', 'writing');
+
+                    // Camera
+                    addCrewMember(project.dop, 'DOP', 'camera');
+                    addCrewMember(project.firstCameraOperator, 'Camera Operator', 'camera');
+                    addCrewMember(project.steadicamOperator, 'Steadicam Operator', 'camera');
+
+                    // Editing
+                    addCrewMember(project.editor, 'Editor', 'editing');
+                    addCrewMember(project.colorist, 'Colorist', 'editing');
+                    addCrewMember(project.onLocationEditor, 'On-Location Editor', 'editing');
+
+                    // Sound
+                    addCrewMember(project.soundRecordist, 'Sound Recordist', 'sound');
+                    addCrewMember(project.soundDesigner, 'Sound Designer', 'sound');
+                    addCrewMember(project.foleyArtist, 'Foley Artist', 'sound');
+
+                    // Music
+                    addCrewMember(project.musicComposer, 'Music Composer', 'music');
+                    addCrewMember(project.bgmComposer, 'BGM Composer', 'music');
+                    addCrewMember(project.playbackSinger, 'Playback Singer', 'music');
+
+                    // Art
+                    addCrewMember(project.productionDesigner, 'Production Designer', 'art');
+                    addCrewMember(project.artDirector, 'Art Director', 'art');
+                    addCrewMember(project.setDesigner, 'Set Designer', 'art');
+
+                    // Costume & Makeup
+                    addCrewMember(project.costumeDesigner, 'Costume Designer', 'costume');
+                    addCrewMember(project.makeupArtist, 'Makeup Artist', 'costume');
+                    addCrewMember(project.hairStylist, 'Hair Stylist', 'costume');
+
+                    // VFX
+                    addCrewMember(project.vfxSupervisor, 'VFX Supervisor', 'vfx');
+                    addCrewMember(project.diArtist, 'DI Artist', 'vfx');
+
+                    // Cast
+                    if (project.cast && Array.isArray(project.cast)) {
+                      project.cast.forEach((castMember: any) => {
+                        addCrewMember(castMember.name, castMember.role || 'Actor', 'cast');
+                      });
+                    }
+                  });
+
+                  const stats = [
+                    { label: 'Directors', count: allCrew.filter(c => c.department === 'direction').length, icon: '🎬', color: 'bg-red-500' },
+                    { label: 'Producers', count: allCrew.filter(c => c.department === 'production').length, icon: '🎥', color: 'bg-blue-500' },
+                    { label: 'Writers', count: allCrew.filter(c => c.department === 'writing').length, icon: '✍️', color: 'bg-green-500' },
+                    { label: 'Camera', count: allCrew.filter(c => c.department === 'camera').length, icon: '📷', color: 'bg-yellow-500' },
+                    { label: 'Music', count: allCrew.filter(c => c.department === 'music').length, icon: '🎵', color: 'bg-purple-500' },
+                    { label: 'Cast', count: allCrew.filter(c => c.department === 'cast').length, icon: '🎭', color: 'bg-pink-500' },
+                  ];
+
+                  return stats.map((stat) => (
+                    <div key={stat.label} className="bg-white border-2 border-gray-200 rounded-xl p-4 shadow-md text-center">
+                      <div className={`w-10 h-10 ${stat.color} rounded-full flex items-center justify-center mx-auto mb-2`}>
+                        <span className="text-xl">{stat.icon}</span>
+                      </div>
+                      <div className="text-2xl font-black text-gray-900">{stat.count}</div>
+                      <div className="text-xs font-bold text-gray-500">{stat.label}</div>
+                    </div>
+                  ));
+                })()}
+              </div>
+
+              {/* Crew List by Department */}
+              {(() => {
+                // Build the full crew list
+                const allCrew: { name: string; role: string; department: string; projects: string[]; culture: string; contact?: string; email?: string; projectCount: number }[] = [];
+
+                submissions.forEach(project => {
+                  const addCrewMember = (name: string | undefined, role: string, department: string, email?: string, phone?: string) => {
+                    if (name && name.trim()) {
+                      const existing = allCrew.find(c => c.name.toLowerCase() === name.toLowerCase() && c.role === role);
+                      if (existing) {
+                        if (!existing.projects.includes(project.projectName)) {
+                          existing.projects.push(project.projectName);
+                          existing.projectCount++;
+                        }
+                      } else {
+                        allCrew.push({
+                          name: name.trim(),
+                          role,
+                          department,
+                          projects: [project.projectName],
+                          culture: project.culture,
+                          contact: phone || '',
+                          email: email || '',
+                          projectCount: 1
+                        });
+                      }
+                    }
+                  };
+
+                  // Direction
+                  addCrewMember(project.director, 'Director', 'direction');
+                  addCrewMember(project.associateDirector, 'Associate Director', 'direction');
+                  addCrewMember(project.assistantDirector1, 'Assistant Director', 'direction');
+                  addCrewMember(project.showRunner, 'Show Runner', 'direction');
+                  addCrewMember(project.creativeDirector, 'Creative Director', 'direction');
+
+                  // Production
+                  addCrewMember(project.headOfProduction, 'Head of Production', 'production');
+                  addCrewMember(project.executiveProducer, 'Executive Producer', 'production');
+                  addCrewMember(project.lineProducer, 'Line Producer', 'production');
+                  addCrewMember(project.projectHead, 'Project Head', 'production');
+                  addCrewMember(project.creator, 'Creator/Producer', 'production', project.officialEmail, project.phone);
+
+                  // Writing
+                  addCrewMember(project.writer, 'Writer', 'writing');
+                  addCrewMember(project.storyBy, 'Story Writer', 'writing');
+                  addCrewMember(project.screenplayBy, 'Screenplay Writer', 'writing');
+                  addCrewMember(project.dialoguesBy, 'Dialogue Writer', 'writing');
+
+                  // Camera
+                  addCrewMember(project.dop, 'DOP', 'camera');
+                  addCrewMember(project.firstCameraOperator, 'Camera Operator', 'camera');
+                  addCrewMember(project.steadicamOperator, 'Steadicam Operator', 'camera');
+
+                  // Editing
+                  addCrewMember(project.editor, 'Editor', 'editing');
+                  addCrewMember(project.colorist, 'Colorist', 'editing');
+                  addCrewMember(project.onLocationEditor, 'On-Location Editor', 'editing');
+
+                  // Sound
+                  addCrewMember(project.soundRecordist, 'Sound Recordist', 'sound');
+                  addCrewMember(project.soundDesigner, 'Sound Designer', 'sound');
+                  addCrewMember(project.foleyArtist, 'Foley Artist', 'sound');
+
+                  // Music
+                  addCrewMember(project.musicComposer, 'Music Composer', 'music');
+                  addCrewMember(project.bgmComposer, 'BGM Composer', 'music');
+                  addCrewMember(project.playbackSinger, 'Playback Singer', 'music');
+
+                  // Art
+                  addCrewMember(project.productionDesigner, 'Production Designer', 'art');
+                  addCrewMember(project.artDirector, 'Art Director', 'art');
+                  addCrewMember(project.setDesigner, 'Set Designer', 'art');
+
+                  // Costume & Makeup
+                  addCrewMember(project.costumeDesigner, 'Costume Designer', 'costume');
+                  addCrewMember(project.makeupArtist, 'Makeup Artist', 'costume');
+                  addCrewMember(project.hairStylist, 'Hair Stylist', 'costume');
+
+                  // VFX
+                  addCrewMember(project.vfxSupervisor, 'VFX Supervisor', 'vfx');
+                  addCrewMember(project.diArtist, 'DI Artist', 'vfx');
+
+                  // Cast
+                  if (project.cast && Array.isArray(project.cast)) {
+                    project.cast.forEach((castMember: any) => {
+                      addCrewMember(castMember.name, castMember.role || 'Actor', 'cast');
+                    });
+                  }
+                });
+
+                const departments = [
+                  { id: 'direction', label: 'Direction Team', icon: '🎬', color: 'from-red-500 to-rose-600' },
+                  { id: 'production', label: 'Production Team', icon: '🎥', color: 'from-blue-500 to-indigo-600' },
+                  { id: 'writing', label: 'Writing Team', icon: '✍️', color: 'from-green-500 to-emerald-600' },
+                  { id: 'camera', label: 'Camera Department', icon: '📷', color: 'from-yellow-500 to-orange-600' },
+                  { id: 'editing', label: 'Post Production', icon: '🎞️', color: 'from-cyan-500 to-teal-600' },
+                  { id: 'sound', label: 'Sound Department', icon: '🔊', color: 'from-indigo-500 to-violet-600' },
+                  { id: 'music', label: 'Music Team', icon: '🎵', color: 'from-purple-500 to-fuchsia-600' },
+                  { id: 'art', label: 'Art Department', icon: '🎨', color: 'from-amber-500 to-yellow-600' },
+                  { id: 'costume', label: 'Costume & Makeup', icon: '👗', color: 'from-pink-500 to-rose-600' },
+                  { id: 'vfx', label: 'VFX & DI', icon: '✨', color: 'from-slate-500 to-gray-600' },
+                  { id: 'cast', label: 'Cast Members', icon: '🎭', color: 'from-red-600 to-pink-600' },
+                ];
+
+                return (
+                  <div className="space-y-4">
+                    {departments.map((dept) => {
+                      const deptCrew = allCrew.filter(c => c.department === dept.id);
+                      if (deptCrew.length === 0) return null;
+
+                      return (
+                        <div key={dept.id} className="bg-white rounded-2xl border-2 border-gray-200 shadow-lg overflow-hidden">
+                          <div className={`bg-gradient-to-r ${dept.color} text-white p-4`}>
+                            <div className="flex items-center gap-3">
+                              <span className="text-3xl">{dept.icon}</span>
+                              <div>
+                                <h3 className="text-xl font-black">{dept.label}</h3>
+                                <p className="text-sm opacity-80 font-semibold">{deptCrew.length} members</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="p-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {deptCrew.sort((a, b) => b.projectCount - a.projectCount).map((crew, index) => (
+                                <div key={`${crew.name}-${index}`} className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:shadow-md transition-all hover:border-purple-300">
+                                  <div className="flex items-start gap-3">
+                                    <div className={`w-12 h-12 bg-gradient-to-br ${dept.color} rounded-full flex items-center justify-center text-white font-black text-lg flex-shrink-0`}>
+                                      {crew.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <h4 className="font-black text-gray-900 truncate">{crew.name}</h4>
+                                      <p className="text-sm text-gray-600 font-semibold">{crew.role}</p>
+                                      <div className="flex items-center gap-2 mt-2">
+                                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-bold rounded-full">
+                                          {crew.projectCount} {crew.projectCount > 1 ? 'projects' : 'project'}
+                                        </span>
+                                        <span className="px-2 py-0.5 bg-gray-200 text-gray-600 text-xs font-bold rounded-full">
+                                          {crew.culture}
+                                        </span>
+                                      </div>
+                                      {(crew.contact || crew.email) && (
+                                        <div className="mt-2 text-xs text-gray-500">
+                                          {crew.email && <div>📧 {crew.email}</div>}
+                                          {crew.contact && <div>📱 {crew.contact}</div>}
+                                        </div>
+                                      )}
+                                      <div className="mt-2">
+                                        <div className="text-xs text-gray-400 font-semibold mb-1">STAGE Projects:</div>
+                                        <div className="flex flex-wrap gap-1">
+                                          {crew.projects.slice(0, 2).map((proj, i) => (
+                                            <span key={i} className="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs font-semibold rounded truncate max-w-[120px]">
+                                              {proj}
+                                            </span>
+                                          ))}
+                                          {crew.projects.length > 2 && (
+                                            <span className="px-2 py-0.5 bg-gray-100 text-gray-500 text-xs font-semibold rounded">
+                                              +{crew.projects.length - 2}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
