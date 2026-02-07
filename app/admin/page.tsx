@@ -1091,6 +1091,218 @@ export default function AdminDashboard() {
     setSelectedTalent(null);
   };
 
+  // Share functionality
+  const handleShare = async (title: string, text: string, url?: string) => {
+    const shareData = {
+      title: title,
+      text: text,
+      url: url || window.location.href
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log('Share cancelled');
+      }
+    } else {
+      // Fallback - copy to clipboard
+      const shareText = `${title}\n\n${text}\n\n${url || window.location.href}`;
+      navigator.clipboard.writeText(shareText);
+      alert('Link copied to clipboard! Share it anywhere.');
+    }
+  };
+
+  // Share to specific platforms
+  const shareToWhatsApp = (text: string) => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const shareToTwitter = (text: string) => {
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const shareToLinkedIn = (text: string, url: string) => {
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+  };
+
+  const shareToEmail = (subject: string, body: string) => {
+    window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+  };
+
+  // Download talents as Excel
+  const downloadTalentsExcel = (talents: any[], filename: string) => {
+    const data = talents.map(t => ({
+      'Name': t.name,
+      'Role': t.role,
+      'Department': t.department,
+      'Phone': t.phone || '',
+      'Email': t.email || '',
+      'Work Link': t.workLink || '',
+      'Culture': t.culture || '',
+      'Projects': t.projects?.map((p: any) => p.name || p).join(', ') || '',
+      'Notes': t.notes || ''
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Talents');
+
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 15 },
+      { wch: 25 }, { wch: 30 }, { wch: 12 }, { wch: 40 }, { wch: 30 }
+    ];
+
+    XLSX.writeFile(wb, `${filename}.xlsx`);
+  };
+
+  // Download talents as CSV
+  const downloadTalentsCSV = (talents: any[], filename: string) => {
+    const headers = ['Name', 'Role', 'Department', 'Phone', 'Email', 'Work Link', 'Culture', 'Projects', 'Notes'];
+    const rows = talents.map(t => [
+      t.name,
+      t.role,
+      t.department,
+      t.phone || '',
+      t.email || '',
+      t.workLink || '',
+      t.culture || '',
+      t.projects?.map((p: any) => p.name || p).join('; ') || '',
+      t.notes || ''
+    ]);
+
+    const csvContent = [headers, ...rows].map(row =>
+      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${filename}.csv`;
+    link.click();
+  };
+
+  // Download talents as PDF (simple text format)
+  const downloadTalentsPDF = (talents: any[], title: string) => {
+    // Create printable HTML
+    const printContent = `
+      <html>
+        <head>
+          <title>${title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { color: #7c3aed; border-bottom: 2px solid #7c3aed; padding-bottom: 10px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th { background: #7c3aed; color: white; padding: 10px; text-align: left; }
+            td { padding: 8px; border-bottom: 1px solid #ddd; }
+            tr:nth-child(even) { background: #f9fafb; }
+            .header { display: flex; justify-content: space-between; align-items: center; }
+            .logo { font-size: 24px; font-weight: bold; color: #7c3aed; }
+            .date { color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">STAGE OTT - Talent Library</div>
+            <div class="date">${new Date().toLocaleDateString('en-IN')}</div>
+          </div>
+          <h1>${title}</h1>
+          <table>
+            <tr>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Department</th>
+              <th>Contact</th>
+              <th>Culture</th>
+              <th>Projects</th>
+            </tr>
+            ${talents.map(t => `
+              <tr>
+                <td><strong>${t.name}</strong></td>
+                <td>${t.role}</td>
+                <td>${t.department}</td>
+                <td>${t.phone || t.email || '-'}</td>
+                <td>${t.culture || '-'}</td>
+                <td>${t.projects?.map((p: any) => p.name || p).join(', ') || '-'}</td>
+              </tr>
+            `).join('')}
+          </table>
+          <p style="margin-top: 30px; color: #666; font-size: 12px;">
+            Generated by STAGE OTT Creator Portal • Total: ${talents.length} talents
+          </p>
+        </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.print();
+    }
+  };
+
+  // Download project as various formats
+  const downloadProjectData = (project: any, format: 'excel' | 'pdf' | 'json') => {
+    if (format === 'excel') {
+      exportToExcel(project);
+    } else if (format === 'json') {
+      const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${project.projectName || 'project'}_data.json`;
+      link.click();
+    } else if (format === 'pdf') {
+      // Use print for PDF
+      const printContent = `
+        <html>
+          <head>
+            <title>${project.projectName} - Project Details</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 20px; }
+              h1 { color: #dc2626; }
+              h2 { color: #7c3aed; margin-top: 20px; }
+              .section { background: #f9fafb; padding: 15px; border-radius: 8px; margin: 10px 0; }
+              .row { display: flex; margin: 5px 0; }
+              .label { font-weight: bold; width: 200px; color: #666; }
+              .value { flex: 1; }
+            </style>
+          </head>
+          <body>
+            <h1>${project.projectName}</h1>
+            <div class="section">
+              <div class="row"><span class="label">Culture:</span><span class="value">${project.culture}</span></div>
+              <div class="row"><span class="label">Format:</span><span class="value">${project.format}</span></div>
+              <div class="row"><span class="label">Genre:</span><span class="value">${project.genre}</span></div>
+              <div class="row"><span class="label">Budget:</span><span class="value">₹${(project.totalBudget || 0).toLocaleString('en-IN')}</span></div>
+              <div class="row"><span class="label">Status:</span><span class="value">${project.status}</span></div>
+            </div>
+            <h2>Creator Details</h2>
+            <div class="section">
+              <div class="row"><span class="label">Creator:</span><span class="value">${project.creator || project.creatorName || '-'}</span></div>
+              <div class="row"><span class="label">Email:</span><span class="value">${project.officialEmail || '-'}</span></div>
+              <div class="row"><span class="label">Phone:</span><span class="value">${project.phone || '-'}</span></div>
+            </div>
+            <h2>Key Crew</h2>
+            <div class="section">
+              <div class="row"><span class="label">Director:</span><span class="value">${project.director || '-'}</span></div>
+              <div class="row"><span class="label">DOP:</span><span class="value">${project.dop || '-'}</span></div>
+              <div class="row"><span class="label">Editor:</span><span class="value">${project.editor || '-'}</span></div>
+              <div class="row"><span class="label">Music:</span><span class="value">${project.musicComposer || '-'}</span></div>
+            </div>
+          </body>
+        </html>
+      `;
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        printWindow.print();
+      }
+    }
+  };
+
   // Mark project as viewed
   const markAsViewed = (projectId: number) => {
     setViewedProjects(prev => {
@@ -4277,7 +4489,7 @@ export default function AdminDashboard() {
             <div className="space-y-6">
               {/* Library Header */}
               <div className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 rounded-2xl p-6 shadow-lg text-white">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div>
                     <h2 className="text-lg font-bold opacity-90 mb-1">Talent Library</h2>
                     <div className="text-3xl font-black">Crew & Cast Database</div>
@@ -4285,12 +4497,70 @@ export default function AdminDashboard() {
                       {talentLibrary.length} talents • Auto-synced from approved projects
                     </p>
                   </div>
-                  <button
-                    onClick={() => setShowAddTalentModal(true)}
-                    className="px-6 py-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl font-black transition-all flex items-center gap-2"
-                  >
-                    <span>➕</span> Add Talent
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Share Button */}
+                    <div className="relative group">
+                      <button className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl font-bold transition-all flex items-center gap-2">
+                        <span>📤</span> Share
+                      </button>
+                      <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                        <button onClick={() => shareToWhatsApp(`STAGE Talent Library\n${talentLibrary.length} talents available\n${window.location.href}`)} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 text-sm font-semibold">
+                          <span>💬</span> WhatsApp
+                        </button>
+                        <button onClick={() => shareToTwitter(`Check out STAGE OTT Talent Library - ${talentLibrary.length} industry talents! ${window.location.href}`)} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 text-sm font-semibold">
+                          <span>🐦</span> Twitter/X
+                        </button>
+                        <button onClick={() => shareToLinkedIn('STAGE OTT Talent Library', window.location.href)} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 text-sm font-semibold">
+                          <span>💼</span> LinkedIn
+                        </button>
+                        <button onClick={() => shareToEmail('STAGE Talent Library', `Check out our talent database with ${talentLibrary.length} industry professionals.\n\n${window.location.href}`)} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 text-sm font-semibold">
+                          <span>📧</span> Email
+                        </button>
+                        <button onClick={() => { navigator.clipboard.writeText(window.location.href); alert('Link copied!'); }} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 text-sm font-semibold">
+                          <span>🔗</span> Copy Link
+                        </button>
+                      </div>
+                    </div>
+                    {/* Download Button */}
+                    <div className="relative group">
+                      <button className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl font-bold transition-all flex items-center gap-2">
+                        <span>⬇️</span> Download
+                      </button>
+                      <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                        <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">All Talents</div>
+                        <button onClick={() => downloadTalentsExcel(talentLibrary, 'STAGE_All_Talents')} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 text-sm font-semibold">
+                          <span>📊</span> Excel (.xlsx)
+                        </button>
+                        <button onClick={() => downloadTalentsCSV(talentLibrary, 'STAGE_All_Talents')} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 text-sm font-semibold">
+                          <span>📄</span> CSV
+                        </button>
+                        <button onClick={() => downloadTalentsPDF(talentLibrary, 'All Talents')} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 text-sm font-semibold">
+                          <span>📑</span> PDF (Print)
+                        </button>
+                        <div className="border-t border-gray-200 my-2"></div>
+                        <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase">By Department</div>
+                        <button onClick={() => downloadTalentsExcel(talentLibrary.filter(t => t.department === 'direction'), 'STAGE_Direction_Team')} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 text-sm font-semibold">
+                          <span>🎬</span> Direction Team
+                        </button>
+                        <button onClick={() => downloadTalentsExcel(talentLibrary.filter(t => t.department === 'production'), 'STAGE_Production_Team')} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 text-sm font-semibold">
+                          <span>🎥</span> Production Team
+                        </button>
+                        <button onClick={() => downloadTalentsExcel(talentLibrary.filter(t => t.department === 'camera'), 'STAGE_Camera_Team')} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 text-sm font-semibold">
+                          <span>📷</span> Camera Team
+                        </button>
+                        <button onClick={() => downloadTalentsExcel(talentLibrary.filter(t => t.department === 'cast'), 'STAGE_Cast_Members')} className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 flex items-center gap-2 text-sm font-semibold">
+                          <span>🎭</span> Cast Members
+                        </button>
+                      </div>
+                    </div>
+                    {/* Add Talent Button */}
+                    <button
+                      onClick={() => setShowAddTalentModal(true)}
+                      className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl font-bold transition-all flex items-center gap-2"
+                    >
+                      <span>➕</span> Add
+                    </button>
+                  </div>
                 </div>
               </div>
 
