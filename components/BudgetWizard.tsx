@@ -45,6 +45,8 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [creatorComment, setCreatorComment] = useState('');
+  const [showCommentModal, setShowCommentModal] = useState(false);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -73,6 +75,13 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
     // Check SOP acknowledgment first
     if (!(formData as any).sopAcknowledged) {
       setSubmitError('⚠️ SOP Terms & Conditions acknowledgment is mandatory before submission. Please go to Step 9 (SOPs) and check the acknowledgment checkbox.');
+      return;
+    }
+
+    // If editing, show comment modal first
+    const editingId = (formData as any)._editingProjectId;
+    if (editingId && !showCommentModal) {
+      setShowCommentModal(true);
       return;
     }
 
@@ -105,28 +114,29 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
         if (error) {
           console.warn('Supabase save failed, using local storage:', error);
           // Fall back to localStorage
-          saveToLocalSubmissions(submissionData);
+          saveToLocalSubmissions(submissionData, undefined, creatorComment);
         }
       } else {
         // No Supabase - save to localStorage submissions
-        const editingId = (formData as any)._editingProjectId;
         const submissionData = {
           ...formData,
           id: editingId || `project_${Date.now()}`,
           submitted_at: new Date().toISOString(),
           updated_at: editingId ? new Date().toISOString() : undefined,
-          status: 'pending_review',
+          status: editingId ? (formData as any).status || 'pending_review' : 'pending_review',
         };
         // Remove internal fields
         delete (submissionData as any)._editingProjectId;
         delete (submissionData as any)._lastSaved;
         delete (submissionData as any)._started;
 
-        saveToLocalSubmissions(submissionData, editingId);
+        saveToLocalSubmissions(submissionData, editingId, creatorComment);
       }
 
-      // Clear the draft
+      // Clear the draft and comment
       onClearDraft?.();
+      setCreatorComment('');
+      setShowCommentModal(false);
 
       // Show success
       setSubmitSuccess(true);
@@ -139,7 +149,7 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
     }
   };
 
-  const saveToLocalSubmissions = (data: any, editingId?: string) => {
+  const saveToLocalSubmissions = (data: any, editingId?: string, comment?: string) => {
     const existingSubmissions = JSON.parse(localStorage.getItem('stage_submissions') || '[]');
 
     if (editingId) {
@@ -149,23 +159,37 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
         const oldData = existingSubmissions[index];
         const changes = detectChanges(oldData, data);
 
+        // Group changes by department for summary
+        const changesByDept: Record<string, number> = {};
+        for (const change of changes) {
+          const dept = change.department || 'Other';
+          changesByDept[dept] = (changesByDept[dept] || 0) + 1;
+        }
+        const deptSummary = Object.entries(changesByDept)
+          .map(([dept, count]) => `${dept}: ${count}`)
+          .join(', ');
+
         // Add change history to submission
         const changeHistory = oldData.changeHistory || [];
-        if (changes.length > 0) {
+        if (changes.length > 0 || comment) {
           changeHistory.push({
             id: `change_${Date.now()}`,
             timestamp: new Date().toISOString(),
             changedBy: 'creator',
             changes: changes,
-            summary: `Creator updated ${changes.length} field${changes.length > 1 ? 's' : ''}`
+            changesByDepartment: changesByDept,
+            creatorComment: comment || null,
+            summary: changes.length > 0
+              ? `Creator updated ${changes.length} field${changes.length > 1 ? 's' : ''} (${deptSummary})`
+              : 'Creator resubmitted with comments'
           });
         }
 
         existingSubmissions[index] = { ...data, changeHistory };
 
         // Create notification for admin about creator changes
-        if (changes.length > 0) {
-          createAdminNotification(data, changes);
+        if (changes.length > 0 || comment) {
+          createAdminNotification(data, changes, comment);
         }
       } else {
         existingSubmissions.unshift(data);
@@ -181,39 +205,81 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
     localStorage.setItem('stage_submissions', JSON.stringify(existingSubmissions));
   };
 
-  // Detect what fields changed between old and new data
-  const detectChanges = (oldData: any, newData: any): Array<{field: string, oldValue: any, newValue: any, label: string}> => {
-    const changes: Array<{field: string, oldValue: any, newValue: any, label: string}> = [];
+  // Detect what fields changed between old and new data - with department-wise tracking
+  const detectChanges = (oldData: any, newData: any): Array<{field: string, oldValue: any, newValue: any, label: string, department?: string, category?: string}> => {
+    const changes: Array<{field: string, oldValue: any, newValue: any, label: string, department?: string, category?: string}> = [];
 
-    const fieldLabels: Record<string, string> = {
-      projectName: 'Project Name',
-      productionCompany: 'Production Company',
-      culture: 'Culture',
-      format: 'Format',
-      genre: 'Genre',
-      subGenre: 'Sub-Genre',
-      estimatedBudget: 'Total Budget',
-      totalDuration: 'Total Duration',
-      shootDays: 'Shoot Days',
-      shootStartDate: 'Shoot Start Date',
-      shootEndDate: 'Shoot End Date',
-      creatorName: 'Creator Name',
-      officialEmail: 'Email',
-      phone: 'Phone',
-      director: 'Director',
-      dop: 'DOP',
-      editor: 'Editor',
-      musicComposer: 'Music Composer',
-      logline: 'Logline',
-      synopsis: 'Synopsis',
-      targetAudience: 'Target Audience',
+    // Field labels with department categorization
+    const fieldConfig: Record<string, { label: string, department: string, category: string }> = {
+      // Project Information
+      projectName: { label: 'Project Name', department: 'Project Info', category: 'basic' },
+      productionCompany: { label: 'Production Company', department: 'Project Info', category: 'basic' },
+      culture: { label: 'Culture', department: 'Project Info', category: 'basic' },
+      format: { label: 'Format', department: 'Project Info', category: 'basic' },
+      genre: { label: 'Genre', department: 'Project Info', category: 'basic' },
+      subGenre: { label: 'Sub-Genre', department: 'Project Info', category: 'basic' },
+      logline: { label: 'Logline', department: 'Project Info', category: 'content' },
+      synopsis: { label: 'Synopsis', department: 'Project Info', category: 'content' },
+      targetAudience: { label: 'Target Audience', department: 'Project Info', category: 'content' },
+
+      // Budget & Finance
+      estimatedBudget: { label: 'Total Budget', department: 'Budget & Finance', category: 'finance' },
+
+      // Timeline
+      totalDuration: { label: 'Total Duration', department: 'Timeline', category: 'schedule' },
+      shootDays: { label: 'Shoot Days', department: 'Timeline', category: 'schedule' },
+      shootStartDate: { label: 'Shoot Start Date', department: 'Timeline', category: 'schedule' },
+      shootEndDate: { label: 'Shoot End Date', department: 'Timeline', category: 'schedule' },
+      finalDeliveryDate: { label: 'Final Delivery Date', department: 'Timeline', category: 'schedule' },
+
+      // Creator Details
+      creatorName: { label: 'Creator Name', department: 'Creator Details', category: 'creator' },
+      officialEmail: { label: 'Email', department: 'Creator Details', category: 'creator' },
+      phone: { label: 'Phone', department: 'Creator Details', category: 'creator' },
+
+      // Crew - Direction
+      director: { label: 'Director', department: 'Crew - Direction', category: 'crew' },
+      associateDirector: { label: 'Associate Director', department: 'Crew - Direction', category: 'crew' },
+      assistantDirector1: { label: 'Assistant Director', department: 'Crew - Direction', category: 'crew' },
+
+      // Crew - Camera
+      dop: { label: 'DOP', department: 'Crew - Camera', category: 'crew' },
+      firstCameraOperator: { label: 'First Camera Operator', department: 'Crew - Camera', category: 'crew' },
+      steadicamOperator: { label: 'Steadicam Operator', department: 'Crew - Camera', category: 'crew' },
+
+      // Crew - Post Production
+      editor: { label: 'Editor', department: 'Crew - Post Production', category: 'crew' },
+      colorist: { label: 'Colorist', department: 'Crew - Post Production', category: 'crew' },
+      vfxSupervisor: { label: 'VFX Supervisor', department: 'Crew - Post Production', category: 'crew' },
+
+      // Crew - Sound & Music
+      soundRecordist: { label: 'Sound Recordist', department: 'Crew - Sound', category: 'crew' },
+      soundDesigner: { label: 'Sound Designer', department: 'Crew - Sound', category: 'crew' },
+      musicComposer: { label: 'Music Composer', department: 'Crew - Music', category: 'crew' },
+      bgmComposer: { label: 'BGM Composer', department: 'Crew - Music', category: 'crew' },
+
+      // Crew - Production
+      executiveProducer: { label: 'Executive Producer', department: 'Crew - Production', category: 'crew' },
+      lineProducer: { label: 'Line Producer', department: 'Crew - Production', category: 'crew' },
+
+      // Crew - Art & Design
+      productionDesigner: { label: 'Production Designer', department: 'Crew - Art', category: 'crew' },
+      artDirector: { label: 'Art Director', department: 'Crew - Art', category: 'crew' },
+      costumeDesigner: { label: 'Costume Designer', department: 'Crew - Costume', category: 'crew' },
+
+      // Crew - Writing
+      writer: { label: 'Writer', department: 'Crew - Writing', category: 'crew' },
+      screenplayBy: { label: 'Screenplay By', department: 'Crew - Writing', category: 'crew' },
+      dialoguesBy: { label: 'Dialogues By', department: 'Crew - Writing', category: 'crew' },
     };
 
-    const fieldsToTrack = Object.keys(fieldLabels);
+    const fieldsToTrack = Object.keys(fieldConfig);
 
+    // Track basic field changes
     for (const field of fieldsToTrack) {
       const oldVal = oldData[field];
       const newVal = newData[field];
+      const config = fieldConfig[field];
 
       // Simple comparison for strings/numbers
       if (typeof oldVal !== 'object' && typeof newVal !== 'object') {
@@ -222,7 +288,64 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
             field,
             oldValue: oldVal || '(empty)',
             newValue: newVal || '(empty)',
-            label: fieldLabels[field] || field
+            label: config.label,
+            department: config.department,
+            category: config.category
+          });
+        }
+      }
+    }
+
+    // Track department-wise budget breakdown changes
+    if (oldData.budgetBreakdown && newData.budgetBreakdown) {
+      const oldBudget = oldData.budgetBreakdown;
+      const newBudget = newData.budgetBreakdown;
+
+      // Create a map of old budget items by category
+      const oldBudgetMap = new Map(oldBudget.map((item: any) => [item.category, item]));
+
+      // Compare each category
+      for (const newItem of newBudget) {
+        const oldItem = oldBudgetMap.get(newItem.category) as any;
+
+        if (oldItem) {
+          // Check if amount changed
+          if (Number(oldItem.amount || 0) !== Number(newItem.amount || 0)) {
+            const oldAmount = Number(oldItem.amount || 0);
+            const newAmount = Number(newItem.amount || 0);
+            const difference = newAmount - oldAmount;
+            const changeType = difference > 0 ? 'increased' : 'decreased';
+
+            changes.push({
+              field: `budget_${newItem.category.toLowerCase().replace(/\s+/g, '_')}`,
+              oldValue: `Rs. ${oldAmount.toLocaleString('en-IN')}`,
+              newValue: `Rs. ${newAmount.toLocaleString('en-IN')} (${changeType} by Rs. ${Math.abs(difference).toLocaleString('en-IN')})`,
+              label: `${newItem.category} Budget`,
+              department: 'Budget & Finance',
+              category: 'budget_breakdown'
+            });
+          }
+
+          // Check if percentage changed
+          if (Number(oldItem.percentage || 0) !== Number(newItem.percentage || 0)) {
+            changes.push({
+              field: `budget_percent_${newItem.category.toLowerCase().replace(/\s+/g, '_')}`,
+              oldValue: `${oldItem.percentage}%`,
+              newValue: `${newItem.percentage}%`,
+              label: `${newItem.category} Allocation`,
+              department: 'Budget & Finance',
+              category: 'budget_breakdown'
+            });
+          }
+        } else {
+          // New category added
+          changes.push({
+            field: `budget_new_${newItem.category.toLowerCase().replace(/\s+/g, '_')}`,
+            oldValue: '(not set)',
+            newValue: `Rs. ${Number(newItem.amount || 0).toLocaleString('en-IN')} (${newItem.percentage}%)`,
+            label: `${newItem.category} Budget (New)`,
+            department: 'Budget & Finance',
+            category: 'budget_breakdown'
           });
         }
       }
@@ -232,21 +355,58 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
   };
 
   // Create notification for admin when creator makes changes
-  const createAdminNotification = (data: any, changes: Array<{field: string, oldValue: any, newValue: any, label: string}>) => {
+  const createAdminNotification = (data: any, changes: Array<{field: string, oldValue: any, newValue: any, label: string, department?: string, category?: string}>, creatorComment?: string) => {
+    // Group changes by department
+    const changesByDepartment: Record<string, typeof changes> = {};
+    for (const change of changes) {
+      const dept = change.department || 'Other';
+      if (!changesByDepartment[dept]) {
+        changesByDepartment[dept] = [];
+      }
+      changesByDepartment[dept].push(change);
+    }
+
+    // Create summary of departments affected
+    const departmentsAffected = Object.keys(changesByDepartment);
+    const summary = departmentsAffected.length > 2
+      ? `${departmentsAffected.slice(0, 2).join(', ')} and ${departmentsAffected.length - 2} more`
+      : departmentsAffected.join(', ');
+
     const notification = {
       id: `admin_notif_${Date.now()}_${data.id}`,
       type: 'creator_edit',
       projectId: data.id,
       projectName: data.projectName || 'Untitled Project',
+      creatorName: data.creatorName || 'Creator',
       creatorEmail: data.officialEmail || '',
-      message: `✏️ Creator updated "${data.projectName}" - ${changes.length} field${changes.length > 1 ? 's' : ''} changed`,
+      message: `✏️ Creator updated "${data.projectName}" - ${changes.length} change${changes.length > 1 ? 's' : ''} in ${summary}`,
       changes: changes,
+      changesByDepartment: changesByDepartment,
+      departmentsAffected: departmentsAffected,
+      creatorComment: creatorComment || null,
       timestamp: new Date().toISOString(),
       read: false,
     };
 
     const existingNotifications = JSON.parse(localStorage.getItem('stage_admin_notifications') || '[]');
     localStorage.setItem('stage_admin_notifications', JSON.stringify([notification, ...existingNotifications]));
+
+    // Also add to project's communication log
+    const commLog = JSON.parse(localStorage.getItem('stage_project_communications') || '{}');
+    if (!commLog[data.id]) {
+      commLog[data.id] = [];
+    }
+    commLog[data.id].unshift({
+      id: `comm_${Date.now()}`,
+      type: 'creator_update',
+      from: 'creator',
+      projectId: data.id,
+      changes: changes,
+      changesByDepartment: changesByDepartment,
+      message: creatorComment || `Updated ${changes.length} field${changes.length > 1 ? 's' : ''}`,
+      timestamp: new Date().toISOString(),
+    });
+    localStorage.setItem('stage_project_communications', JSON.stringify(commLog));
   };
 
   // Create notification for admin about new submission
@@ -344,6 +504,77 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
           )}
         </div>
       </div>
+
+      {/* Creator Comment Modal - For resubmissions */}
+      {showCommentModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-6 text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">💬</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-black">Add Update Note</h3>
+                  <p className="text-blue-100 text-sm font-semibold">Describe changes made to this project</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              <div className="mb-4">
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  What changes did you make? (Optional)
+                </label>
+                <textarea
+                  value={creatorComment}
+                  onChange={(e) => setCreatorComment(e.target.value)}
+                  placeholder="e.g., Updated budget allocation as per feedback, Changed shoot dates, Added new crew members..."
+                  className="w-full h-32 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all resize-none text-gray-900 font-medium"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  This note will be visible to the admin team and helps them understand your updates.
+                </p>
+              </div>
+
+              {/* Project being updated */}
+              <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center text-white font-black">
+                    {(formData.projectName || 'U')[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <div className="font-bold text-gray-900">{formData.projectName || 'Untitled Project'}</div>
+                    <div className="text-sm text-gray-500">{formData.format} - {formData.culture}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowCommentModal(false);
+                    setCreatorComment('');
+                  }}
+                  className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleSubmit()}
+                  className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-black rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <span>Submit Update</span>
+                  <span>→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Success Modal - OTT Industry Standard */}
       {submitSuccess && (

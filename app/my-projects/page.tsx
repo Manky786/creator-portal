@@ -182,6 +182,7 @@ export default function MyProjectsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'approved': return 'bg-green-100 text-green-800 border-green-300';
+      case 'agreement-signed': return 'bg-teal-100 text-teal-800 border-teal-300';
       case 'in-production': return 'bg-purple-100 text-purple-800 border-purple-300';
       case 'rejected': return 'bg-red-100 text-red-800 border-red-300';
       case 'in_review':
@@ -195,6 +196,7 @@ export default function MyProjectsPage() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'approved': return '✓ Approved';
+      case 'agreement-signed': return '📄 Agreement Signed';
       case 'in-production': return '🎬 In Production';
       case 'rejected': return '✗ Rejected';
       case 'in_review':
@@ -205,10 +207,11 @@ export default function MyProjectsPage() {
     }
   };
 
-  // Check if project is locked (approved or in-production) and no edit access granted
+  // Check if project is locked (approved, agreement-signed or in-production) and no edit access granted
   const isProjectLocked = (projectId: string, status: string) => {
     const hasEditAccess = grantedEditAccess.includes(projectId);
-    return (status === 'approved' || status === 'in-production') && !hasEditAccess;
+    const lockedStatuses = ['approved', 'agreement-signed', 'in-production'];
+    return lockedStatuses.includes(status) && !hasEditAccess;
   };
 
   // Check if edit access request is pending for a project
@@ -625,6 +628,7 @@ export default function MyProjectsPage() {
                         {/* Current Status */}
                         <div className={`rounded-xl p-4 border-2 ${
                           selectedProject.status === 'approved' ? 'bg-green-500/10 border-green-500/50' :
+                          selectedProject.status === 'agreement-signed' ? 'bg-teal-500/10 border-teal-500/50' :
                           selectedProject.status === 'in-production' ? 'bg-purple-500/10 border-purple-500/50' :
                           selectedProject.status === 'rejected' ? 'bg-red-500/10 border-red-500/50' :
                           selectedProject.status === 'revision-requested' ? 'bg-orange-500/10 border-orange-500/50' :
@@ -633,6 +637,7 @@ export default function MyProjectsPage() {
                           <div className="flex items-center gap-3">
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                               selectedProject.status === 'approved' ? 'bg-green-500/30' :
+                              selectedProject.status === 'agreement-signed' ? 'bg-teal-500/30' :
                               selectedProject.status === 'in-production' ? 'bg-purple-500/30' :
                               selectedProject.status === 'rejected' ? 'bg-red-500/30' :
                               selectedProject.status === 'revision-requested' ? 'bg-orange-500/30' :
@@ -640,6 +645,7 @@ export default function MyProjectsPage() {
                             }`}>
                               <span className="text-lg">
                                 {selectedProject.status === 'approved' ? '✅' :
+                                 selectedProject.status === 'agreement-signed' ? '📄' :
                                  selectedProject.status === 'in-production' ? '🎬' :
                                  selectedProject.status === 'rejected' ? '❌' :
                                  selectedProject.status === 'revision-requested' ? '📝' :
@@ -688,6 +694,7 @@ export default function MyProjectsPage() {
                                   <div className="flex items-start gap-3">
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                                       notif.newStatus === 'approved' ? 'bg-green-500/20' :
+                                      notif.newStatus === 'agreement-signed' ? 'bg-teal-500/20' :
                                       notif.newStatus === 'in-production' ? 'bg-purple-500/20' :
                                       notif.newStatus === 'rejected' ? 'bg-red-500/20' :
                                       notif.newStatus === 'revision-requested' ? 'bg-orange-500/20' :
@@ -697,6 +704,7 @@ export default function MyProjectsPage() {
                                     }`}>
                                       <span className="text-lg">
                                         {notif.newStatus === 'approved' ? '✅' :
+                                         notif.newStatus === 'agreement-signed' ? '📄' :
                                          notif.newStatus === 'in-production' ? '🎬' :
                                          notif.newStatus === 'rejected' ? '❌' :
                                          notif.newStatus === 'revision-requested' ? '📝' :
@@ -710,6 +718,7 @@ export default function MyProjectsPage() {
                                       <div className="flex items-center gap-2 mb-1">
                                         <span className={`px-2 py-0.5 rounded text-xs font-bold ${
                                           notif.newStatus === 'approved' ? 'bg-green-500/30 text-green-400' :
+                                          notif.newStatus === 'agreement-signed' ? 'bg-teal-500/30 text-teal-400' :
                                           notif.newStatus === 'in-production' ? 'bg-purple-500/30 text-purple-400' :
                                           notif.newStatus === 'rejected' ? 'bg-red-500/30 text-red-400' :
                                           notif.newStatus === 'revision-requested' ? 'bg-orange-500/30 text-orange-400' :
@@ -754,6 +763,7 @@ export default function MyProjectsPage() {
                                         <span className="text-gray-500">→</span>
                                         <span className={`px-3 py-1 rounded-lg text-sm font-bold ${
                                           notif.newStatus === 'approved' ? 'bg-green-500/30 text-green-400' :
+                                          notif.newStatus === 'agreement-signed' ? 'bg-teal-500/30 text-teal-400' :
                                           notif.newStatus === 'in-production' ? 'bg-purple-500/30 text-purple-400' :
                                           notif.newStatus === 'rejected' ? 'bg-red-500/30 text-red-400' :
                                           notif.newStatus === 'revision-requested' ? 'bg-orange-500/30 text-orange-400' :

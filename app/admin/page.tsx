@@ -1667,6 +1667,8 @@ END:VCARD`;
         return { color: 'from-gray-500 to-gray-600', icon: '🗑 SCRAPPED', text: 'Scrapped', badge: 'bg-gray-100 border-gray-500 text-gray-800' };
       case 'in-production':
         return { color: 'from-cyan-500 to-blue-600', icon: '🎬 PRODUCTION', text: 'In Production', badge: 'bg-cyan-100 border-cyan-500 text-cyan-800' };
+      case 'agreement-signed':
+        return { color: 'from-teal-500 to-cyan-600', icon: '📄 AGREEMENT', text: 'Agreement Signed', badge: 'bg-teal-100 border-teal-500 text-teal-800' };
       default:
         return { color: 'from-gray-500 to-gray-600', icon: '• ' + status.toUpperCase(), text: status, badge: 'bg-gray-100 border-gray-500 text-gray-800' };
     }
@@ -5342,15 +5344,29 @@ END:VCARD`;
                   Select a new status for this project
                 </p>
               </div>
+              {/* Status Flow: Pending → Under Review → Approved → Agreement Signed → In Production */}
+              <div className="text-xs text-gray-500 mb-3 flex items-center gap-2 flex-wrap">
+                <span className="font-bold">Workflow:</span>
+                <span className="px-2 py-0.5 bg-yellow-500/20 rounded text-yellow-400">Pending</span>
+                <span>→</span>
+                <span className="px-2 py-0.5 bg-blue-500/20 rounded text-blue-400">Review</span>
+                <span>→</span>
+                <span className="px-2 py-0.5 bg-green-500/20 rounded text-green-400">Approved</span>
+                <span>→</span>
+                <span className="px-2 py-0.5 bg-cyan-500/20 rounded text-cyan-400">Agreement</span>
+                <span>→</span>
+                <span className="px-2 py-0.5 bg-purple-500/20 rounded text-purple-400">Production</span>
+              </div>
               <div className="space-y-2 mb-6">
                 {[
-                  { value: 'pending', label: 'Pending Review', icon: '⏳', color: 'bg-yellow-500/20 border-yellow-500 text-yellow-300' },
-                  { value: 'under-review', label: 'Under Review', icon: '👁️', color: 'bg-blue-500/20 border-blue-500 text-blue-300' },
-                  { value: 'approved', label: 'Approved', icon: '✅', color: 'bg-green-500/20 border-green-500 text-green-300' },
-                  { value: 'revision-requested', label: 'Revision Needed', icon: '📝', color: 'bg-orange-500/20 border-orange-500 text-orange-300' },
-                  { value: 'on-hold', label: 'On Hold', icon: '⏸️', color: 'bg-gray-500/20 border-gray-500 text-gray-300' },
-                  { value: 'in-production', label: 'In Production', icon: '🎬', color: 'bg-purple-500/20 border-purple-500 text-purple-300' },
-                  { value: 'scrapped', label: 'Scrapped', icon: '🗑️', color: 'bg-red-500/20 border-red-500 text-red-300' },
+                  { value: 'pending', label: 'Pending Review', icon: '⏳', color: 'bg-yellow-500/20 border-yellow-500 text-yellow-300', step: 1 },
+                  { value: 'under-review', label: 'Under Review', icon: '👁️', color: 'bg-blue-500/20 border-blue-500 text-blue-300', step: 2 },
+                  { value: 'approved', label: 'Approved', icon: '✅', color: 'bg-green-500/20 border-green-500 text-green-300', step: 3 },
+                  { value: 'agreement-signed', label: 'Agreement Signed', icon: '📄', color: 'bg-cyan-500/20 border-cyan-500 text-cyan-300', step: 4 },
+                  { value: 'in-production', label: 'In Production', icon: '🎬', color: 'bg-purple-500/20 border-purple-500 text-purple-300', step: 5 },
+                  { value: 'revision-requested', label: 'Revision Needed', icon: '📝', color: 'bg-orange-500/20 border-orange-500 text-orange-300', step: 0 },
+                  { value: 'on-hold', label: 'On Hold', icon: '⏸️', color: 'bg-gray-500/20 border-gray-500 text-gray-300', step: 0 },
+                  { value: 'scrapped', label: 'Scrapped', icon: '🗑️', color: 'bg-red-500/20 border-red-500 text-red-300', step: 0 },
                 ].map((status) => {
                   const currentSubmission = submissions.find(s => s.id === showStatusMenu);
                   const isCurrentStatus = currentSubmission?.status === status.value;
@@ -9789,8 +9805,55 @@ END:VCARD`;
                           <div className="text-gray-400 text-xs mt-0.5">{notif.creatorEmail}</div>
                           <div className="text-gray-300 text-sm mt-2">{notif.message}</div>
 
-                          {/* Show changes if available */}
-                          {notif.changes && notif.changes.length > 0 && (
+                          {/* Creator Comment */}
+                          {notif.creatorComment && (
+                            <div className="mt-3 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-lg p-3 border border-blue-500/30">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-sm">💬</span>
+                                <span className="text-xs font-bold text-blue-400">Creator's Note:</span>
+                              </div>
+                              <p className="text-sm text-white italic">"{notif.creatorComment}"</p>
+                            </div>
+                          )}
+
+                          {/* Show changes grouped by department */}
+                          {notif.changesByDepartment && Object.keys(notif.changesByDepartment).length > 0 && (
+                            <div className="mt-3 bg-black/30 rounded-lg p-3 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-bold text-blue-400">Changes by Department:</span>
+                                <span className="text-xs text-gray-500">{notif.changes?.length || 0} total changes</span>
+                              </div>
+
+                              {Object.entries(notif.changesByDepartment).map(([dept, changes]: [string, any]) => (
+                                <div key={dept} className="bg-white/5 rounded-lg p-2">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-xs px-2 py-0.5 bg-purple-500/30 rounded text-purple-300 font-bold">{dept}</span>
+                                    <span className="text-xs text-gray-500">({Array.isArray(changes) ? changes.length : changes} change{(Array.isArray(changes) ? changes.length : changes) > 1 ? 's' : ''})</span>
+                                  </div>
+                                  {Array.isArray(changes) && changes.slice(0, 3).map((change: any, idx: number) => (
+                                    <div key={idx} className="text-xs ml-2 py-1 border-l-2 border-gray-700 pl-2">
+                                      <span className="text-gray-400 font-medium">{change.label}:</span>
+                                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                                        <span className="text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded line-through text-[10px]">
+                                          {String(change.oldValue).substring(0, 25)}{String(change.oldValue).length > 25 ? '...' : ''}
+                                        </span>
+                                        <span className="text-gray-500 text-[10px]">→</span>
+                                        <span className="text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded text-[10px]">
+                                          {String(change.newValue).substring(0, 25)}{String(change.newValue).length > 25 ? '...' : ''}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                  {Array.isArray(changes) && changes.length > 3 && (
+                                    <div className="text-[10px] text-gray-500 ml-4 mt-1">+{changes.length - 3} more in this department</div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Fallback: Show simple changes if no department grouping */}
+                          {(!notif.changesByDepartment || Object.keys(notif.changesByDepartment).length === 0) && notif.changes && notif.changes.length > 0 && (
                             <div className="mt-3 bg-black/30 rounded-lg p-3 space-y-2">
                               <div className="text-xs font-bold text-blue-400 mb-2">Changes Made:</div>
                               {notif.changes.slice(0, 5).map((change: any, idx: number) => (
