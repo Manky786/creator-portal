@@ -3652,309 +3652,43 @@ END:VCARD`;
               </div>
             )}
 
-            {/* Analytics Dashboard */}
+            {/* Quick Stats Summary */}
             {showAnalytics && (
-              <div className="mb-10 bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl border border-white/10 p-6">
-                <h2 className="text-2xl font-black text-white mb-6 flex items-center gap-3">
-                  <span>📊</span> Analytics Dashboard
-                </h2>
+              <div className="mb-8 bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl border border-white/10 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-black text-white flex items-center gap-2">
+                    <span>📊</span> Quick Stats
+                  </h2>
+                  <Link
+                    href="/admin/analytics"
+                    className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold rounded-lg transition-all text-sm flex items-center gap-2"
+                  >
+                    <span>View Full Analytics</span>
+                    <span>→</span>
+                  </Link>
+                </div>
 
-                {/* Stats Overview */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                  <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-xl p-4">
-                    <div className="text-3xl font-black text-green-400">{stats.approved}</div>
-                    <div className="text-gray-400 text-sm">Approved</div>
-                    <div className="text-green-400 text-xs mt-1">
-                      {stats.total > 0 ? Math.round((stats.approved / stats.total) * 100) : 0}% approval rate
-                    </div>
+                {/* Simple Stats Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
+                    <div className="text-3xl font-black text-blue-400">{stats.total}</div>
+                    <div className="text-sm text-gray-400">Total</div>
                   </div>
-                  <div className="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-xl p-4">
+                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
                     <div className="text-3xl font-black text-yellow-400">{stats.pending + stats.underReview}</div>
-                    <div className="text-gray-400 text-sm">In Pipeline</div>
-                    <div className="text-yellow-400 text-xs mt-1">Pending + Under Review</div>
+                    <div className="text-sm text-gray-400">Pipeline</div>
                   </div>
-                  <div className="bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-500/30 rounded-xl p-4">
-                    <div className="text-3xl font-black text-cyan-400">{stats.inProduction}</div>
-                    <div className="text-gray-400 text-sm">In Production</div>
-                    <div className="text-cyan-400 text-xs mt-1">Active filming</div>
+                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
+                    <div className="text-3xl font-black text-green-400">{stats.approved}</div>
+                    <div className="text-sm text-gray-400">Approved</div>
                   </div>
-                  <div className="bg-gradient-to-br from-emerald-600/20 to-green-600/20 border border-emerald-500/30 rounded-xl p-4">
-                    <div className="text-2xl font-black text-emerald-400">{formatBudgetInWords(stats.totalBudget)}</div>
-                    <div className="text-gray-400 text-sm">Total Value</div>
-                    <div className="text-emerald-400 text-xs mt-1">All projects</div>
+                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
+                    <div className="text-3xl font-black text-purple-400">{stats.inProduction}</div>
+                    <div className="text-sm text-gray-400">Production</div>
                   </div>
-                </div>
-
-                {/* Charts Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {/* Status Distribution */}
-                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                    <h3 className="text-lg font-bold text-white mb-4">Status Distribution</h3>
-                    <div className="space-y-3">
-                      {[
-                        { label: 'Pending', count: stats.pending, color: 'bg-yellow-500', total: stats.total },
-                        { label: 'Under Review', count: stats.underReview, color: 'bg-blue-500', total: stats.total },
-                        { label: 'Approved', count: stats.approved, color: 'bg-green-500', total: stats.total },
-                        { label: 'In Production', count: stats.inProduction, color: 'bg-cyan-500', total: stats.total },
-                        { label: 'Revision', count: stats.revisionRequested, color: 'bg-purple-500', total: stats.total },
-                        { label: 'On Hold', count: stats.onHold, color: 'bg-orange-500', total: stats.total },
-                        { label: 'Scrapped', count: stats.scrapped, color: 'bg-gray-500', total: stats.total },
-                      ].map((item) => (
-                        <div key={item.label}>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-400">{item.label}</span>
-                            <span className="text-white font-bold">{item.count} ({item.total > 0 ? Math.round((item.count / item.total) * 100) : 0}%)</span>
-                          </div>
-                          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full ${item.color} rounded-full transition-all duration-500`}
-                              style={{ width: `${item.total > 0 ? (item.count / item.total) * 100 : 0}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Culture Distribution */}
-                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                    <h3 className="text-lg font-bold text-white mb-4">Culture Distribution</h3>
-                    <div className="space-y-3">
-                      {['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'].map((culture) => {
-                        const count = submissions.filter(s => s.culture?.toLowerCase() === culture.toLowerCase()).length;
-                        const budget = submissions
-                          .filter(s => s.culture?.toLowerCase() === culture.toLowerCase())
-                          .reduce((sum, s) => sum + (s.totalBudget || 0), 0);
-                        return (
-                          <div key={culture}>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span className="text-gray-400">{culture}</span>
-                              <span className="text-white font-bold">{count} projects</span>
-                            </div>
-                            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full transition-all duration-500 ${getCultureColor(culture).replace('from-', 'bg-').split(' ')[0]}`}
-                                style={{ width: `${stats.total > 0 ? (count / stats.total) * 100 : 0}%` }}
-                              />
-                            </div>
-                            <div className="text-xs text-emerald-400 mt-1">{formatBudgetInWords(budget)}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Format Distribution */}
-                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                    <h3 className="text-lg font-bold text-white mb-4">Format Distribution</h3>
-                    <div className="space-y-3">
-                      {[
-                        { name: 'Feature Film', icon: '🎬', color: 'bg-red-500' },
-                        { name: 'Mini Film', icon: '🎞️', color: 'bg-amber-500' },
-                        { name: 'Long Series', icon: '📺', color: 'bg-green-500' },
-                        { name: 'Limited Series', icon: '🎭', color: 'bg-purple-500' },
-                        { name: 'Microdrama', icon: '⚡', color: 'bg-cyan-500' },
-                      ].map((format) => {
-                        const count = submissions.filter(s => s.format === format.name).length;
-                        return (
-                          <div key={format.name}>
-                            <div className="flex justify-between text-sm mb-1">
-                              <span className="text-gray-400">{format.icon} {format.name}</span>
-                              <span className="text-white font-bold">{count}</span>
-                            </div>
-                            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full ${format.color} rounded-full transition-all duration-500`}
-                                style={{ width: `${stats.total > 0 ? (count / stats.total) * 100 : 0}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Budget by Culture */}
-                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                    <h3 className="text-lg font-bold text-white mb-4">Budget by Culture</h3>
-                    <div className="space-y-2">
-                      {['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'].map((culture) => {
-                        const budget = submissions
-                          .filter(s => s.culture?.toLowerCase() === culture.toLowerCase())
-                          .reduce((sum, s) => sum + (s.totalBudget || 0), 0);
-                        const percentage = stats.totalBudget > 0 ? (budget / stats.totalBudget) * 100 : 0;
-                        return (
-                          <div key={culture} className="flex items-center gap-3">
-                            <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${getCultureColor(culture)}`}></div>
-                            <div className="flex-1">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-400">{culture}</span>
-                                <span className="text-emerald-400 font-bold">{formatBudgetInWords(budget)}</span>
-                              </div>
-                              <div className="text-xs text-gray-500">{Math.round(percentage)}% of total</div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Approval Rate Gauge */}
-                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                    <h3 className="text-lg font-bold text-white mb-4">Approval Rate</h3>
-                    <div className="flex flex-col items-center">
-                      <div className="relative w-32 h-32">
-                        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                          <circle cx="50" cy="50" r="40" fill="none" stroke="#374151" strokeWidth="10" />
-                          <circle
-                            cx="50" cy="50" r="40" fill="none" stroke="#22c55e" strokeWidth="10"
-                            strokeDasharray={`${stats.total > 0 ? (stats.approved / stats.total) * 251.2 : 0} 251.2`}
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-3xl font-black text-green-400">
-                            {stats.total > 0 ? Math.round((stats.approved / stats.total) * 100) : 0}%
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-gray-400 text-sm mt-2">{stats.approved} of {stats.total} approved</div>
-                    </div>
-                  </div>
-
-                  {/* Recent Activity */}
-                  <div className="bg-white/5 rounded-xl p-4 border border-white/10">
-                    <h3 className="text-lg font-bold text-white mb-4">Recent Submissions</h3>
-                    <div className="space-y-2 max-h-48 overflow-y-auto">
-                      {[...submissions]
-                        .sort((a, b) => new Date(b.submittedDate).getTime() - new Date(a.submittedDate).getTime())
-                        .slice(0, 5)
-                        .map((project) => (
-                          <div key={project.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5">
-                            <div className={`w-2 h-2 rounded-full ${
-                              project.status === 'approved' ? 'bg-green-500' :
-                              project.status === 'pending' ? 'bg-yellow-500' :
-                              project.status === 'in-production' ? 'bg-cyan-500' : 'bg-gray-500'
-                            }`}></div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-white text-sm font-semibold truncate">{project.projectName}</div>
-                              <div className="text-gray-500 text-xs">{getTimeElapsed(project.submittedDate)}</div>
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Submission Trends Chart - Full Width */}
-                <div className="mt-6 bg-white/5 rounded-xl p-5 border border-white/10">
-                  <h3 className="text-lg font-bold text-white mb-4">Submission Trends (Last 7 Days)</h3>
-                  <div className="h-48 flex items-end gap-2">
-                    {(() => {
-                      // Generate last 7 days
-                      const days = [];
-                      for (let i = 6; i >= 0; i--) {
-                        const date = new Date();
-                        date.setDate(date.getDate() - i);
-                        const dateStr = date.toISOString().split('T')[0];
-                        const dayName = date.toLocaleDateString('en-IN', { weekday: 'short' });
-                        const count = submissions.filter(s => {
-                          const submitDate = (s.submittedDate || s.submitted_at || '').split('T')[0];
-                          return submitDate === dateStr;
-                        }).length;
-                        days.push({ date: dateStr, day: dayName, count });
-                      }
-                      const maxCount = Math.max(...days.map(d => d.count), 1);
-
-                      return days.map((day, idx) => (
-                        <div key={day.date} className="flex-1 flex flex-col items-center gap-2">
-                          <div className="w-full flex flex-col items-center justify-end h-36">
-                            <span className="text-xs font-bold text-white mb-1">{day.count}</span>
-                            <div
-                              className={`w-full rounded-t-lg transition-all duration-500 ${
-                                idx === 6 ? 'bg-gradient-to-t from-red-500 to-pink-500' : 'bg-gradient-to-t from-blue-500 to-cyan-500'
-                              }`}
-                              style={{ height: `${day.count > 0 ? (day.count / maxCount) * 100 : 5}%`, minHeight: '8px' }}
-                            />
-                          </div>
-                          <div className="text-center">
-                            <div className={`text-xs font-bold ${idx === 6 ? 'text-white' : 'text-gray-400'}`}>{day.day}</div>
-                            <div className="text-[10px] text-gray-600">{day.date.slice(5)}</div>
-                          </div>
-                        </div>
-                      ));
-                    })()}
-                  </div>
-                  <div className="mt-4 flex items-center justify-center gap-6 text-xs">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-                      <span className="text-gray-400">Past Days</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-gradient-to-r from-red-500 to-pink-500"></div>
-                      <span className="text-gray-400">Today</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Budget Trend Chart */}
-                <div className="mt-6 bg-white/5 rounded-xl p-5 border border-white/10">
-                  <h3 className="text-lg font-bold text-white mb-4">Budget Distribution by Format</h3>
-                  <div className="space-y-4">
-                    {[
-                      { name: 'Feature Film', icon: '🎬', color: 'from-red-500 to-pink-500' },
-                      { name: 'Mini Film', icon: '🎞️', color: 'from-amber-500 to-orange-500' },
-                      { name: 'Long Series', icon: '📺', color: 'from-green-500 to-emerald-500' },
-                      { name: 'Limited Series', icon: '🎭', color: 'from-purple-500 to-indigo-500' },
-                      { name: 'Microdrama', icon: '⚡', color: 'from-cyan-500 to-blue-500' },
-                    ].map((format) => {
-                      const formatBudget = submissions
-                        .filter(s => s.format === format.name)
-                        .reduce((sum, s) => sum + (s.totalBudget || s.estimatedBudget || 0), 0);
-                      const percentage = stats.totalBudget > 0 ? (formatBudget / stats.totalBudget) * 100 : 0;
-                      return (
-                        <div key={format.name}>
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm text-gray-400 flex items-center gap-2">
-                              <span>{format.icon}</span>
-                              <span>{format.name}</span>
-                            </span>
-                            <span className="text-sm font-bold text-emerald-400">{formatBudgetInWords(formatBudget)}</span>
-                          </div>
-                          <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full bg-gradient-to-r ${format.color} rounded-full transition-all duration-700`}
-                              style={{ width: `${percentage}%` }}
-                            />
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">{Math.round(percentage)}% of total budget</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Quick Stats Row */}
-                <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 rounded-xl p-4 text-center">
-                    <div className="text-3xl mb-1">📊</div>
-                    <div className="text-2xl font-black text-blue-400">{stats.total}</div>
-                    <div className="text-xs text-gray-400">Total Projects</div>
-                  </div>
-                  <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-xl p-4 text-center">
-                    <div className="text-3xl mb-1">✅</div>
-                    <div className="text-2xl font-black text-green-400">{stats.approved + submissions.filter(s => s.status === 'agreement-signed').length}</div>
-                    <div className="text-xs text-gray-400">Approved + Agreement</div>
-                  </div>
-                  <div className="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-xl p-4 text-center">
-                    <div className="text-3xl mb-1">⏳</div>
-                    <div className="text-2xl font-black text-yellow-400">{stats.pending}</div>
-                    <div className="text-xs text-gray-400">Awaiting Review</div>
-                  </div>
-                  <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-xl p-4 text-center">
-                    <div className="text-3xl mb-1">🎬</div>
-                    <div className="text-2xl font-black text-purple-400">{stats.inProduction}</div>
-                    <div className="text-xs text-gray-400">In Production</div>
+                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
+                    <div className="text-xl font-black text-emerald-400">{formatBudgetInWords(stats.totalBudget)}</div>
+                    <div className="text-sm text-gray-400">Total Value</div>
                   </div>
                 </div>
               </div>
