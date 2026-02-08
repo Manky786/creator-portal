@@ -5335,29 +5335,29 @@ END:VCARD`;
 
         {/* Status Change Modal */}
         {showStatusMenu && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-blue-500 rounded-2xl shadow-2xl p-6 max-w-md w-full">
-              <div className="text-center mb-6">
-                <div className="text-6xl mb-4">🔄</div>
-                <h3 className="text-2xl font-black text-white mb-2">Change Project Status</h3>
-                <p className="text-gray-300 font-semibold">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 border-2 border-blue-500 rounded-2xl shadow-2xl p-6 max-w-md w-full my-4 max-h-[90vh] overflow-y-auto">
+              <div className="text-center mb-4">
+                <div className="text-5xl mb-3">🔄</div>
+                <h3 className="text-xl font-black text-white mb-1">Change Project Status</h3>
+                <p className="text-gray-400 text-sm font-semibold">
                   Select a new status for this project
                 </p>
               </div>
               {/* Status Flow: Pending → Under Review → Approved → Agreement Signed → In Production */}
-              <div className="text-xs text-gray-500 mb-3 flex items-center gap-2 flex-wrap">
+              <div className="text-[10px] text-gray-500 mb-3 flex items-center gap-1 flex-wrap justify-center">
                 <span className="font-bold">Workflow:</span>
-                <span className="px-2 py-0.5 bg-yellow-500/20 rounded text-yellow-400">Pending</span>
+                <span className="px-1.5 py-0.5 bg-yellow-500/20 rounded text-yellow-400">Pending</span>
                 <span>→</span>
-                <span className="px-2 py-0.5 bg-blue-500/20 rounded text-blue-400">Review</span>
+                <span className="px-1.5 py-0.5 bg-blue-500/20 rounded text-blue-400">Review</span>
                 <span>→</span>
-                <span className="px-2 py-0.5 bg-green-500/20 rounded text-green-400">Approved</span>
+                <span className="px-1.5 py-0.5 bg-green-500/20 rounded text-green-400">Approved</span>
                 <span>→</span>
-                <span className="px-2 py-0.5 bg-cyan-500/20 rounded text-cyan-400">Agreement</span>
+                <span className="px-1.5 py-0.5 bg-cyan-500/20 rounded text-cyan-400">Agreement</span>
                 <span>→</span>
-                <span className="px-2 py-0.5 bg-purple-500/20 rounded text-purple-400">Production</span>
+                <span className="px-1.5 py-0.5 bg-purple-500/20 rounded text-purple-400">Production</span>
               </div>
-              <div className="space-y-2 mb-6">
+              <div className="space-y-2 mb-4">
                 {[
                   { value: 'pending', label: 'Pending Review', icon: '⏳', color: 'bg-yellow-500/20 border-yellow-500 text-yellow-300', step: 1 },
                   { value: 'under-review', label: 'Under Review', icon: '👁️', color: 'bg-blue-500/20 border-blue-500 text-blue-300', step: 2 },
@@ -5377,16 +5377,16 @@ END:VCARD`;
                         handleStatusChange(showStatusMenu, status.value);
                         setShowStatusMenu(null);
                       }}
-                      className={`w-full text-left px-4 py-3 rounded-xl border-2 font-bold flex items-center gap-3 transition-all hover:scale-[1.02] ${
+                      className={`w-full text-left px-3 py-2.5 rounded-lg border-2 font-bold flex items-center gap-2 transition-all hover:scale-[1.01] text-sm ${
                         isCurrentStatus
                           ? 'bg-white/20 border-white text-white'
                           : `${status.color} hover:bg-white/10`
                       }`}
                     >
-                      <span className="text-xl">{status.icon}</span>
+                      <span className="text-lg">{status.icon}</span>
                       <span className="flex-1">{status.label}</span>
                       {isCurrentStatus && (
-                        <span className="text-green-400 font-black">✓ Current</span>
+                        <span className="text-green-400 font-black text-xs">✓ Current</span>
                       )}
                     </button>
                   );
@@ -5394,7 +5394,7 @@ END:VCARD`;
               </div>
               <button
                 onClick={() => setShowStatusMenu(null)}
-                className="w-full py-3 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded-xl transition-all"
+                className="w-full py-2.5 bg-gray-600 hover:bg-gray-500 text-white font-bold rounded-lg transition-all text-sm"
               >
                 Cancel
               </button>
