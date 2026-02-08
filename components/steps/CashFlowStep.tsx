@@ -34,7 +34,8 @@ const projectTypes = {
   microdrama: 'Microdrama',
 };
 
-// Default payment tranches for each project type
+// Default payment tranches for each project type - OTT Industry Standard (LOCKED)
+// These are fixed terms as per STAGE OTT policy - Admin can modify for special cases
 const defaultTranches: Record<ProjectType, Omit<PaymentTranche, 'id' | 'amount' | 'expectedDate' | 'actualDate'>[]> = {
   feature: [
     { name: 'Tranche 1 - Agreement Signing', description: 'Upon signing of the agreement. Payment released within 15 days of approved invoice.', percentage: 25, status: 'pending' },
@@ -49,11 +50,10 @@ const defaultTranches: Record<ProjectType, Omit<PaymentTranche, 'id' | 'amount' 
     { name: 'Tranche 4 - Post-Delivery Payment', description: 'Payable 60 days after the final delivery, contingent upon the receipt of a duly approved invoice. Payment released within 15 days thereafter.', percentage: 10, status: 'pending' },
   ],
   longSeries: [
-    { name: 'Tranche 1 - Episodes 1-5 + Pre-Production', description: 'Payment for the initial five episodes, along with the one-time pre-production cost, will be processed after the creator agreement is signed and before the shoot begins.', percentage: 25, status: 'pending' },
-    { name: 'Tranche 2 - Episodes 6-10', description: 'Payment will be disbursed upon delivery and successful technical compliance/quality control (TC/QC) of the first 10 episodes.', percentage: 20, status: 'pending' },
-    { name: 'Tranche 3 - Episodes 11-15', description: 'Payment will be made after delivery and TC/QC approval of episodes 11-15.', percentage: 20, status: 'pending' },
-    { name: 'Tranche 4 - Episodes 16-20', description: 'Payment will be made after delivery and TC/QC approval of episodes 16-20.', percentage: 20, status: 'pending' },
-    { name: 'Tranche 5 - Episodes 21-26 (Final)', description: 'Payment for the concluding six episodes (episodes 21–26) will be rendered after delivery and successful TC/QC of all episodes.', percentage: 15, status: 'pending' },
+    { name: 'Tranche 1 - Agreement Signing', description: 'Upon signing of the agreement. Payment released within 15 days of approved invoice.', percentage: 25, status: 'pending' },
+    { name: 'Tranche 2 - Offline Edit Approval', description: 'Following the successful completion and approval of the offline edit. Payment released within 15 days of approved invoice.', percentage: 25, status: 'pending' },
+    { name: 'Tranche 3 - Final Delivery & QC', description: 'After final Technical Check (TC), Quality Check (QC), and approval of all project deliverables. Payment released within 15 days of approved invoice.', percentage: 40, status: 'pending' },
+    { name: 'Tranche 4 - Post-Delivery Payment', description: 'Payable 60 days after the final delivery, contingent upon the receipt of a duly approved invoice. Payment released within 15 days thereafter.', percentage: 10, status: 'pending' },
   ],
   limitedSeries: [
     { name: 'Tranche 1 - Agreement Signing', description: 'Upon signing of the agreement. Payment released within 15 days of approved invoice.', percentage: 25, status: 'pending' },
@@ -237,8 +237,9 @@ export default function CashFlowStep({ formData, setFormData, onNext, onBack }: 
   const totalWithGST = calculateTotalWithGST(totalAmount);
   const isBalanced = Math.abs(totalPercentage - 100) < 0.01;
 
-  // Platform-level lock - Unlocked for creators to manage payment terms
-  const isPlatformLocked = false; // Unlocked for creator control
+  // Platform-level lock - LOCKED for creators (OTT Standard Terms)
+  // Terms are fixed as per STAGE policy - only Admin can modify
+  const isPlatformLocked = true; // Locked - creators can only view, not edit
 
   return (
     <div className="max-w-7xl mx-auto" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -248,8 +249,24 @@ export default function CashFlowStep({ formData, setFormData, onNext, onBack }: 
           💰 Cash Flow & Payment Schedule
         </h2>
         <p className="text-gray-700 text-lg font-semibold">
-          Manage your payment milestones and cash flow structure for the project
+          View payment milestones and cash flow structure for your project
         </p>
+
+        {/* Locked Terms Notice */}
+        <div className="mt-4 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-400 rounded-xl p-4 flex items-start gap-3">
+          <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <span className="text-white text-xl">🔒</span>
+          </div>
+          <div>
+            <h4 className="font-black text-blue-900 text-base mb-1">STAGE OTT Standard Payment Terms</h4>
+            <p className="text-sm font-semibold text-blue-800">
+              Payment milestones and percentages are fixed as per STAGE OTT policy. Select your project type below to view the applicable payment schedule. These terms ensure fair and timely payments for all creators.
+            </p>
+            <p className="text-xs text-blue-600 mt-2 font-bold">
+              Note: Payment terms can only be modified by STAGE Admin for special cases.
+            </p>
+          </div>
+        </div>
 
         {/* Warning when no budget data */}
         {totalBudget === 0 && (
@@ -290,8 +307,7 @@ export default function CashFlowStep({ formData, setFormData, onNext, onBack }: 
             <select
               value={selectedProjectType}
               onChange={(e) => handleProjectTypeChange(e.target.value as ProjectType)}
-              disabled={isPlatformLocked}
-              className="w-full px-4 py-4 text-base font-black text-gray-900 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none bg-white hover:border-cyan-400 transition-colors shadow-sm hover:shadow-md appearance-none"
+              className="w-full px-4 py-4 text-base font-black text-gray-900 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none bg-white hover:border-cyan-400 transition-colors shadow-sm hover:shadow-md appearance-none cursor-pointer"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23111827'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
                 backgroundRepeat: 'no-repeat',
@@ -580,15 +596,22 @@ export default function CashFlowStep({ formData, setFormData, onNext, onBack }: 
 
       {/* Payment Tranches Table */}
       <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-red-50 border-2 border-purple-300 rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.01]">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg transform hover:rotate-6 transition-all">
-            <span className="text-3xl">📊</span>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg transform hover:rotate-6 transition-all">
+              <span className="text-3xl">📊</span>
+            </div>
+            <div>
+              <h3 className="text-2xl font-black bg-gradient-to-r from-purple-700 to-pink-600 bg-clip-text text-transparent">
+                Payment Milestones & Tranches
+              </h3>
+              <p className="text-xs font-semibold text-purple-700">Payment schedule with 18% GST included</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-2xl font-black bg-gradient-to-r from-purple-700 to-pink-600 bg-clip-text text-transparent">
-              Payment Milestones & Tranches
-            </h3>
-            <p className="text-xs font-semibold text-purple-700">Payment schedule with 18% GST included</p>
+          {/* Locked Badge */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+            <span className="text-white text-lg">🔒</span>
+            <span className="text-white font-bold text-sm">STAGE Standard Terms</span>
           </div>
         </div>
 
@@ -597,15 +620,12 @@ export default function CashFlowStep({ formData, setFormData, onNext, onBack }: 
         <div className="overflow-visible">
           <table className="w-full table-auto border-collapse" style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
             <colgroup>
-              <col style={{ width: '4%' }} />
-              <col style={{ width: '18%' }} />
-              <col style={{ width: '28%' }} />
-              <col style={{ width: '8%' }} />
-              <col style={{ width: '12%' }} />
-              <col style={{ width: '12%' }} />
+              <col style={{ width: '5%' }} />
+              <col style={{ width: '20%' }} />
+              <col style={{ width: '35%' }} />
               <col style={{ width: '10%' }} />
-              <col style={{ width: '6%' }} />
-              <col style={{ width: '2%' }} />
+              <col style={{ width: '15%' }} />
+              <col style={{ width: '15%' }} />
             </colgroup>
             <thead className="bg-gradient-to-r from-purple-700 via-pink-600 to-red-600 border-b-4 border-yellow-400">
               <tr>
@@ -626,15 +646,6 @@ export default function CashFlowStep({ formData, setFormData, onNext, onBack }: 
                 </th>
                 <th className="px-2 py-3 text-right text-xs font-extrabold text-yellow-200 uppercase tracking-wider">
                   🎯 + GST
-                </th>
-                <th className="px-2 py-3 text-center text-xs font-extrabold text-white uppercase tracking-wider">
-                  📅 Date
-                </th>
-                <th className="px-2 py-3 text-center text-xs font-extrabold text-white uppercase tracking-wider">
-                  🚦
-                </th>
-                <th className="px-2 py-3 text-center text-xs font-extrabold text-white uppercase tracking-wider">
-                  ⚙️
                 </th>
               </tr>
             </thead>
@@ -700,41 +711,6 @@ export default function CashFlowStep({ formData, setFormData, onNext, onBack }: 
                         </div>
                       </div>
                     </td>
-                    <td className="px-2 py-2 bg-gradient-to-br from-orange-100 to-yellow-100">
-                      <input
-                        type="date"
-                        value={tranche.expectedDate}
-                        onChange={(e) => handleTrancheChange(tranche.id, 'expectedDate', e.target.value)}
-                        disabled={isPlatformLocked}
-                        className="w-full px-2 py-2 text-xs font-bold text-center text-orange-900 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        style={{ fontFamily: '"SF Pro Text", Inter, sans-serif' }}
-                      />
-                    </td>
-                    <td className="px-1 py-2 bg-gradient-to-br from-indigo-100 to-purple-100">
-                      <select
-                        value={tranche.status}
-                        onChange={(e) => handleTrancheChange(tranche.id, 'status', e.target.value)}
-                        disabled={isPlatformLocked}
-                        className="w-full px-2 py-2 text-xs font-bold text-indigo-900 border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                        style={{ fontFamily: '"SF Pro Text", Inter, sans-serif' }}
-                      >
-                        <option value="pending">⏳ Pending</option>
-                        <option value="in-progress">🔄 Progress</option>
-                        <option value="completed">✅ Done</option>
-                      </select>
-                    </td>
-                    <td className="px-1 py-2 text-center bg-gradient-to-br from-gray-100 to-gray-200">
-                      <button
-                        onClick={() => removeTranche(tranche.id)}
-                        disabled={isPlatformLocked}
-                        className="p-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-all shadow-md hover:shadow-lg hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
-                        title="Delete milestone"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </td>
                   </tr>
                 );
               })}
@@ -765,25 +741,35 @@ export default function CashFlowStep({ formData, setFormData, onNext, onBack }: 
                     With 18% GST
                   </div>
                 </td>
-                <td colSpan={3} className="bg-gradient-to-r from-red-600 to-orange-600"></td>
               </tr>
             </tfoot>
           </table>
         </div>
 
-        {/* Add Milestone Button */}
-        <div className="px-4 py-4 bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 border-t-2 border-green-300">
-          <div className="flex items-center justify-center">
-            <button
-              onClick={addTranche}
-              disabled={isPlatformLocked}
-              className="px-8 py-3 rounded-xl text-base font-black transition-all duration-200 flex items-center gap-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-2xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="text-xl">➕</span>
-              <span>Add Custom Milestone</span>
-            </button>
+        {/* Add Milestone Button - Hidden for Creators (Locked Terms) */}
+        {!isPlatformLocked && (
+          <div className="px-4 py-4 bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 border-t-2 border-green-300">
+            <div className="flex items-center justify-center">
+              <button
+                onClick={addTranche}
+                className="px-8 py-3 rounded-xl text-base font-black transition-all duration-200 flex items-center gap-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-2xl hover:scale-105"
+              >
+                <span className="text-xl">➕</span>
+                <span>Add Custom Milestone</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Locked Notice for Creators */}
+        {isPlatformLocked && (
+          <div className="px-4 py-4 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-t-2 border-blue-300">
+            <div className="flex items-center justify-center gap-3 text-blue-800">
+              <span className="text-xl">ℹ️</span>
+              <span className="font-bold text-sm">Payment terms are fixed as per STAGE OTT policy. Contact admin for any modifications.</span>
+            </div>
+          </div>
+        )}
         </div>
       </div>
 

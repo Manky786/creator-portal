@@ -420,9 +420,74 @@ export default function BudgetStep({ formData, setFormData, onNext, onBack }: Pr
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isFileProcessing, setIsFileProcessing] = useState(false);
   const [unmatchedItems, setUnmatchedItems] = useState<string[]>([]);
+  const [matchedItems, setMatchedItems] = useState<{name: string, amount: number, department: string, days?: number, perDay?: number}[]>([]);
+  const [scanSummary, setScanSummary] = useState<{total: number, matched: number, unmatched: number} | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle budget file upload and parse Excel
+  // Comprehensive keyword mapping for budget categories
+  const categoryKeywords: { [key: string]: string[] } = {
+    'preproduction': ['pre-production', 'preproduction', 'pre production', 'concept', 'story development', 'screenplay', 'script', 'dialogue', 'research', 'storyboard', 'recce', 'scouting', 'look test', 'workshop', 'development', 'pre prod'],
+    'cast': ['cast', 'artist', 'actor', 'actress', 'talent', 'hero', 'heroine', 'lead', 'supporting', 'junior artist', 'extra', 'celebrity', 'star cast', 'main cast', 'primary artist', 'secondary artist', 'tertiary', 'कलाकार', 'per diem', 'celebrity manager'],
+    'direction': ['direction', 'director', 'associate director', 'assistant director', '1st ad', '2nd ad', 'ad team', 'निर्देशक', 'script supervisor'],
+    'creative': ['creative', 'show runner', 'showrunner', 'project head', 'creative director', 'creative producer', 'content head', 'creative team'],
+    'writing': ['writing', 'writer', 'screenplay writer', 'dialogue writer', 'story writer', 'script writer', 'lyricist', 'लेखक', 'additional writer', 'script consultant'],
+    'camera': ['camera', 'cinematographer', 'dop', 'director of photography', 'camera operator', 'focus puller', 'cinematography', 'कैमरा', 'camera team', 'assistant cinematographer'],
+    'production': ['production', 'producer', 'production manager', 'executive producer', 'line producer', 'production team', 'spot boy', 'spot team', 'निर्माण', 'प्रोडक्शन', 'production assistant', 'head of production'],
+    'art': ['art', 'art director', 'art department', 'setting', 'painter', 'art team', 'कला', 'set design', 'assistant art'],
+    'location': ['location', 'studio', 'set construction', 'rental', 'construction', 'props', 'property', 'लोकेशन', 'location rental', 'studio rental', 'set building', 'dismantling'],
+    'costume': ['costume', 'wardrobe', 'stylist', 'tailor', 'dressman', 'dress', 'पोशाक', 'costume designer', 'assistant costume'],
+    'makeup': ['makeup', 'make up', 'make-up', 'hair', 'hairdresser', 'hair dresser', 'mua', 'मेकअप', 'makeup artist', 'hair stylist'],
+    'action': ['action', 'stunt', 'fight', 'choreographer', 'choreography', 'dance', 'एक्शन', 'action director', 'fight master', 'assistant choreographer'],
+    'casting': ['casting', 'casting director', 'audition', 'assistant casting'],
+    'photography': ['photography', 'still', 'bts', 'behind the scene', 'documentation', 'photographer', 'still photographer', 'bts videographer'],
+    'sound': ['sound', 'audio', 'recordist', 'boom', 'sync sound', 'sound department', 'साउंड', 'ध्वनि', 'boom operator', 'sound recordist', 'assistant sound'],
+    'lighting': ['lighting', 'light', 'gaffer', 'electric', 'lightmen', 'generator', 'लाइट', 'best boy', 'chief lighting', 'lighting assistant'],
+    'grip': ['grip', 'dit', 'digital imaging', 'camera support', 'dolly grip', 'key grip', 'camera attendant'],
+    'equipment': ['equipment', 'camera equipment', 'lens', 'gimbal', 'gimble', 'drone', 'track', 'trolley', 'jimmy jib', 'jib', 'crane', 'dolly', 'steadicam', 'camera car', 'monitor', 'lights equipment', 'rostrum', 'उपकरण', 'generator', 'fuel', 'rental equipment'],
+    'postproduction': ['post-production', 'postproduction', 'post production', 'post', 'editing', 'editor', 'color', 'colour', 'grading', 'di', 'vfx', 'graphics', 'cgi', 'visual effects', 'online', 'offline', 'पोस्ट', 'color grading', 'sound design', 'sound mixing', 'dubbing', 'foley'],
+    'music': ['music', 'song', 'background music', 'bgm', 'score', 'composer', 'musician', 'singer', 'playback', 'soundtrack', 'music director', 'lyricist', 'recording', 'संगीत', 'गाना', 'background score', 'music production', 'sync license'],
+    'publicity': ['publicity', 'marketing', 'promotion', 'poster', 'trailer', 'teaser', 'promo', 'advertising', 'pr', 'social media', 'प्रचार', 'digital marketing'],
+    'transport': ['transport', 'transportation', 'travel', 'vehicle', 'car', 'vanity', 'vanity van', 'bus', 'flight', 'accommodation', 'hotel', 'stay', 'lodging', 'food', 'catering', 'meal', 'conveyance', 'यात्रा', 'परिवहन', 'travel allowance', 'local transport'],
+    'insurance': ['insurance', 'contingency', 'miscellaneous', 'misc', 'other', 'additional', 'बीमा', 'production insurance', 'equipment insurance'],
+  };
+
+  // Category ID to name mapping
+  const categoryNames: { [key: string]: string } = {
+    'preproduction': 'Pre-Production',
+    'cast': 'Cast',
+    'direction': 'Direction Team',
+    'creative': 'Creative Team',
+    'writing': 'Writing Team',
+    'camera': 'Cinematographer Team',
+    'production': 'Production Team',
+    'art': 'Art Team',
+    'location': 'Location & Sets',
+    'costume': 'Costume & Wardrobe',
+    'makeup': 'Hair & Makeup',
+    'action': 'Action & Choreography',
+    'casting': 'Casting Department',
+    'photography': 'Photography & Documentation',
+    'sound': 'Sound Department',
+    'lighting': 'Lighting Department',
+    'grip': 'Grip & Camera Support',
+    'equipment': 'Equipment',
+    'postproduction': 'Post-Production',
+    'music': 'Music & Songs',
+    'publicity': 'Publicity & Marketing',
+    'transport': 'Transport & Accommodation',
+    'insurance': 'Insurance & Contingency',
+  };
+
+  // Column header patterns for detecting data columns
+  const columnPatterns = {
+    days: ['days', 'no of days', 'no. of days', 'number of days', 'shooting days', 'दिन'],
+    perDay: ['per day', 'rate', 'daily rate', 'rate/day', 'per day rate', 'daily', 'प्रतिदिन'],
+    lumpsum: ['lumpsum', 'lump sum', 'fixed', 'total', 'amount', 'budget', 'cost', 'राशि', 'कुल'],
+    people: ['people', 'no of people', 'qty', 'quantity', 'units', 'persons', 'nos', 'no.'],
+    description: ['particulars', 'description', 'item', 'name', 'details', 'विवरण'],
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     console.log('File selected:', file);
@@ -431,156 +496,321 @@ export default function BudgetStep({ formData, setFormData, onNext, onBack }: Pr
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
       const allowedExtensions = ['xlsx', 'xls'];
 
-      console.log('File extension:', fileExtension);
-      console.log('File name:', file.name);
-      console.log('File size:', file.size);
-
       if (allowedExtensions.includes(fileExtension || '')) {
         setUploadedFile(file);
         setIsFileProcessing(true);
         setUnmatchedItems([]);
+        setMatchedItems([]);
+        setScanSummary(null);
 
         try {
           // Read Excel file
           const data = await file.arrayBuffer();
           const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as any[][];
 
-          console.log('=== EXCEL PARSING START ===');
-          console.log('Excel data parsed:', jsonData);
-          console.log('Current categories before update:', categories);
+          console.log('=== COMPREHENSIVE BUDGET SCANNER START ===');
+          console.log('Sheets found:', workbook.SheetNames);
 
-          // Parse Excel data and match with budget categories
-          // Deep clone to ensure React detects state changes
+          // Deep clone categories
           const updatedCategories = categories.map(cat => ({
             ...cat,
             items: cat.items.map(item => ({ ...item }))
           }));
+
           const unmatched: string[] = [];
-          let matchedCount = 0;
+          const matched: {name: string, amount: number, department: string, days?: number, perDay?: number}[] = [];
+          const categoryTotals: { [key: string]: number } = {};
+          const categoryItems: { [key: string]: any[] } = {};
 
-          // Expected Excel format: Column A = Category/Item Name, Column B = Amount
-          // Start from row 0 or 1 depending on whether there's a header
-          const startRow = jsonData[0] && typeof jsonData[0][1] === 'string' && isNaN(parseFloat(String(jsonData[0][1]).replace(/[₹$,\s]/g, ''))) ? 1 : 0;
+          // Initialize
+          updatedCategories.forEach(cat => {
+            categoryTotals[cat.id] = 0;
+            categoryItems[cat.id] = [];
+          });
 
-          console.log(`Starting from row ${startRow}`);
+          // Parse amount from various formats
+          const parseAmount = (value: any): number => {
+            if (value === null || value === undefined || value === '') return 0;
+            if (typeof value === 'number') return Math.abs(value);
 
-          for (let i = startRow; i < jsonData.length; i++) {
-            const row = jsonData[i];
-            if (!row || row.length < 2) continue;
+            let str = String(value).trim();
+            str = str.replace(/[₹$,\s()]/g, '');
 
-            const itemName = String(row[0] || '').trim().toLowerCase();
-            // Parse amount - remove currency symbols, commas, spaces
-            const amountStr = String(row[1] || '').replace(/[₹$,\s]/g, '');
-            const amount = parseFloat(amountStr) || 0;
+            const isNegative = str.startsWith('-');
+            str = str.replace('-', '');
 
-            console.log(`Row ${i}: "${row[0]}" = "${row[1]}" (cleaned: "${amountStr}", parsed: ${amount})`);
+            const lowerStr = str.toLowerCase();
+            let amount = 0;
 
-            if (!itemName || amount === 0) {
-              console.log(`Skipping row ${i}: empty name or zero amount`);
-              continue;
+            if (lowerStr.includes('lakh') || lowerStr.includes('lac')) {
+              amount = (parseFloat(lowerStr.replace(/[^0-9.]/g, '')) || 0) * 100000;
+            } else if (lowerStr.includes('cr') || lowerStr.includes('crore')) {
+              amount = (parseFloat(lowerStr.replace(/[^0-9.]/g, '')) || 0) * 10000000;
+            } else if (lowerStr.includes('k') || lowerStr.includes('thousand')) {
+              amount = (parseFloat(lowerStr.replace(/[^0-9.]/g, '')) || 0) * 1000;
+            } else {
+              amount = parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
             }
 
-            let matched = false;
+            return isNegative ? -amount : amount;
+          };
 
-            // Try to match with category names
-            for (let catIndex = 0; catIndex < updatedCategories.length; catIndex++) {
-              const category = updatedCategories[catIndex];
-              const categoryNameLower = category.name.toLowerCase();
-
-              // Check if row matches category name
-              if (itemName.includes(categoryNameLower) || categoryNameLower.includes(itemName)) {
-                updatedCategories[catIndex].amount = amount;
-                matched = true;
-                matchedCount++;
-                console.log(`✓ Matched category: ${category.name} = ₹${amount.toLocaleString('en-IN')}`);
-                break;
+          // Detect column type from header
+          const detectColumnType = (header: string): string => {
+            const lowerHeader = header.toLowerCase().trim();
+            for (const [type, patterns] of Object.entries(columnPatterns)) {
+              for (const pattern of patterns) {
+                if (lowerHeader.includes(pattern)) return type;
               }
+            }
+            return 'unknown';
+          };
 
-              // Check if row matches any item in the category
-              for (let itemIndex = 0; itemIndex < category.items.length; itemIndex++) {
-                const item = category.items[itemIndex];
-                const itemDescLower = item.description.toLowerCase();
+          // Smart matching function
+          const findMatchingCategory = (text: string): string | null => {
+            const lowerText = text.toLowerCase();
+            for (const [catId, keywords] of Object.entries(categoryKeywords)) {
+              for (const keyword of keywords) {
+                if (lowerText.includes(keyword)) {
+                  return catId;
+                }
+              }
+            }
+            return null;
+          };
 
-                if (itemName.includes(itemDescLower) || itemDescLower.includes(itemName)) {
-                  updatedCategories[catIndex].items[itemIndex].lumpsumFixed = amount;
-                  updatedCategories[catIndex].items[itemIndex].total = amount;
-                  matched = true;
-                  matchedCount++;
-                  console.log(`✓ Matched item: ${item.description} = ₹${amount.toLocaleString('en-IN')}`);
-                  break;
+          // Process each sheet
+          for (const sheetName of workbook.SheetNames) {
+            const sheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' }) as any[][];
+
+            console.log(`\n=== Processing Sheet: "${sheetName}" (${jsonData.length} rows) ===`);
+
+            if (jsonData.length < 2) continue;
+
+            // Detect header row and column mapping
+            let headerRowIndex = -1;
+            let columnMap: { [key: string]: number } = {};
+
+            // Find header row (first row with text)
+            for (let i = 0; i < Math.min(10, jsonData.length); i++) {
+              const row = jsonData[i];
+              if (!row) continue;
+
+              let textCells = 0;
+              for (let col = 0; col < row.length; col++) {
+                const cell = String(row[col] || '').trim();
+                if (cell && isNaN(parseFloat(cell.replace(/[₹$,\s]/g, '')))) {
+                  textCells++;
+                  const colType = detectColumnType(cell);
+                  if (colType !== 'unknown') {
+                    columnMap[colType] = col;
+                  }
                 }
               }
 
-              if (matched) break;
+              if (textCells >= 2) {
+                headerRowIndex = i;
+                console.log(`Header row found at index ${i}:`, row.slice(0, 8));
+                console.log('Column mapping:', columnMap);
+                break;
+              }
             }
 
-            if (!matched) {
-              unmatched.push(`${row[0]} (₹${amount.toLocaleString('en-IN')})`);
-              console.log(`✗ Not matched: ${row[0]} = ₹${amount.toLocaleString('en-IN')}`);
+            // If no header found, assume first column is description, look for amounts
+            if (headerRowIndex === -1) {
+              headerRowIndex = 0;
+              columnMap = { description: 0 };
+            }
+
+            // Track current department context from sheet name or section headers
+            let currentDepartment = findMatchingCategory(sheetName);
+            console.log(`Sheet "${sheetName}" default department: ${currentDepartment || 'none'}`);
+
+            // Process data rows
+            for (let i = headerRowIndex + 1; i < jsonData.length; i++) {
+              const row = jsonData[i];
+              if (!row || !Array.isArray(row)) continue;
+
+              // Find description/item name
+              let itemName = '';
+              let descCol = columnMap.description ?? 0;
+
+              // Try to find first text cell
+              for (let col = 0; col < Math.min(row.length, 5); col++) {
+                const cell = String(row[col] || '').trim();
+                if (cell && cell.length > 1) {
+                  // Check if it's a number
+                  const numCheck = parseAmount(cell);
+                  if (numCheck === 0 || cell.length > 3) {
+                    itemName = cell;
+                    descCol = col;
+                    break;
+                  }
+                }
+              }
+
+              if (!itemName || itemName.length < 2) continue;
+
+              // Skip headers and totals
+              const lowerName = itemName.toLowerCase();
+              if (lowerName.includes('particulars') || lowerName.includes('s.no') ||
+                  lowerName.includes('sr.no') || lowerName === 'total' ||
+                  lowerName === 'grand total' || lowerName === 'sub total' ||
+                  lowerName.includes('-------')) continue;
+
+              // Check if this row is a section header (department name)
+              const sectionDept = findMatchingCategory(itemName);
+              if (sectionDept) {
+                currentDepartment = sectionDept;
+                console.log(`Section header found: "${itemName}" -> ${currentDepartment}`);
+                // Check if this row also has amounts (then it's data, not just header)
+                let hasAmount = false;
+                for (let col = descCol + 1; col < row.length; col++) {
+                  if (parseAmount(row[col]) > 0) {
+                    hasAmount = true;
+                    break;
+                  }
+                }
+                if (!hasAmount) continue;
+              }
+
+              // Extract numeric values from columns
+              let days = 0, perDay = 0, lumpsum = 0, people = 0;
+
+              // Try mapped columns first
+              if (columnMap.days !== undefined) days = parseAmount(row[columnMap.days]);
+              if (columnMap.perDay !== undefined) perDay = parseAmount(row[columnMap.perDay]);
+              if (columnMap.lumpsum !== undefined) lumpsum = parseAmount(row[columnMap.lumpsum]);
+              if (columnMap.people !== undefined) people = parseAmount(row[columnMap.people]);
+
+              // If no lumpsum from mapped column, scan all columns for amounts
+              if (lumpsum === 0) {
+                const amounts: number[] = [];
+                for (let col = 0; col < row.length; col++) {
+                  if (col === descCol) continue;
+                  const amt = parseAmount(row[col]);
+                  if (amt > 0) amounts.push(amt);
+                }
+
+                if (amounts.length > 0) {
+                  // Take the largest amount as total/lumpsum
+                  lumpsum = Math.max(...amounts);
+
+                  // If multiple amounts, try to detect days and per day
+                  if (amounts.length >= 2) {
+                    const sorted = [...amounts].sort((a, b) => a - b);
+                    // Smallest might be days if < 100
+                    if (sorted[0] < 100 && sorted[0] !== lumpsum) {
+                      days = sorted[0];
+                    }
+                    // Second smallest might be per day
+                    if (sorted.length > 2 && sorted[1] < lumpsum && sorted[1] > days) {
+                      perDay = sorted[1];
+                    }
+                  }
+                }
+              }
+
+              if (lumpsum <= 0) continue;
+
+              // Determine department - use item name first, then current context
+              let matchedDept = findMatchingCategory(itemName) || currentDepartment;
+
+              console.log(`Row ${i}: "${itemName}" | Days: ${days} | PerDay: ${perDay} | Total: ₹${lumpsum.toLocaleString('en-IN')} | Dept: ${matchedDept || 'NONE'}`);
+
+              if (matchedDept) {
+                categoryTotals[matchedDept] += lumpsum;
+                categoryItems[matchedDept].push({
+                  name: itemName,
+                  days: days,
+                  perDay: perDay,
+                  lumpsum: lumpsum,
+                  people: people
+                });
+
+                matched.push({
+                  name: itemName,
+                  amount: lumpsum,
+                  department: categoryNames[matchedDept] || matchedDept,
+                  days: days,
+                  perDay: perDay
+                });
+              } else {
+                unmatched.push(`${itemName} | Days: ${days || '-'} | ₹${lumpsum.toLocaleString('en-IN')}`);
+              }
             }
           }
 
-          // Recalculate category amounts from their items
+          // Update category amounts and items
           updatedCategories.forEach(cat => {
-            const itemsTotal = cat.items.reduce((sum, item) => sum + item.total, 0);
-            if (itemsTotal > 0) {
-              cat.amount = itemsTotal;
+            if (categoryTotals[cat.id] > 0) {
+              cat.amount = categoryTotals[cat.id];
+
+              // Update items with scanned data
+              const scannedItems = categoryItems[cat.id] || [];
+              scannedItems.forEach((scanned, idx) => {
+                if (idx < cat.items.length) {
+                  cat.items[idx].description = scanned.name;
+                  cat.items[idx].noOfDays = scanned.days || 0;
+                  cat.items[idx].perDay = scanned.perDay || 0;
+                  cat.items[idx].lumpsumFixed = scanned.lumpsum || 0;
+                  cat.items[idx].total = scanned.lumpsum || 0;
+                  cat.items[idx].noOfPeople = scanned.people || 0;
+                }
+              });
             }
           });
 
           // Calculate total budget
           const totalBudget = updatedCategories.reduce((sum, cat) => sum + cat.amount, 0);
 
-          // Recalculate percentages based on total
+          // Recalculate percentages
           if (totalBudget > 0) {
             updatedCategories.forEach(cat => {
-              if (cat.amount > 0) {
-                cat.yourPercentage = Math.round((cat.amount / totalBudget) * 100);
-              }
+              cat.yourPercentage = cat.amount > 0 ? Math.round((cat.amount / totalBudget) * 100) : 0;
             });
           }
 
-          console.log('Total Budget:', totalBudget);
-          console.log('Updated Categories:', updatedCategories);
-          console.log('Budget auto-filled successfully');
-          console.log('Unmatched items:', unmatched);
+          const filledDepartments = updatedCategories.filter(c => c.amount > 0).length;
 
-          // Log each category amount for debugging
-          updatedCategories.forEach(cat => {
-            console.log(`${cat.name}: ₹${cat.amount.toLocaleString('en-IN')} (${cat.yourPercentage}%)`);
+          console.log('\n=== FINAL SCAN RESULTS ===');
+          console.log(`Total Budget: ₹${totalBudget.toLocaleString('en-IN')}`);
+          console.log(`Matched: ${matched.length} items in ${filledDepartments} departments`);
+          console.log(`Unmatched: ${unmatched.length} items`);
+          console.log('\nDepartment Breakdown:');
+          updatedCategories.filter(c => c.amount > 0).forEach(cat => {
+            console.log(`  ${cat.name}: ₹${cat.amount.toLocaleString('en-IN')} (${cat.yourPercentage}%) - ${categoryItems[cat.id]?.length || 0} items`);
           });
-          console.log('=== EXCEL PARSING END ===');
+          console.log('=== COMPREHENSIVE BUDGET SCANNER END ===');
 
           // Update state and formData
           setCategories(updatedCategories);
           setFormData({
             ...formData,
             budgetCategories: updatedCategories,
+            totalProductionCost: totalBudget,
           });
+          setMatchedItems(matched);
           setUnmatchedItems(unmatched);
+          setScanSummary({
+            total: totalBudget,
+            matched: matched.length,
+            unmatched: unmatched.length
+          });
           setIsFileProcessing(false);
-
-          // Show summary
-          const totalRows = jsonData.length - startRow;
-          setTimeout(() => {
-            alert(`Budget Import Summary:\n\n✓ Matched: ${matchedCount} items\n✗ Unmatched: ${unmatched.length} items\n\nTotal Budget: ₹${totalBudget.toLocaleString('en-IN')}\n\n${unmatched.length > 0 ? 'Please scroll down to see unmatched items that need manual entry.' : 'All items imported successfully!'}`);
-          }, 100);
 
         } catch (error) {
           console.error('Error parsing Excel file:', error);
-          alert('Error reading Excel file. Please ensure it has the correct format: Column A = Item Name, Column B = Amount');
+          alert('Error reading file: ' + (error as any).message);
           setIsFileProcessing(false);
         }
       } else {
-        alert('Please upload a valid Excel file format: .xlsx or .xls');
+        alert('Please upload Excel file (.xlsx or .xls)');
       }
-    } else {
-      console.log('No file selected');
     }
 
-    // Reset input value to allow same file upload again
+    // Reset input
     if (event.target) {
       event.target.value = '';
     }
@@ -590,6 +820,8 @@ export default function BudgetStep({ formData, setFormData, onNext, onBack }: Pr
     setUploadedFile(null);
     setIsFileProcessing(false);
     setUnmatchedItems([]);
+    setMatchedItems([]);
+    setScanSummary(null);
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -956,99 +1188,234 @@ export default function BudgetStep({ formData, setFormData, onNext, onBack }: Pr
           />
         </div>
 
-        {/* File Upload Section */}
-        <div className="mt-6 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl border-2 border-indigo-300 p-6 shadow-lg">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-3xl">📎</span>
-            <div>
-              <h3 className="text-lg font-bold text-indigo-900">Upload Budget File (Optional)</h3>
-              <p className="text-sm text-indigo-700">Upload Excel, Word, or PDF file to auto-fill budget data</p>
+        {/* File Upload Section - Smart Budget Scanner */}
+        <div className="mt-6 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 rounded-2xl border-2 border-indigo-300 p-6 shadow-xl">
+          <div className="flex items-start gap-4 mb-5">
+            <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+              <span className="text-2xl">🤖</span>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-black text-indigo-900">Smart Budget Scanner</h3>
+              <p className="text-sm text-indigo-700 mt-1 leading-relaxed">
+                Upload your existing budget file and our AI will automatically extract & fill all budget data department-wise.
+                Any items that couldn't be matched will be shown for manual entry.
+              </p>
             </div>
           </div>
 
+          {/* How it works - Info Box */}
+          <div className="bg-white/70 rounded-xl p-4 mb-5 border border-indigo-200">
+            <h4 className="font-bold text-indigo-900 text-sm mb-2 flex items-center gap-2">
+              <span>💡</span> How it works:
+            </h4>
+            <ul className="text-xs text-indigo-800 space-y-1.5">
+              <li className="flex items-start gap-2">
+                <span className="text-green-500 font-bold">1.</span>
+                <span>Upload your budget Excel file (Column A = Item Name, Column B = Amount)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-500 font-bold">2.</span>
+                <span>System auto-scans and matches items to departments (Direction, Production, Camera, etc.)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-500 font-bold">3.</span>
+                <span>Matched items are auto-filled, unmatched items are listed for manual entry</span>
+              </li>
+            </ul>
+          </div>
+
           {!uploadedFile ? (
-            <div className="flex items-center gap-4">
+            <div className="space-y-4">
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".xlsx,.xls,.docx,.doc,.pdf"
+                accept=".xlsx,.xls"
                 onChange={handleFileUpload}
                 className="hidden"
                 id="budget-file-upload"
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-200 cursor-pointer flex items-center gap-2"
+                className="w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-200 cursor-pointer flex items-center justify-center gap-3"
                 type="button"
               >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
-                Choose File
+                <span>Upload Budget File to Auto-Scan</span>
               </button>
-              <span className="text-sm text-gray-600 font-semibold">
-                Supported: Excel (.xlsx, .xls), Word (.docx, .doc), PDF
-              </span>
+              <p className="text-center text-xs text-gray-500 font-semibold">
+                Supported format: Excel (.xlsx, .xls) with budget items and amounts
+              </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {isFileProcessing ? (
-                <div className="flex items-center gap-3 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
-                  <div className="animate-spin">
-                    <svg className="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-bold text-yellow-900">Processing file...</p>
-                    <p className="text-sm text-yellow-700">{uploadedFile.name}</p>
+                <div className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div className="w-12 h-12 border-4 border-blue-200 rounded-full"></div>
+                      <div className="w-12 h-12 border-4 border-blue-500 rounded-full absolute top-0 left-0 animate-spin border-t-transparent"></div>
+                    </div>
+                    <div>
+                      <p className="font-black text-blue-900 text-lg">Scanning your budget file...</p>
+                      <p className="text-sm text-blue-700 font-semibold">{uploadedFile.name}</p>
+                      <p className="text-xs text-blue-600 mt-1">Extracting department-wise budget data</p>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 bg-green-50 border-2 border-green-300 rounded-lg">
+                <div className="space-y-4">
+                  {/* Success Header */}
+                  <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">✅</span>
+                      <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                        <span className="text-2xl text-white">✓</span>
+                      </div>
                       <div>
-                        <p className="font-bold text-green-900">File uploaded successfully!</p>
-                        <p className="text-sm text-green-700">{uploadedFile.name}</p>
-                        <p className="text-xs text-green-600 mt-1">Budget data auto-filled. You can manually adjust any fields below.</p>
+                        <p className="font-black text-green-900 text-lg">Scan Complete!</p>
+                        <p className="text-sm text-green-700 font-semibold">{uploadedFile.name}</p>
                       </div>
                     </div>
                     <button
                       onClick={removeUploadedFile}
-                      className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
+                      className="px-4 py-2 bg-gray-100 hover:bg-red-100 text-gray-600 hover:text-red-600 font-bold rounded-lg transition-all duration-200 flex items-center gap-2 border border-gray-200 hover:border-red-300"
                     >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Remove
+                      <span>✕</span> Remove
                     </button>
                   </div>
 
-                  {/* Unmatched items warning */}
-                  {unmatchedItems.length > 0 && (
-                    <div className="p-4 bg-orange-50 border-2 border-orange-300 rounded-lg">
+                  {/* Scan Results Summary */}
+                  <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                    <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                      <span>📊</span> Scan Results
+                    </h4>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="bg-blue-50 rounded-lg p-3 border border-blue-200 text-center">
+                        <div className="text-xl font-black text-blue-700">
+                          ₹{scanSummary ? (scanSummary.total / 100000).toFixed(1) : 0}L
+                        </div>
+                        <div className="text-xs font-semibold text-blue-600">Total Found</div>
+                      </div>
+                      <div className="bg-green-50 rounded-lg p-3 border border-green-200 text-center">
+                        <div className="text-xl font-black text-green-700">
+                          {matchedItems.length}
+                        </div>
+                        <div className="text-xs font-semibold text-green-600">Items Matched</div>
+                      </div>
+                      <div className="bg-orange-50 rounded-lg p-3 border border-orange-200 text-center">
+                        <div className="text-xl font-black text-orange-700">
+                          {unmatchedItems.length}
+                        </div>
+                        <div className="text-xs font-semibold text-orange-600">Need Manual</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Matched Items - Successfully Added */}
+                  {matchedItems.length > 0 && (
+                    <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl">
                       <div className="flex items-start gap-3">
-                        <span className="text-2xl">⚠️</span>
+                        <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-lg">✓</span>
+                        </div>
                         <div className="flex-1">
-                          <p className="font-bold text-orange-900 mb-2">
-                            {unmatchedItems.length} item(s) could not be automatically matched
+                          <p className="font-black text-green-900 text-lg mb-1">
+                            ✅ {matchedItems.length} Items Auto-Filled
+                          </p>
+                          <p className="text-sm text-green-700 mb-3">
+                            These items were successfully matched and added to departments:
+                          </p>
+                          <div className="bg-white rounded-lg border border-green-200 max-h-64 overflow-y-auto">
+                            <table className="w-full text-xs">
+                              <thead className="bg-green-100 sticky top-0">
+                                <tr>
+                                  <th className="text-left p-2 font-bold text-green-800">Item</th>
+                                  <th className="text-center p-2 font-bold text-green-800">Days</th>
+                                  <th className="text-right p-2 font-bold text-green-800">Per Day</th>
+                                  <th className="text-right p-2 font-bold text-green-800">Total</th>
+                                  <th className="text-left p-2 font-bold text-green-800">Department</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {matchedItems.map((item, index) => (
+                                  <tr key={index} className="border-b border-green-100 hover:bg-green-50">
+                                    <td className="p-2 text-gray-800 font-medium" title={item.name}>
+                                      {item.name.substring(0, 25)}{item.name.length > 25 ? '...' : ''}
+                                    </td>
+                                    <td className="p-2 text-center text-gray-600">
+                                      {item.days && item.days > 0 ? item.days : '-'}
+                                    </td>
+                                    <td className="p-2 text-right text-gray-600">
+                                      {item.perDay && item.perDay > 0 ? `₹${item.perDay.toLocaleString('en-IN')}` : '-'}
+                                    </td>
+                                    <td className="p-2 text-right text-green-700 font-bold">
+                                      ₹{item.amount.toLocaleString('en-IN')}
+                                    </td>
+                                    <td className="p-2">
+                                      <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold whitespace-nowrap">
+                                        {item.department.replace(' Team', '').replace(' Department', '')}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Unmatched items - Need Manual Entry */}
+                  {unmatchedItems.length > 0 && (
+                    <div className="p-4 bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-400 rounded-xl">
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-lg">!</span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-black text-orange-900 text-lg mb-1">
+                            ⚠️ {unmatchedItems.length} Items Need Manual Entry
                           </p>
                           <p className="text-sm text-orange-700 mb-3">
-                            Please add these items manually to the appropriate categories:
+                            Click on any item to copy, then add to the correct department below:
                           </p>
-                          <div className="bg-white rounded-lg p-3 border border-orange-200 max-h-40 overflow-y-auto">
-                            <ul className="space-y-1">
+                          <div className="bg-white rounded-lg p-3 border border-orange-200 max-h-48 overflow-y-auto">
+                            <div className="space-y-2">
                               {unmatchedItems.map((item, index) => (
-                                <li key={index} className="text-sm text-gray-800 flex items-start gap-2">
-                                  <span className="text-orange-500 font-bold">•</span>
-                                  <span className="font-semibold">{item}</span>
-                                </li>
+                                <button
+                                  key={index}
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(item);
+                                    alert(`Copied: ${item}`);
+                                  }}
+                                  className="w-full flex items-center justify-between text-sm bg-orange-50 hover:bg-orange-100 p-3 rounded-lg transition-all cursor-pointer border border-orange-200 hover:border-orange-400"
+                                >
+                                  <span className="font-semibold text-gray-800 text-left">{item}</span>
+                                  <span className="text-orange-500 font-bold text-xs bg-orange-200 px-2 py-1 rounded">📋 Copy</span>
+                                </button>
                               ))}
-                            </ul>
+                            </div>
                           </div>
+                          <p className="text-xs text-orange-600 mt-2 font-semibold">
+                            💡 Click item to copy → Scroll down → Find matching department → Paste amount
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No items found warning */}
+                  {matchedItems.length === 0 && unmatchedItems.length === 0 && (
+                    <div className="p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">⚠️</span>
+                        <div>
+                          <p className="font-black text-yellow-900">No budget items found in file</p>
+                          <p className="text-sm text-yellow-700">
+                            Make sure your Excel file has: Column A = Item Name, Column B/C = Amount (in numbers)
+                          </p>
                         </div>
                       </div>
                     </div>

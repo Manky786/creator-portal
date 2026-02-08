@@ -816,7 +816,7 @@ export default function AdminDashboard() {
   const [filterFormat, setFilterFormat] = useState<string>('all');
   const [filterCulture, setFilterCulture] = useState<string>('all');
   const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
-  const [detailView, setDetailView] = useState<'project' | 'creator' | 'budget' | 'timeline' | 'crew' | 'cast' | 'technical' | 'cashflow' | 'documents' | 'missing' | 'agreement' | 'activity'>('project');
+  const [detailView, setDetailView] = useState<'project' | 'creator' | 'budget' | 'timeline' | 'crew' | 'cast' | 'technical' | 'cashflow' | 'documents' | 'missing' | 'agreement' | 'activity' | 'sop'>('project');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
   const [showStatusMenu, setShowStatusMenu] = useState<number | null>(null);
   const [submissions, setSubmissions] = useState<any[]>(sampleSubmissions);
@@ -2146,6 +2146,74 @@ END:VCARD`;
 
         <h2>4. Total Budget</h2>
         <div class="row"><span class="label">Amount:</span><span class="value highlight">${formatBudgetInWords(submission.totalBudget || parseFloat(submission.estimatedBudget) || 0)}</span></div>
+
+        <h2>4.1 Detailed Budget Breakdown (Department-wise)</h2>
+        ${submission.budgetCategories && submission.budgetCategories.length > 0 ? `
+          <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 11px;">
+            <thead>
+              <tr style="background: #1a1a2e; color: white;">
+                <th style="border: 1px solid #333; padding: 8px; text-align: left;">Department</th>
+                <th style="border: 1px solid #333; padding: 8px; text-align: left;">Item Description</th>
+                <th style="border: 1px solid #333; padding: 8px; text-align: center;">Days</th>
+                <th style="border: 1px solid #333; padding: 8px; text-align: center;">Qty/People</th>
+                <th style="border: 1px solid #333; padding: 8px; text-align: right;">Per Day (₹)</th>
+                <th style="border: 1px solid #333; padding: 8px; text-align: right;">Lumpsum (₹)</th>
+                <th style="border: 1px solid #333; padding: 8px; text-align: right;">Total (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${submission.budgetCategories.map((category: any) => {
+                const filledItems = category.items?.filter((item: any) => item.total > 0 || item.description) || [];
+                if (filledItems.length === 0) return '';
+
+                return `
+                  <tr style="background: #f8f9fa;">
+                    <td colspan="6" style="border: 1px solid #ddd; padding: 10px; font-weight: bold; background: #e9ecef;">
+                      ${category.icon || '📁'} ${category.name}
+                    </td>
+                    <td style="border: 1px solid #ddd; padding: 10px; font-weight: bold; background: #e9ecef; text-align: right;">
+                      ₹${(category.amount || 0).toLocaleString('en-IN')}
+                    </td>
+                  </tr>
+                  ${filledItems.map((item: any) => `
+                    <tr>
+                      <td style="border: 1px solid #ddd; padding: 6px;"></td>
+                      <td style="border: 1px solid #ddd; padding: 6px;">${item.description || 'N/A'}</td>
+                      <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">${item.days || '-'}</td>
+                      <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">${item.people || item.rooms || item.quantity || '-'}</td>
+                      <td style="border: 1px solid #ddd; padding: 6px; text-align: right;">${item.perDay ? '₹' + item.perDay.toLocaleString('en-IN') : '-'}</td>
+                      <td style="border: 1px solid #ddd; padding: 6px; text-align: right;">${item.lumpsum ? '₹' + item.lumpsum.toLocaleString('en-IN') : '-'}</td>
+                      <td style="border: 1px solid #ddd; padding: 6px; text-align: right; font-weight: bold;">₹${(item.total || 0).toLocaleString('en-IN')}</td>
+                    </tr>
+                  `).join('')}
+                `;
+              }).join('')}
+            </tbody>
+            <tfoot>
+              <tr style="background: #16a34a; color: white; font-weight: bold;">
+                <td colspan="6" style="border: 1px solid #333; padding: 12px; text-align: right; font-size: 14px;">GRAND TOTAL:</td>
+                <td style="border: 1px solid #333; padding: 12px; text-align: right; font-size: 14px;">
+                  ₹${(submission.budgetCategories.reduce((sum: number, cat: any) => sum + (cat.amount || 0), 0)).toLocaleString('en-IN')}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #ddd;">
+            <h4 style="margin: 0 0 10px 0; color: #333;">Budget Summary by Department:</h4>
+            <table style="width: 100%; border-collapse: collapse;">
+              ${submission.budgetCategories.filter((cat: any) => cat.amount > 0).map((cat: any) => `
+                <tr>
+                  <td style="padding: 5px 10px; border-bottom: 1px solid #eee;">${cat.icon || '📁'} ${cat.name}</td>
+                  <td style="padding: 5px 10px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">₹${(cat.amount || 0).toLocaleString('en-IN')}</td>
+                  <td style="padding: 5px 10px; border-bottom: 1px solid #eee; text-align: right; color: #666;">${(cat.yourPercentage || 0).toFixed(1)}%</td>
+                </tr>
+              `).join('')}
+            </table>
+          </div>
+        ` : `
+          <p style="color: #888; font-style: italic;">No detailed budget breakdown available</p>
+        `}
 
         <h2>5. Director & Writer</h2>
         <div class="row"><span class="label">Director:</span><span class="value">${submission.director || 'N/A'}</span></div>
@@ -3880,6 +3948,9 @@ END:VCARD`;
                         {submission.warnings > 0 && (
                           <div className="text-amber-400 text-xs">⚠️ {submission.warnings} Warnings</div>
                         )}
+                        {submission.sopComments && submission.sopComments.length > 0 && (
+                          <div className="text-blue-400 text-xs">💬 {submission.sopComments.length} SOP Questions</div>
+                        )}
                       </div>
 
                       {/* Action Buttons */}
@@ -5294,21 +5365,31 @@ END:VCARD`;
                     { id: 'cashflow', icon: '💳', label: 'Cash Flow' },
                     { id: 'documents', icon: '📁', label: 'Documents' },
                     { id: 'missing', icon: '⚠️', label: 'Missing' },
+                    { id: 'sop', icon: '💬', label: 'SOP Comments', badge: selectedSubmission?.sopComments?.length || 0 },
                     { id: 'agreement', icon: '📝', label: 'Agreement' },
                     { id: 'activity', icon: '📋', label: 'Activity Log' },
-                  ].map((tab, index) => (
+                  ].map((tab: any, index) => (
                     <button
                       key={tab.id}
                       onClick={() => setDetailView(tab.id as any)}
                       className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
                         detailView === tab.id
                           ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg scale-105'
-                          : 'bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 hover:text-white'
+                          : tab.id === 'sop' && tab.badge > 0
+                            ? 'bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-500/50 hover:text-blue-300'
+                            : 'bg-white/5 text-gray-400 hover:bg-white/10 border border-white/10 hover:text-white'
                       }`}
                     >
                       <span className="text-sm">{tab.icon}</span>
                       <span>{tab.label}</span>
-                      {detailView === tab.id && <span className="ml-1 w-2 h-2 bg-white rounded-full animate-pulse"></span>}
+                      {tab.badge > 0 && (
+                        <span className={`ml-1 px-1.5 py-0.5 text-xs font-black rounded-full ${
+                          detailView === tab.id ? 'bg-white text-red-500' : 'bg-blue-500 text-white'
+                        }`}>
+                          {tab.badge}
+                        </span>
+                      )}
+                      {detailView === tab.id && !tab.badge && <span className="ml-1 w-2 h-2 bg-white rounded-full animate-pulse"></span>}
                     </button>
                   ))}
                 </div>
@@ -5988,6 +6069,125 @@ END:VCARD`;
                         </div>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* SOP Comments Tab */}
+                {detailView === 'sop' && (
+                  <div className="space-y-6">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center">
+                            <span className="text-4xl">💬</span>
+                          </div>
+                          <div>
+                            <h2 className="text-2xl font-black">SOP Questions & Comments</h2>
+                            <p className="text-blue-100 font-semibold mt-1">
+                              Creator's queries about Standard Operating Procedures
+                            </p>
+                          </div>
+                        </div>
+                        {selectedSubmission.sopComments && selectedSubmission.sopComments.length > 0 && (
+                          <div className="text-right">
+                            <div className="text-4xl font-black">{selectedSubmission.sopComments.length}</div>
+                            <div className="text-blue-200 text-sm font-bold">Total Comments</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {selectedSubmission.sopComments && selectedSubmission.sopComments.length > 0 ? (
+                      <>
+                        {/* Comments by Section */}
+                        <div className="space-y-4">
+                          {(() => {
+                            // Group comments by section
+                            const groupedComments: { [key: string]: any[] } = {};
+                            selectedSubmission.sopComments.forEach((comment: any) => {
+                              if (!groupedComments[comment.sectionTitle]) {
+                                groupedComments[comment.sectionTitle] = [];
+                              }
+                              groupedComments[comment.sectionTitle].push(comment);
+                            });
+
+                            return Object.entries(groupedComments).map(([sectionTitle, comments], sectionIndex) => (
+                              <div key={sectionIndex} className="bg-white rounded-2xl border-2 border-blue-200 shadow-lg overflow-hidden">
+                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b-2 border-blue-200">
+                                  <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-black text-gray-900 flex items-center gap-2">
+                                      <span className="text-xl">📋</span>
+                                      {sectionTitle}
+                                    </h3>
+                                    <span className="px-3 py-1 bg-blue-500 text-white text-xs font-bold rounded-full">
+                                      {comments.length} {comments.length === 1 ? 'Comment' : 'Comments'}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="p-4 space-y-3">
+                                  {comments.map((comment: any, commentIndex: number) => (
+                                    <div key={commentIndex} className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-5 border border-blue-100">
+                                      <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 bg-blue-100 border-2 border-blue-300 rounded-full flex items-center justify-center flex-shrink-0">
+                                          <span className="text-lg">❓</span>
+                                        </div>
+                                        <div className="flex-1">
+                                          <p className="text-gray-800 font-semibold text-base leading-relaxed">
+                                            {comment.comment}
+                                          </p>
+                                          <p className="text-xs text-gray-500 mt-3 flex items-center gap-2">
+                                            <span>📅</span>
+                                            {new Date(comment.timestamp).toLocaleString('en-IN', {
+                                              day: '2-digit',
+                                              month: 'short',
+                                              year: 'numeric',
+                                              hour: '2-digit',
+                                              minute: '2-digit'
+                                            })}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ));
+                          })()}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border-2 border-amber-200">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <span className="text-3xl">⚠️</span>
+                              <div>
+                                <h3 className="text-lg font-black text-amber-900">Action Required</h3>
+                                <p className="text-amber-700 font-medium text-sm">Please review and respond to creator's queries</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-3">
+                              <button className="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center gap-2">
+                                <span>📧</span>
+                                Email Creator
+                              </button>
+                              <button className="px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:shadow-lg transition-all flex items-center gap-2">
+                                <span>✅</span>
+                                Mark Resolved
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-12 border-2 border-green-200 text-center">
+                        <div className="text-6xl mb-4">✅</div>
+                        <h3 className="text-2xl font-black text-green-800 mb-2">No SOP Comments</h3>
+                        <p className="text-green-700 font-semibold">
+                          Creator has not submitted any questions or comments about the Standard Operating Procedures.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -8313,6 +8513,65 @@ END:VCARD`;
                           <div className="text-xs font-bold text-emerald-400 uppercase mb-1">4. Total Budget</div>
                           <div className="text-2xl font-black text-emerald-400">{formatBudget(selectedSubmission.totalBudget || selectedSubmission.estimatedBudget || 0)}</div>
                         </div>
+
+                        {/* 4.1 Detailed Budget Breakdown */}
+                        {selectedSubmission.budgetCategories && selectedSubmission.budgetCategories.length > 0 && (
+                          <div className="border-b-2 border-white/10 pb-4">
+                            <div className="text-xs font-bold text-emerald-400 uppercase mb-3">4.1 Detailed Budget Breakdown (Department-wise)</div>
+                            <div className="space-y-3 max-h-96 overflow-y-auto">
+                              {selectedSubmission.budgetCategories.filter((cat: any) => cat.amount > 0 || (cat.items && cat.items.some((item: any) => item.total > 0))).map((category: any, catIndex: number) => {
+                                const filledItems = category.items?.filter((item: any) => item.total > 0 || item.description) || [];
+                                return (
+                                  <div key={catIndex} className="bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+                                    <div className="bg-white/10 px-4 py-2 flex items-center justify-between">
+                                      <span className="font-bold text-white flex items-center gap-2">
+                                        <span>{category.icon || '📁'}</span>
+                                        {category.name}
+                                      </span>
+                                      <span className="font-black text-emerald-400">₹{(category.amount || 0).toLocaleString('en-IN')}</span>
+                                    </div>
+                                    {filledItems.length > 0 && (
+                                      <div className="p-3">
+                                        <table className="w-full text-xs">
+                                          <thead>
+                                            <tr className="text-gray-400">
+                                              <th className="text-left p-1">Item</th>
+                                              <th className="text-center p-1">Days</th>
+                                              <th className="text-center p-1">Qty</th>
+                                              <th className="text-right p-1">Per Day</th>
+                                              <th className="text-right p-1">Lumpsum</th>
+                                              <th className="text-right p-1">Total</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {filledItems.map((item: any, itemIdx: number) => (
+                                              <tr key={itemIdx} className="text-gray-300 border-t border-white/5">
+                                                <td className="p-1 text-white">{item.description || 'N/A'}</td>
+                                                <td className="p-1 text-center">{item.days || '-'}</td>
+                                                <td className="p-1 text-center">{item.people || item.quantity || '-'}</td>
+                                                <td className="p-1 text-right">{item.perDay ? `₹${item.perDay.toLocaleString('en-IN')}` : '-'}</td>
+                                                <td className="p-1 text-right">{item.lumpsum ? `₹${item.lumpsum.toLocaleString('en-IN')}` : '-'}</td>
+                                                <td className="p-1 text-right font-bold text-emerald-400">₹{(item.total || 0).toLocaleString('en-IN')}</td>
+                                              </tr>
+                                            ))}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            <div className="mt-4 bg-emerald-500/20 border border-emerald-400/30 rounded-lg p-4">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-white">Grand Total (All Departments)</span>
+                                <span className="text-2xl font-black text-emerald-400">
+                                  ₹{(selectedSubmission.budgetCategories.reduce((sum: number, cat: any) => sum + (cat.amount || 0), 0)).toLocaleString('en-IN')}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
                         {/* 5. Director & Writer */}
                         <div className="border-b-2 border-white/10 pb-4">

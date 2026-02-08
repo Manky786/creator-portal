@@ -13,7 +13,6 @@ function CreatorPageContent() {
   const searchParams = useSearchParams();
   const [started, setStarted] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [showSampleModal, setShowSampleModal] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [draftCleared, setDraftCleared] = useState(false);
@@ -576,21 +575,6 @@ function CreatorPageContent() {
               </ul>
             </div>
 
-            {/* Sample Preview Button */}
-            <button
-              onClick={() => setShowSampleModal(true)}
-              className={`group w-full mb-4 bg-white/5 backdrop-blur-sm border-2 border-white/20 text-white py-4 rounded-2xl font-semibold text-lg hover:bg-white/10 hover:border-red-500/50 transition-all duration-300 hover:scale-[1.02] ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}
-              style={{animationDelay: '0.75s'}}
-            >
-              <span className="flex items-center justify-center gap-3">
-                👁️ View Sample Budget Preview
-                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </span>
-            </button>
-
             {/* Premium CTA Button */}
             <button
               onClick={() => setStarted(true)}
@@ -612,94 +596,6 @@ function CreatorPageContent() {
             </div>
           </div>
         </div>
-
-        {/* Sample Budget Modal */}
-        {showSampleModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setShowSampleModal(false)}>
-            <div className="bg-gradient-to-br from-gray-900 to-black border border-white/20 rounded-3xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-              {/* Modal Header */}
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-black text-white">📋 Sample Budget Preview</h2>
-                <button
-                  onClick={() => setShowSampleModal(false)}
-                  className="text-gray-400 hover:text-white text-3xl font-bold transition-colors"
-                >
-                  ×
-                </button>
-              </div>
-
-              {/* Sample Content */}
-              <div className="space-y-6">
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                  <h3 className="text-xl font-bold text-white mb-4">Project: "Mahapunarjanam"</h3>
-                  <div className="grid md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-400">Format:</span>
-                      <span className="text-white font-semibold ml-2">Web Series</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Culture:</span>
-                      <span className="text-white font-semibold ml-2">Haryanvi</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Episodes:</span>
-                      <span className="text-white font-semibold ml-2">26 Episodes</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-400">Total Budget:</span>
-                      <span className="text-red-400 font-bold ml-2">₹1.10 Cr</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Budget Breakdown */}
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
-                  <h4 className="font-bold text-white mb-4">Department-wise Budget Breakdown</h4>
-                  <div className="space-y-3">
-                    {[
-                      { dept: 'Cast (Primary & Secondary)', amount: '16.50 Lakh', percent: '15%' },
-                      { dept: 'Post-Production & VFX', amount: '13.20 Lakh', percent: '12%' },
-                      { dept: 'Production & Location', amount: '19.80 Lakh', percent: '18%' },
-                      { dept: 'Camera & Equipment', amount: '16.50 Lakh', percent: '15%' },
-                      { dept: 'Direction & Creative', amount: '15.40 Lakh', percent: '14%' },
-                      { dept: 'Music & Songs', amount: '13.20 Lakh', percent: '12%' },
-                      { dept: 'Art & Costume', amount: '8.80 Lakh', percent: '8%' },
-                      { dept: 'Travel & Accommodation', amount: '6.60 Lakh', percent: '6%' },
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-center justify-between text-sm hover:bg-white/5 p-2 rounded-lg transition-colors">
-                        <span className="text-gray-300">{item.dept}</span>
-                        <div className="flex items-center gap-4">
-                          <span className="text-white font-semibold">₹{item.amount}</span>
-                          <span className="text-red-400 font-bold w-12 text-right">{item.percent}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-white/20 flex justify-between items-center">
-                    <span className="text-white font-bold">Total Allocated:</span>
-                    <span className="text-red-500 font-black text-lg">₹1.10 Cr</span>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-2xl p-6">
-                  <p className="text-green-400 font-semibold text-center">
-                    ✓ This project was approved and is now streaming on STAGE
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setShowSampleModal(false);
-                    setStarted(true);
-                  }}
-                  className="w-full bg-gradient-to-r from-red-600 to-red-700 text-white py-4 rounded-2xl font-bold text-lg hover:shadow-2xl hover:shadow-red-500/50 transition-all"
-                >
-                  Start Your Submission →
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Premium CSS Animations */}
         <style jsx>{`

@@ -41,7 +41,7 @@ export default function WelcomePage() {
 
       {/* Header */}
       <header className="relative z-10 pt-8 px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-center">
           <Link href="/">
             <Image
               src="/images/stage-logo-official.png"
@@ -51,12 +51,6 @@ export default function WelcomePage() {
               priority
               className="h-14 w-auto"
             />
-          </Link>
-          <Link
-            href="/admin"
-            className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-lg transition-all border border-white/20"
-          >
-            Admin Panel
           </Link>
         </div>
       </header>

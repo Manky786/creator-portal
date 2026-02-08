@@ -22,216 +22,510 @@ interface SOPSection {
 }
 
 const initialSOPSections: SOPSection[] = [
+  // ============== PRE-PRODUCTION ==============
+  {
+    id: 'pre-production',
+    title: '📌 PRE-PRODUCTION Guidelines',
+    itemCount: 3,
+    emoji: '📋',
+    gradient: 'from-orange-50 via-amber-50 to-orange-100 border-orange-400',
+    items: [
+      'Creator MUST give a brief outline of the project in the format of the pitch deck requirement provided by STAGE',
+      'Creator MUST list down shot division and production requirements of every film or show before going into the process of production',
+      'Creators MUST conduct workshops with the crew members and the cast before the shoot so everyone is aware of their roles on set'
+    ]
+  },
+  {
+    id: 'pre-production-instructions',
+    title: 'Pre-Production Instructions (Mandatory)',
+    itemCount: 6,
+    emoji: '📝',
+    gradient: 'from-yellow-50 via-amber-50 to-yellow-100 border-yellow-400',
+    items: [
+      'Location Permits: Secure shooting permissions or NOC for all locations and submit them to STAGE Content/Legal Team TWO WEEKS in advance',
+      'Artist Agreements and NDAs: Sign agreements with all artists and HODs and submit them to STAGE',
+      'Pre-Production Meeting: Attend a meeting with all HODs and STAGE officials ONE WEEK before shoot date. Director must present finalized cast details, look references, and location deck with all interior/exterior locations and permission letters',
+      'Shooting Schedule: Provide shooting schedule in advance and share daily shoot reports with STAGE Team',
+      'Hiring Guidelines: Hire experienced personnel for all HOD positions. Interns are NOT allowed to handle HOD roles',
+      'Clapboard and Log Sheet: Assign a skilled assistant director to manage the clapboard and log sheet'
+    ]
+  },
+  {
+    id: 'budget-breakdown',
+    title: 'Budget Breakdown Requirements',
+    itemCount: 2,
+    emoji: '💰',
+    gradient: 'from-green-50 via-emerald-50 to-green-100 border-green-400',
+    items: [
+      'Creator MUST provide a detailed budget sheet that discloses and lists down exactly how and where the budget will be used',
+      'The budget will be allocated only after discussion with and approval by the STAGE team'
+    ]
+  },
+  {
+    id: 'technical-equipment',
+    title: 'Technical Equipment Requirements',
+    itemCount: 3,
+    emoji: '🎥',
+    gradient: 'from-blue-50 via-cyan-50 to-blue-100 border-blue-400',
+    items: [
+      'CAMERA - Creator must list down the camera model and lenses being used for the production',
+      'SOUND EQUIPMENT - Creator must list down the sound equipment to be used in the production',
+      'LIGHT EQUIPMENT - Creator must list down the light equipment to be used in the production'
+    ]
+  },
+  {
+    id: 'look-references',
+    title: 'Look References Requirements',
+    itemCount: 2,
+    emoji: '🎨',
+    gradient: 'from-purple-50 via-pink-50 to-purple-100 border-purple-400',
+    items: [
+      'ART DIRECTION - Creator must share reference images of other films/shows that have similar art direction to their production ideas',
+      'MAKE-UP & COSTUME - Creator must share reference images of other films/shows that have similar make-up & costume to their production ideas'
+    ]
+  },
+  {
+    id: 'work-links',
+    title: 'Work Links for Technical Onboarding',
+    itemCount: 10,
+    emoji: '🔗',
+    gradient: 'from-indigo-50 via-violet-50 to-indigo-100 border-indigo-400',
+    items: [
+      'Director - Work links required (minimum 4 links)',
+      'Director of Photography - Work links required (minimum 4 links)',
+      'Editor - Work links required (minimum 4 links)',
+      'Sound Designer - Work links required (minimum 4 links)',
+      'BGM Artist - Work links required (minimum 4 links)',
+      'Colorist - Work links required (minimum 4 links)',
+      'Art Director/Production Designer - Work links required (minimum 4 links)',
+      'Make-Up and Costume - Work links required (minimum 4 links)',
+      'VFX Artist (If any) - Work links required (minimum 4 links)',
+      'NOTE: Only work links are acceptable, do not share IMDB pages or written profiles'
+    ]
+  },
+
+  // ============== PRODUCTION - CINEMATOGRAPHY ==============
+  {
+    id: 'cinematography-equipment',
+    title: '📌 CINEMATOGRAPHY - Equipment & Settings',
+    itemCount: 8,
+    emoji: '📷',
+    gradient: 'from-red-50 via-orange-50 to-red-100 border-red-400',
+    items: [
+      'All footage MUST be shot in landscape, i.e., 16:9, 2:1 aspect ratios',
+      'All footage MUST be shot at 25 fps frame rate',
+      'Use only full frame cameras that can shoot 4K footage at least',
+      'Use the same company and model of cameras in multi cam shoots',
+      'Acceptable cameras include SONY FX6, FX9, SONY VENICE, ARRI ALEXA MINI',
+      'All footage must be shot in RAW and Log mode as is required for Digital Intermediate (DI) and Color Grading',
+      'Prime Cine lenses and a standard kit must be used. If lenses vary according to requirements, it must be discussed with and approved by STAGE',
+      'Use stabilizers like Tripod, Gimbal and Trolley wherever required'
+    ]
+  },
+  {
+    id: 'shot-division',
+    title: 'Shot Division and Shoot Guidelines',
+    itemCount: 8,
+    emoji: '🎬',
+    gradient: 'from-rose-50 via-pink-50 to-rose-100 border-rose-400',
+    items: [
+      'Enough footage must be filmed to make the post production process hassle free',
+      'Filler shots MUST be taken for every scene, specially for shows and series as they are necessary for the trailer',
+      'Make sure that all shots are well lit and lighting is done according to location and mood',
+      'Sync all camera settings with each other throughout a scene, specially during multi cam shoots',
+      'Use appropriate lenses for different kinds of shots and make sure they are well composed and shot with stable focus and no movement jerks',
+      'Shoot Behind the Scene videos for every scene if it is stated that they are required by the STAGE team',
+      'A Log Sheet MUST be maintained throughout the shoot',
+      'Creator MUST share some footage and sounds every day of production for quality assurance'
+    ]
+  },
+
+  // ============== PRODUCTION - SOUND RECORDING ==============
   {
     id: 'sound-recording',
-    title: 'Sound Recording Guidelines',
-    itemCount: 12,
+    title: '📌 SOUND RECORDING Guidelines',
+    itemCount: 10,
     emoji: '🎙️',
-    gradient: 'from-blue-50 via-cyan-50 to-blue-100 border-blue-300',
+    gradient: 'from-violet-50 via-purple-50 to-violet-100 border-violet-400',
     items: [
-      'Professional boom microphone required for all dialogue recording',
-      'Wireless lavalier mics for backup and wide shots',
-      'Minimum -12dB to -6dB recording levels to prevent clipping',
-      'Room tone recording (30 seconds minimum) for each location',
-      'Separate track recording for dialogue, ambience, and effects',
-      'Wind protection and deadcat for outdoor recording',
-      'Headphone monitoring mandatory during all takes',
-      'Sync sound with timecode or slate for post-production',
-      'Background noise check before each take',
-      'ADR requirements to be noted during production',
-      'Sound report sheet for each shooting day',
-      'Backup recording device mandatory for critical scenes'
+      'Use good quality mics, stands and recording devices. Acceptable: Sound Device 888, 664, MixPre 10; Mics: Sennheiser 8060, MKH60, MKH50, MKH416; Wireless: Sennheiser G4 500/100 series with Sanken COS11D or Sennheiser ME',
+      'Make sure all devices are working properly and all sounds are clean before each shot',
+      'In case of sync sound, make sure there is no echo or muffle in the audio',
+      'Make sure that dialogues are recorded without disturbance',
+      'Make sure to record ambience and foley sounds in each scene',
+      'Make sure to use appropriate settings according to the location and distance of actors',
+      'Make sure to check the audio recording after every shot and re-record it if it does not match guidelines',
+      'Do not forget to back up the audio while recording sound during shoot',
+      'It must be discussed before the shoot if the sound recording would be sync sound or dubbing',
+      'NOTE: The audio quality will be checked by STAGE team and if the project requires full dubbing or any changes, it will be done by the creator\'s team without any extra budget'
     ]
   },
+
+  // ============== PRODUCTION - ART DIRECTION ==============
   {
-    id: 'art-costume',
-    title: 'Art Direction & Costume Guidelines',
-    itemCount: 6,
-    emoji: '🎨',
-    gradient: 'from-purple-50 via-pink-50 to-purple-100 border-purple-300',
-    items: [
-      'Detailed production design brief with mood boards and references',
-      'Color palette approval for sets and costumes before shoot',
-      'Props and set dressing inventory with photographs',
-      'Costume continuity photographs for each character and scene',
-      'Period accuracy verification for historical content',
-      'Brand clearances and legal approvals for visible products'
-    ]
-  },
-  {
-    id: 'filming',
-    title: 'Filming Guidelines',
-    itemCount: 19,
-    emoji: '🎬',
-    gradient: 'from-red-50 via-orange-50 to-red-100 border-red-300',
-    items: [
-      'Minimum 4K resolution (3840x2160) for all principal photography',
-      'Log profile or RAW capture mandatory for narrative content',
-      'Frame rate: 24fps for cinematic, 25fps for PAL, 30fps for documentary',
-      'Aspect ratio: 16:9 standard, 2.39:1 for premium cinematic content',
-      'White balance locked per scene to maintain color consistency',
-      'Exposure monitoring with waveform, histogram, or false color',
-      'Focus peaking and focus assist tools to ensure sharp imagery',
-      'Camera movement to be motivated and purposeful, avoid unnecessary shaky footage',
-      'Master shot and adequate coverage for editing flexibility',
-      'Proper headroom and lead room for character framing',
-      'Lighting setup to ensure proper exposure and mood',
-      'Natural light continuity maintained throughout scene',
-      'Shot list and storyboard adherence for complex sequences',
-      'Call sheet distribution 24 hours before shoot day',
-      'Weather contingency plans for outdoor shoots',
-      'Safety protocols and risk assessment on set',
-      'Continuity notes for wardrobe, props, and actor positions',
-      'Daily rushes review for quality control',
-      'Backup equipment plan for all critical gear'
-    ]
-  },
-  {
-    id: 'promotional',
-    title: 'Promotional Content Requirements',
-    itemCount: 5,
-    emoji: '📢',
-    gradient: 'from-green-50 via-emerald-50 to-green-100 border-green-300',
-    items: [
-      'Behind-the-scenes footage and photographs during production',
-      'Cast and crew interviews for promotional use',
-      'Key art assets: high-resolution stills, posters, character shots',
-      'Teaser and trailer-ready footage with variety of shots',
-      'Social media content: vertical videos (9:16), square format (1:1)'
-    ]
-  },
-  {
-    id: 'data-management',
-    title: 'Data Management Guidelines',
-    itemCount: 3,
-    emoji: '💾',
-    gradient: 'from-slate-50 via-gray-50 to-slate-100 border-slate-300',
-    items: [
-      'Triple backup strategy: on-set storage, primary backup, cloud/offsite backup',
-      'File naming convention: ProjectName_SceneNo_TakeNo_Date_CameraID',
-      'Data verification and checksum validation after each transfer'
-    ]
-  },
-  {
-    id: 'post-format',
-    title: 'Post-Production Format Requirements',
+    id: 'art-direction',
+    title: 'Art Direction Guidelines',
     itemCount: 4,
-    emoji: '⚙️',
-    gradient: 'from-indigo-50 via-violet-50 to-indigo-100 border-indigo-300',
+    emoji: '🎭',
+    gradient: 'from-fuchsia-50 via-pink-50 to-fuchsia-100 border-fuchsia-400',
     items: [
-      'Editing software: Adobe Premiere Pro, DaVinci Resolve, or Avid Media Composer',
-      'Project timeline settings: 24fps for film, 25fps for PAL broadcast',
-      'Sequence resolution: 4K (3840x2160) for master, 1080p for deliverables',
-      'Audio configuration: Stereo or 5.1 surround sound mix'
+      'Artist costumes MUST be chosen according to their place of belonging and mood of the story. All elements of the costume must be true to the fictional identity of the character',
+      'The set must be designed according to the story with research on real life references',
+      'The actors must be sharp in their senses, relaxed and well rested before the shoot for their best performance',
+      'DO NOT show any brands/brand symbols in costumes, set design or props. Brands can appear ONLY IF there is planned brand integration'
     ]
   },
   {
-    id: 'post-video',
+    id: 'filming-guidelines-mandatory',
+    title: 'Filming Guidelines (Mandatory)',
+    itemCount: 18,
+    emoji: '🎯',
+    gradient: 'from-red-50 via-rose-50 to-red-100 border-red-400',
+    items: [
+      'Use only STAGE-approved clapboards and log sheets',
+      'Film the ENTIRE approved shoot script as per agreed production values. Any omitted scene must either be filmed later or will attract a PENALTY',
+      'Animal Welfare: Ensure no harm to animals during filming. If animals are involved, a veterinarian must be present with fitness certificates',
+      'Share daily shoot schedule and shooting reports with the STAGE team',
+      'Do NOT change primary artists without immediate notification to the content team',
+      'Only approved dialects can be used. For any deviations, prior permission from STAGE Content team is required',
+      'Avoid on-set script improvisation unless necessary for comedic effect',
+      'Creator is fully responsible for managing the shoot location, including any cost overruns',
+      'Confidentiality: NO sharing or posting of plot-revealing images or clips from the set. Plot discussions during media engagements are NOT allowed',
+      'Scene Leak Prevention: Script bundles from each day\'s shoot should be destroyed to avoid scene leakage',
+      'Set Security: Provide ID cards to all team members to prevent outsider intrusion',
+      'Safety & Security: Creator must ensure safety of cast/crew. No visual/audio presence of brands & institutions without approval',
+      'Language: Avoid using foul language in scripts without prior WRITTEN consent from Content Team',
+      'On-Set Conduct: Smoking, drinking alcohol, or using prohibited substances on set is STRICTLY PROHIBITED',
+      'Transportation: Ensure all drivers are licensed. Extra precautions for post-night shots, exterior shoots, or uncontrollable environments',
+      'Meals: Provide timely and healthy meals for cast & crew. ONLY VEGETARIAN food is allowed on set',
+      'Character Promos and Poster Photoshoot: Conducting on-set character promo shoots and poster photoshoots is MANDATORY',
+      'Mobile Experience: Avoid excessive use of extreme wide shots and aerial shots. Prioritize close-up shots and master shots for mobile viewing'
+    ]
+  },
+
+  // ============== PRODUCTION - PROMOTIONAL CONTENT ==============
+  {
+    id: 'promotional-content',
+    title: 'Promotional Content Guidelines',
+    itemCount: 4,
+    emoji: '📢',
+    gradient: 'from-cyan-50 via-teal-50 to-cyan-100 border-cyan-400',
+    items: [
+      'Photos of all important characters MUST be clicked during shoot for cover posters and thumbnails with concept photoshoots for official poster designs',
+      'CHARACTER VIDEOS: Videos of all characters appealing for downloading STAGE app must be shot in landscape and portrait. Script will be provided by STAGE team',
+      'ACTOR VIDEOS: Film/web series/show announcement videos MUST be shot of every actor in landscape and portrait. Script will be provided by STAGE team',
+      'These marketing assets must be treated as an integral part of the shoot schedule and included in the sanctioned budget'
+    ]
+  },
+
+  // ============== POST-PRODUCTION ==============
+  {
+    id: 'format-technicalities',
+    title: '📌 POST-PRODUCTION - Format Technicalities',
+    itemCount: 4,
+    emoji: '📐',
+    gradient: 'from-blue-50 via-sky-50 to-blue-100 border-blue-400',
+    items: [
+      'Frame ratio MUST be 16:9 (3840x2160 / 1920x1080)',
+      'Frame rate MUST be 25 fps',
+      'Pixel aspect ratio must be Square pixel',
+      'Display format must be Progressive Scan'
+    ]
+  },
+  {
+    id: 'video-guidelines',
     title: 'Post-Production Video Guidelines',
     itemCount: 6,
     emoji: '🎞️',
-    gradient: 'from-teal-50 via-cyan-50 to-teal-100 border-teal-300',
+    gradient: 'from-red-50 via-orange-50 to-red-100 border-red-400',
     items: [
-      'First cut assembly within 2 weeks of shoot completion',
-      'Rough cut for review with temp music and basic color',
-      'Fine cut with locked picture before final color grading',
-      'VFX shots integration with proper tracking and compositing',
-      'Title sequence and graphics integration as per brand guidelines',
-      'Final master in ProRes 422 HQ or DNxHR HQX codec'
+      'Each and every video MUST have STAGE intro and outro which will be provided by the STAGE team. These will be added ONLY after final approval',
+      'There can be NO logo on any video that is released on STAGE',
+      'The end credits must be in a certain format provided by STAGE team',
+      'Credits for the STAGE team must be added in end credits',
+      'In any credit/mention of STAGE, it must be typed out in all capital letters only',
+      'Make sure that all audio video cuts are smooth and there are no abrupt frames or jerks'
     ]
   },
   {
-    id: 'post-sound',
-    title: 'Post-Production Sound Guidelines',
-    itemCount: 12,
+    id: 'sound-mixing',
+    title: 'Sound Mixing and Mastering',
+    itemCount: 5,
     emoji: '🔊',
-    gradient: 'from-amber-50 via-yellow-50 to-amber-100 border-amber-300',
+    gradient: 'from-purple-50 via-violet-50 to-purple-100 border-purple-400',
     items: [
-      'Dialogue editing and cleanup to remove background noise',
-      'ADR recording for unclear or noisy dialogue',
-      'Foley recording for footsteps, cloth movement, and object handling',
-      'Sound effects design and library integration',
-      'Ambience and room tone layering for natural sound',
-      'Music composition and background score integration',
-      'Sound mixing to balance dialogue, music, and effects',
-      'Loudness normalization to -16 LUFS for OTT platform standards',
-      'Dynamic range control for consistent playback across devices',
-      '5.1 surround mix for premium content, stereo for standard',
-      'Final mix delivery in WAV format (24-bit, 48kHz)',
-      'Separate M&E (Music & Effects) track for international dubbing'
+      'Make sure every dialogue is lip synced',
+      'Use foley and ambience according to the scene',
+      'Make sure there are no gaps, sharp cuts or jerks in audio',
+      'All audio levels MUST be between -12db to -6db',
+      'Make sure that audios are clean and do not have any noise or noise inconsistencies'
     ]
   },
   {
-    id: 'post-color',
-    title: 'Post-Production Color Guidelines',
+    id: 'bgm-design',
+    title: 'Background Music Design',
+    itemCount: 4,
+    emoji: '🎵',
+    gradient: 'from-indigo-50 via-blue-50 to-indigo-100 border-indigo-400',
+    items: [
+      'All music that is used MUST be created originally. Do not copy music that is not original',
+      'Sync BGM according to the requirement of the content',
+      'Make sure that BGM does not overpower dialogues and they are clearly audible',
+      'All music that is used must be recorded in a music cue sheet (template will be provided by STAGE)'
+    ]
+  },
+  {
+    id: 'epidemic-music',
+    title: 'Epidemic Music Bank Guidelines',
+    itemCount: 4,
+    emoji: '🎧',
+    gradient: 'from-teal-50 via-emerald-50 to-teal-100 border-teal-400',
+    items: [
+      'STAGE team has licensed the Epidemic Music Bank - a large collection of music tracks apt for almost all genres and scenes',
+      'Epidemic Music Bank can be used only in STAGE projects and shall be provided where deemed necessary',
+      'Project should still use 80% of original music',
+      'Creators would have to provide a cue sheet of each and every music piece utilized in the project. Access will be provided along with confidentiality notice'
+    ]
+  },
+  {
+    id: 'color-guidelines',
+    title: 'Color Grading Guidelines',
     itemCount: 5,
     emoji: '🌈',
-    gradient: 'from-rose-50 via-pink-50 to-rose-100 border-rose-300',
+    gradient: 'from-rose-50 via-pink-50 to-rose-100 border-rose-400',
     items: [
-      'Color grading in DaVinci Resolve or professional grading suite',
-      'Rec.709 color space for HD/SDR delivery, Rec.2020 for HDR if required',
-      'Shot matching for continuity across scenes',
-      'Creative grade as per director\'s vision and approved LUT',
-      'Final export with proper color space tagging and metadata'
+      'The color grading of a project must be done according to the genre, feel and theme of the project',
+      'Make sure the color is consistent throughout the scene',
+      'Make sure the color does not mismatch in any shot, especially in multi-cam footages',
+      'CC and DI must be done in dedicated softwares like DaVinci Resolve, do not use Adobe Premiere Pro or any other editing software',
+      'The look and feel should match what was promised by the creator during pitching and pre production discussions'
     ]
   },
   {
-    id: 'branding',
-    title: 'STAGE Branding & Packaging',
+    id: 'branding-packaging',
+    title: 'STAGE Branding and Packaging',
     itemCount: 5,
     emoji: '✨',
-    gradient: 'from-fuchsia-50 via-purple-50 to-fuchsia-100 border-fuchsia-300',
+    gradient: 'from-fuchsia-50 via-purple-50 to-fuchsia-100 border-fuchsia-400',
     items: [
-      'STAGE logo placement as per brand guidelines (intro/outro)',
-      'End credits format with proper hierarchy and legal disclaimers',
-      'Content rating card (U, U/A, A) at the beginning',
-      'Copyright notice and production company credits',
-      'Promotional end card with social media handles and website'
+      'The film/episode should begin with STAGE Intro and disclaimer that will be provided by us',
+      'After Intro and Disclaimer, there will be no other credit plate. Film/Episode will begin directly after STAGE Intro',
+      'There must be a cold open before any Intro graphics in the web series',
+      'Web Series Intro Graphics must be under 40 seconds',
+      'Statutory Warning overlay must be used at bottom right whenever smoking/drinking is on screen (overlay will be provided by STAGE)'
     ]
   },
+
+  // ============== FINAL DELIVERY ==============
   {
-    id: 'final-delivery',
-    title: 'Final Export & Delivery Requirements',
+    id: 'final-delivery-video',
+    title: '📌 FINAL DELIVERY - Video Requirements',
     itemCount: 5,
     emoji: '📦',
-    gradient: 'from-lime-50 via-green-50 to-lime-100 border-lime-300',
+    gradient: 'from-lime-50 via-green-50 to-lime-100 border-lime-400',
     items: [
-      'Master file: ProRes 422 HQ or H.264 high bitrate (4K or 1080p)',
-      'Platform delivery: MP4 (H.264 video, AAC audio) for streaming',
-      'Resolution options: 4K (3840x2160), 1080p (1920x1080), 720p (1280x720)',
-      'Audio: Stereo AAC at 320kbps or 5.1 surround as separate stems',
-      'Subtitle files: SRT or VTT format with proper timecodes and translations'
+      '4K DPX 12 Bit (Clean)',
+      '422/HQ (.Mov)',
+      '4K MP4 (H.264)',
+      'DI Project File',
+      'EDIT Project File'
     ]
   },
   {
-    id: 'quality-control',
-    title: 'Quality Control Process',
-    itemCount: 11,
-    emoji: '✅',
-    gradient: 'from-sky-50 via-blue-50 to-sky-100 border-sky-300',
+    id: 'final-delivery-audio',
+    title: 'Final Delivery - Audio Requirements',
+    itemCount: 8,
+    emoji: '🔉',
+    gradient: 'from-sky-50 via-blue-50 to-sky-100 border-sky-400',
     items: [
-      'Technical QC check for video artifacts, audio sync, and file integrity',
-      'Content review for continuity errors and production quality',
-      'Audio QC for levels, balance, and clarity across all scenes',
-      'Color consistency check across entire program',
-      'Subtitle accuracy and synchronization verification',
-      'Compliance check for content rating and censorship guidelines',
-      'Legal clearance verification for music, brands, and copyrighted material',
-      'Metadata validation: title, description, episode number, runtime',
-      'Test playback on multiple devices and platforms',
-      'Final approval sign-off from director and production head',
-      'Archive master files with proper labeling and documentation'
+      'Final-Mix: Stereo and 5.1 Mix',
+      'Un-Mix: Stereo Dialogue',
+      'Un-Mix: Stereo Music',
+      'Un-Mix: Stereo Foley',
+      'Un-Mix: Stereo SFX',
+      'Un-Mix: 5.1 Music and Effects',
+      'Foley must be recorded separately',
+      'Final project must be delivered in LTO tape'
+    ]
+  },
+
+  // ============== QUALITY CONTROL ==============
+  {
+    id: 'qc-overview',
+    title: '📌 QUALITY CONTROL Overview',
+    itemCount: 3,
+    emoji: '✅',
+    gradient: 'from-emerald-50 via-green-50 to-emerald-100 border-emerald-400',
+    items: [
+      'Quality Control ensures a smooth and enriching viewer experience from scripting, shooting, post production to final delivery',
+      'QC is performed primarily on frame.io software where feedback is delivered with time stamps',
+      'STAGE will share frame.io links with delivered content and feedback where creators can read and reply to discuss'
+    ]
+  },
+  {
+    id: 'qc-round1',
+    title: 'QC Round 1: Content QC',
+    itemCount: 4,
+    emoji: '1️⃣',
+    gradient: 'from-blue-50 via-indigo-50 to-blue-100 border-blue-400',
+    items: [
+      'Creators are required to share a line up to the content team for review',
+      'Content team will check and finalize structure, dialect, episodic or dramatic flow to ensure shoot went according to script',
+      'After feedback, creator will share an offline edit with reference BGM',
+      'After content team approval, finalized content cut will be transferred for technical editing quality check before sound and DI'
+    ]
+  },
+  {
+    id: 'qc-round2',
+    title: 'QC Round 2: Offline Edit QC',
+    itemCount: 3,
+    emoji: '2️⃣',
+    gradient: 'from-violet-50 via-purple-50 to-violet-100 border-violet-400',
+    items: [
+      'Technical QC team will check the edit and give feedback within 7-10 business days',
+      'Creator is required to make necessary changes in edit and share final edit with STAGE team',
+      'After STAGE approval, the final edit can go for Sound and DI'
+    ]
+  },
+  {
+    id: 'qc-round3',
+    title: 'QC Round 3: Sound and BGM QC',
+    itemCount: 4,
+    emoji: '3️⃣',
+    gradient: 'from-amber-50 via-yellow-50 to-amber-100 border-amber-400',
+    items: [
+      'After edit approval, creator shares content with sound mixing mastering (dialogue, dubbing sync, foley) and BGM',
+      'STAGE team will check the BGM and sound design and share feedback',
+      'Creator is required to make changes and share with team within 4-5 business days',
+      'After approval for sound and BGM, move on to color'
+    ]
+  },
+  {
+    id: 'qc-round4',
+    title: 'QC Round 4: Color QC',
+    itemCount: 4,
+    emoji: '4️⃣',
+    gradient: 'from-rose-50 via-red-50 to-rose-100 border-rose-400',
+    items: [
+      'After sound approval, creator shares film/show with DI and color',
+      'STAGE team will review DI and color grading and provide feedback',
+      'Creator will share final corrected content',
+      'After final approval from STAGE team, STAGE intro-outro would be added to the content'
+    ]
+  },
+  {
+    id: 'qc-notes',
+    title: 'Important QC Notes',
+    itemCount: 4,
+    emoji: '⚠️',
+    gradient: 'from-orange-50 via-amber-50 to-orange-100 border-orange-400',
+    items: [
+      'ALL FILES SHARED FOR QC MUST HAVE A "FOR STAGE PREVIEW" WATERMARK in bottom right corner. Only final delivery would be watermark free',
+      'STAGE Intro, Outro and post credits to be added after final approval of film/show',
+      'After every QC round, a deadline will be defined for delivery of next cut. This deadline must be strictly followed',
+      'If deadlines need to be revised, it can be done ONLY after discussion with STAGE team'
+    ]
+  },
+
+  // ============== DATA STORAGE ==============
+  {
+    id: 'data-storage',
+    title: '📌 DATA STORAGE - Required Folders',
+    itemCount: 14,
+    emoji: '💾',
+    gradient: 'from-slate-50 via-gray-50 to-slate-100 border-slate-400',
+    items: [
+      'Raw footage/clips - All raw data in day-wise folders or easily understandable format',
+      'Project files - All project files (episode prproj, Teaser/Trailer prproj, After Effects, PSD files, sound files, DaVinci DI project files)',
+      'XML files - XML files of all project files and versions',
+      'Graphics/VFX data - Any VFX or animation used along with editable files',
+      'Proxy - Proxy files of all versions pertaining to the project',
+      'Songs - All songs used in the project',
+      'IT Tracks - All BGM files (scoring, mixing, foley) with mixed and open IT tracks, 16 Track of Songs',
+      'Sync Audio - All recorded voices/sounds of camera and sound recorders with project files',
+      'BGM - All BGM tracks used in the project',
+      'Final Export - All final exports (4K/H.264, Clean mov, HD, ProRes.mov Apple ProRes 422 HQ) with dialogue track and BGM IT tracks',
+      'Unmixed Tracks Stereo - Unmix tracks (Dialogue, Music, Foley+SFX layers) for Film/Show, Trailer and Teaser',
+      'Unmix Tracks 5.1 - Unmix M&E and Separate channels unmix',
+      'Teaser and trailer final exports - Final exports with raw data, VFX data, Music data and editable files',
+      'Character Promos and photoshoots - All data, project files and exports'
+    ]
+  },
+  {
+    id: 'data-documents',
+    title: 'Documents Folder Requirements',
+    itemCount: 1,
+    emoji: '📄',
+    gradient: 'from-zinc-50 via-stone-50 to-zinc-100 border-zinc-400',
+    items: [
+      'Documents folder should contain: Script, Screenplay, and all Contracts signed by artists for the movie or web-series'
+    ]
+  },
+  {
+    id: 'data-delivery-notes',
+    title: 'Data Delivery Instructions',
+    itemCount: 4,
+    emoji: '📬',
+    gradient: 'from-cyan-50 via-sky-50 to-cyan-100 border-cyan-400',
+    items: [
+      'All project files should work in Hard Disk by locating the media files in respective data folders',
+      'Once all data is uploaded in harddisks, arrange a video call with STAGE authority to check and confirm the data',
+      'After confirmation, courier the harddisks to: Tower A, 7th Floor, Club 125, Sector 125, Noida, U.P. Pin. 201301',
+      'Contact: Anushka - 9425360822'
     ]
   }
 ];
 
+interface SOPComment {
+  sectionId: string;
+  sectionTitle: string;
+  comment: string;
+  timestamp: string;
+}
+
 export default function BudgetEntryStep({ formData, setFormData, onNext, onBack }: Props) {
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
   const [acknowledged, setAcknowledged] = useState(false);
-  const [sopSections, setSOPSections] = useState<SOPSection[]>(initialSOPSections);
+  const [commentingSectionId, setCommentingSectionId] = useState<string | null>(null);
+  const [currentComment, setCurrentComment] = useState('');
+  const [sopComments, setSopComments] = useState<SOPComment[]>(
+    (formData as any).sopComments || []
+  );
+  const sopSections = initialSOPSections;
 
   // Force console log to verify version
-  console.log('BudgetEntryStep v2.0 loaded - sections:', sopSections.length);
+  console.log('BudgetEntryStep v4.0 loaded - sections:', sopSections.length);
+
+  // Save comments to formData whenever they change
+  const saveComments = (comments: SOPComment[]) => {
+    setSopComments(comments);
+    setFormData({ ...formData, sopComments: comments } as any);
+  };
+
+  const addComment = (sectionId: string, sectionTitle: string) => {
+    if (!currentComment.trim()) return;
+
+    const newComment: SOPComment = {
+      sectionId,
+      sectionTitle,
+      comment: currentComment.trim(),
+      timestamp: new Date().toISOString()
+    };
+
+    const updatedComments = [...sopComments, newComment];
+    saveComments(updatedComments);
+    setCurrentComment('');
+    setCommentingSectionId(null);
+  };
+
+  const deleteComment = (index: number) => {
+    const updatedComments = sopComments.filter((_, i) => i !== index);
+    saveComments(updatedComments);
+  };
+
+  const getCommentsForSection = (sectionId: string) => {
+    return sopComments.filter(c => c.sectionId === sectionId);
+  };
 
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev => ({
@@ -252,59 +546,6 @@ export default function BudgetEntryStep({ formData, setFormData, onNext, onBack 
     setExpandedSections({});
   };
 
-  const addNewSOP = () => {
-    const newSOP: SOPSection = {
-      id: `custom-sop-${Date.now()}`,
-      title: 'New SOP Section',
-      itemCount: 1,
-      emoji: '📝',
-      gradient: 'from-indigo-50 via-blue-50 to-indigo-100 border-indigo-300',
-      items: ['New guideline - click to edit']
-    };
-    setSOPSections([...sopSections, newSOP]);
-    setExpandedSections({ ...expandedSections, [newSOP.id]: true });
-  };
-
-  const deleteSOPSection = (sectionId: string) => {
-    if (confirm('Are you sure you want to delete this SOP section?')) {
-      setSOPSections(sopSections.filter(section => section.id !== sectionId));
-      const newExpanded = { ...expandedSections };
-      delete newExpanded[sectionId];
-      setExpandedSections(newExpanded);
-    }
-  };
-
-  const updateSOPSection = (sectionId: string, field: keyof SOPSection, value: any) => {
-    setSOPSections(sopSections.map(section =>
-      section.id === sectionId ? { ...section, [field]: value, itemCount: field === 'items' ? value.length : section.itemCount } : section
-    ));
-  };
-
-  const addSOPItem = (sectionId: string) => {
-    setSOPSections(sopSections.map(section =>
-      section.id === sectionId ? { ...section, items: [...section.items, 'New guideline'], itemCount: section.items.length + 1 } : section
-    ));
-  };
-
-  const deleteSOPItem = (sectionId: string, itemIndex: number) => {
-    setSOPSections(sopSections.map(section =>
-      section.id === sectionId ? {
-        ...section,
-        items: section.items.filter((_, index) => index !== itemIndex),
-        itemCount: section.items.length - 1
-      } : section
-    ));
-  };
-
-  const updateSOPItem = (sectionId: string, itemIndex: number, value: string) => {
-    setSOPSections(sopSections.map(section =>
-      section.id === sectionId ? {
-        ...section,
-        items: section.items.map((item, index) => index === itemIndex ? value : item)
-      } : section
-    ));
-  };
-
   return (
     <div className="max-w-6xl mx-auto" style={{ fontFamily: 'Inter, sans-serif' }} key="sop-v2-2026">
       {/* Filmmaker Quote */}
@@ -323,13 +564,13 @@ export default function BudgetEntryStep({ formData, setFormData, onNext, onBack 
       {/* Header */}
       <div className="mb-8">
         <h2 className="text-5xl font-black bg-gradient-to-r from-purple-700 via-pink-600 to-red-600 bg-clip-text text-transparent mb-4 tracking-tight">
-          📋 Standard Operating Procedures
+          📋 STAGE Standard Operating Procedures
         </h2>
         <p className="text-gray-700 text-lg mb-2 font-semibold">
-          Please review all SOPs carefully before proceeding to the next step.
+          Complete guidelines for Pre-Production, Production, Post-Production, Quality Control & Data Delivery
         </p>
         <p className="text-gray-600 text-base font-medium">
-          You must acknowledge that you have read and understood all requirements.
+          You must acknowledge that you have read and understood ALL requirements before submitting your project.
         </p>
       </div>
 
@@ -347,17 +588,7 @@ export default function BudgetEntryStep({ formData, setFormData, onNext, onBack 
       </div>
 
       {/* Expand/Collapse Controls */}
-      <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={addNewSOP}
-          className="px-6 py-3 text-sm font-bold bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          Add New SOP
-        </button>
-
+      <div className="flex justify-end items-center mb-6">
         <div className="flex gap-3">
           <button
             onClick={expandAll}
@@ -391,16 +622,9 @@ export default function BudgetEntryStep({ formData, setFormData, onNext, onBack 
                   <span className="text-3xl">{section.emoji}</span>
                 </div>
                 <div className="text-left flex-1 min-w-0">
-                  <input
-                    type="text"
-                    value={section.title}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      updateSOPSection(section.id, 'title', e.target.value);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-full text-xl md:text-2xl font-black text-gray-900 tracking-tight bg-transparent border-b-2 border-transparent hover:border-purple-400 focus:border-purple-600 focus:outline-none transition-all"
-                  />
+                  <h3 className="w-full text-xl md:text-2xl font-black text-gray-900 tracking-tight">
+                    {section.title}
+                  </h3>
                   <p className="text-sm text-gray-600 font-bold mt-1">
                     {section.itemCount} {section.itemCount === 1 ? 'item' : 'items'}
                   </p>
@@ -433,49 +657,211 @@ export default function BudgetEntryStep({ formData, setFormData, onNext, onBack 
               <div className="px-7 py-6 bg-white/50 backdrop-blur-sm border-t-2 border-gray-200">
                 <ul className="space-y-4">
                   {section.items.map((item, index) => (
-                    <li key={index} className="flex items-start gap-4 group">
+                    <li key={index} className="flex items-start gap-4">
                       <span className="text-purple-600 font-black text-2xl mt-0.5 flex-shrink-0">•</span>
-                      <input
-                        type="text"
-                        value={item}
-                        onChange={(e) => updateSOPItem(section.id, index, e.target.value)}
-                        className="flex-1 text-gray-900 font-semibold text-base leading-relaxed bg-transparent border-b-2 border-transparent hover:border-purple-300 focus:border-purple-600 focus:outline-none transition-all py-1"
-                      />
-                      {/* Delete button removed as per requirements */}
+                      <span className="flex-1 text-gray-900 font-semibold text-base leading-relaxed py-1">
+                        {item}
+                      </span>
                     </li>
                   ))}
                 </ul>
-                <button
-                  onClick={() => addSOPItem(section.id)}
-                  className="mt-4 w-full px-4 py-2 text-sm font-bold border-2 border-dashed border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 hover:border-purple-400 transition-all flex items-center justify-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add Item
-                </button>
+
+                {/* Existing Comments for this section */}
+                {getCommentsForSection(section.id).length > 0 && (
+                  <div className="mt-6 space-y-3">
+                    <h4 className="text-sm font-black text-purple-700 uppercase tracking-wide">Your Comments/Questions:</h4>
+                    {getCommentsForSection(section.id).map((comment, idx) => {
+                      const globalIdx = sopComments.findIndex(c => c === comment);
+                      return (
+                        <div key={idx} className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4 relative">
+                          <p className="text-gray-800 font-medium pr-8">{comment.comment}</p>
+                          <p className="text-xs text-gray-500 mt-2">
+                            {new Date(comment.timestamp).toLocaleString('en-IN')}
+                          </p>
+                          <button
+                            onClick={() => deleteComment(globalIdx)}
+                            className="absolute top-3 right-3 text-red-500 hover:text-red-700 transition-colors"
+                            title="Delete comment"
+                          >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Add Comment Section */}
+                {commentingSectionId === section.id ? (
+                  <div className="mt-6 bg-blue-50 border-2 border-blue-300 rounded-xl p-4">
+                    <h4 className="text-sm font-black text-blue-700 mb-3 flex items-center gap-2">
+                      💬 Add Comment or Question
+                    </h4>
+                    <textarea
+                      value={currentComment}
+                      onChange={(e) => setCurrentComment(e.target.value)}
+                      placeholder="Type your question or comment about this SOP section... (e.g., 'Can we use different camera if approved?')"
+                      className="w-full p-4 border-2 border-blue-300 rounded-xl text-gray-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                      rows={3}
+                    />
+                    <div className="flex gap-3 mt-3">
+                      <button
+                        onClick={() => addComment(section.id, section.title)}
+                        disabled={!currentComment.trim()}
+                        className={`px-5 py-2 rounded-lg font-bold text-sm transition-all ${
+                          currentComment.trim()
+                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                      >
+                        Submit Comment
+                      </button>
+                      <button
+                        onClick={() => {
+                          setCommentingSectionId(null);
+                          setCurrentComment('');
+                        }}
+                        className="px-5 py-2 rounded-lg font-bold text-sm bg-gray-200 text-gray-700 hover:bg-gray-300 transition-all"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setCommentingSectionId(section.id)}
+                    className="mt-6 w-full px-4 py-3 text-sm font-bold border-2 border-dashed border-blue-400 text-blue-600 rounded-xl hover:bg-blue-50 hover:border-blue-500 transition-all flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                    Have a Question? Add Comment
+                  </button>
+                )}
               </div>
             )}
           </div>
         ))}
       </div>
 
-      {/* Acknowledgment Checkbox */}
-      <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-100 border-2 border-blue-400 rounded-2xl p-7 mb-8 shadow-lg hover:shadow-xl transition-all duration-300">
-        <label className="flex items-start gap-5 cursor-pointer group">
+      {/* SOP Comments Summary */}
+      {sopComments.length > 0 && (
+        <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-300 rounded-2xl p-6 mb-8 shadow-lg">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-black text-blue-800 flex items-center gap-2">
+              💬 Your Comments & Questions ({sopComments.length})
+            </h3>
+            <span className="px-3 py-1 bg-blue-500 text-white text-xs font-bold rounded-full">
+              Will be sent to STAGE Team
+            </span>
+          </div>
+          <p className="text-sm text-blue-700 font-medium mb-4">
+            These comments will be visible to the STAGE admin team after you submit your project.
+          </p>
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {sopComments.map((comment, index) => (
+              <div key={index} className="bg-white border border-blue-200 rounded-xl p-4 flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <p className="text-xs font-bold text-purple-600 mb-1">{comment.sectionTitle}</p>
+                  <p className="text-gray-800 font-medium text-sm">{comment.comment}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {new Date(comment.timestamp).toLocaleString('en-IN')}
+                  </p>
+                </div>
+                <button
+                  onClick={() => deleteComment(index)}
+                  className="text-red-500 hover:text-red-700 transition-colors flex-shrink-0"
+                  title="Delete comment"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* MANDATORY Acknowledgment Section */}
+      <div className={`rounded-2xl p-7 mb-8 shadow-xl transition-all duration-300 border-4 ${
+        acknowledged
+          ? 'bg-gradient-to-br from-green-50 via-emerald-50 to-green-100 border-green-500'
+          : 'bg-gradient-to-br from-red-50 via-orange-50 to-amber-50 border-red-500 animate-pulse'
+      }`}>
+        {/* Mandatory Badge */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <span className="text-4xl">{acknowledged ? '✅' : '🚨'}</span>
+            <div>
+              <h3 className="text-2xl font-black text-gray-900">Creator Acknowledgment</h3>
+              <p className="text-sm font-bold text-gray-600">You must accept to submit your project</p>
+            </div>
+          </div>
+          <div className={`px-4 py-2 rounded-full font-black text-sm ${
+            acknowledged
+              ? 'bg-green-500 text-white'
+              : 'bg-red-500 text-white animate-bounce'
+          }`}>
+            {acknowledged ? '✓ ACKNOWLEDGED' : '⚠️ MANDATORY'}
+          </div>
+        </div>
+
+        {/* Important Notice */}
+        <div className={`p-4 rounded-xl mb-6 ${
+          acknowledged
+            ? 'bg-green-100 border-2 border-green-300'
+            : 'bg-red-100 border-2 border-red-300'
+        }`}>
+          <p className={`text-sm font-bold ${acknowledged ? 'text-green-800' : 'text-red-800'}`}>
+            {acknowledged
+              ? '✅ Thank you! You have acknowledged all Terms & Conditions. You can now proceed to submit your project.'
+              : '⚠️ IMPORTANT: You cannot submit your project without acknowledging that you have read and understood all the Standard Operating Procedures (SOPs) and Terms & Conditions listed above.'
+            }
+          </p>
+        </div>
+
+        {/* Checkbox Area */}
+        <label className={`flex items-start gap-5 cursor-pointer p-5 rounded-xl transition-all duration-200 ${
+          acknowledged
+            ? 'bg-green-100 border-2 border-green-400'
+            : 'bg-white border-2 border-gray-300 hover:border-purple-400 hover:bg-purple-50'
+        }`}>
           <input
             type="checkbox"
             checked={acknowledged}
             onChange={(e) => setAcknowledged(e.target.checked)}
-            className="w-7 h-7 text-purple-600 border-3 border-gray-400 rounded-md focus:ring-3 focus:ring-purple-500 mt-1 cursor-pointer"
+            className="w-8 h-8 text-green-600 border-3 border-gray-400 rounded-lg focus:ring-4 focus:ring-green-500 mt-1 cursor-pointer accent-green-600"
           />
-          <div>
-            <p className="text-base font-bold text-gray-900 leading-relaxed mb-2">
-              I confirm that I have read and understood all the Standard Operating Procedures (SOPs) listed above.
+          <div className="flex-1">
+            <p className="text-lg font-black text-gray-900 leading-relaxed mb-3">
+              📋 I, the Creator, hereby confirm and acknowledge that:
             </p>
-            <p className="text-base font-semibold text-gray-800 leading-relaxed">
-              I agree to comply with all requirements including Pre-Production, Production, Post-Production, and Quality Control guidelines. I understand that non-compliance may result in penalties, payment delays, or content rejection.
-            </p>
+            <ul className="space-y-2 text-base font-semibold text-gray-800">
+              <li className="flex items-start gap-2">
+                <span className="text-green-600 font-bold">1.</span>
+                <span>I have carefully read and understood ALL the Standard Operating Procedures (SOPs) listed above.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-600 font-bold">2.</span>
+                <span>I agree to comply with all Pre-Production, Production, Post-Production, and Quality Control guidelines.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-600 font-bold">3.</span>
+                <span>I understand that non-compliance may result in penalties, payment delays, content rejection, or termination of agreement.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-green-600 font-bold">4.</span>
+                <span>I accept all Terms & Conditions of STAGE OTT Platform for content creation and delivery.</span>
+              </li>
+            </ul>
+            <div className="mt-4 p-3 bg-amber-100 rounded-lg border border-amber-300">
+              <p className="text-sm font-bold text-amber-800">
+                💡 By checking this box, you are legally bound to follow all guidelines. Please ensure you have read everything carefully.
+              </p>
+            </div>
           </div>
         </label>
       </div>

@@ -3,11 +3,19 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import FilmmakerQuote from "@/components/FilmmakerQuote";
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [loginType, setLoginType] = useState<'creator' | 'admin' | null>(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
@@ -16,6 +24,59 @@ export default function Home() {
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleCreatorLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    // Simple validation
+    if (!email.includes('@')) {
+      setError('Please enter a valid email address');
+      setIsLoading(false);
+      return;
+    }
+
+    // Store email in localStorage for creator identification
+    localStorage.setItem('stage_creator_email', email);
+    localStorage.setItem('stage_creator_logged_in', 'true');
+
+    setTimeout(() => {
+      setIsLoading(false);
+      router.push('/welcome');
+    }, 1000);
+  };
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    // Simple admin validation (in production, use proper auth)
+    const validAdminEmails = ['admin@stage.in', 'vinod@stage.in', 'anushka@stage.in', 'content@stage.in', 'production@stage.in'];
+
+    if (!validAdminEmails.includes(email.toLowerCase()) || password !== 'stage@2026') {
+      setError('Invalid credentials. Contact IT support.');
+      setIsLoading(false);
+      return;
+    }
+
+    localStorage.setItem('stage_admin_email', email);
+    localStorage.setItem('stage_admin_logged_in', 'true');
+
+    setTimeout(() => {
+      setIsLoading(false);
+      router.push('/admin');
+    }, 1000);
+  };
+
+  const openLoginModal = (type: 'creator' | 'admin') => {
+    setLoginType(type);
+    setShowLoginModal(true);
+    setEmail('');
+    setPassword('');
+    setError('');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white overflow-hidden">
@@ -51,12 +112,21 @@ export default function Home() {
             <div className="hidden md:flex gap-8 text-sm font-semibold mr-4">
               <a href="#features" className="text-gray-400 hover:text-white transition-colors">Features</a>
               <a href="#process" className="text-gray-400 hover:text-white transition-colors">Process</a>
-              <a href="/admin" className="text-gray-400 hover:text-white transition-colors">Admin</a>
             </div>
-            <Link href="/welcome" className="px-8 py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2">
+            <button
+              onClick={() => openLoginModal('creator')}
+              className="px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-lg transition-all flex items-center gap-2"
+            >
+              <span>👤</span>
+              <span>Login</span>
+            </button>
+            <button
+              onClick={() => openLoginModal('creator')}
+              className="px-8 py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+            >
               <span>🚀</span>
               <span>Get Started</span>
-            </Link>
+            </button>
           </nav>
         </div>
       </header>
@@ -93,20 +163,24 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <Link href="/welcome">
-                <button className="group px-6 py-3 bg-white text-black rounded-md font-bold text-sm md:text-base hover:bg-gray-200 transition-all duration-300 shadow-lg flex items-center justify-center gap-2">
-                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                  <span>Start Your Journey</span>
-                </button>
-              </Link>
-
-              <button className="px-6 py-3 bg-white/20 backdrop-blur-md text-white rounded-md font-bold text-sm md:text-base hover:bg-white/30 transition-all duration-300 flex items-center justify-center gap-2">
-                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <button
+                onClick={() => openLoginModal('creator')}
+                className="group px-6 py-3 bg-white text-black rounded-md font-bold text-sm md:text-base hover:bg-gray-200 transition-all duration-300 shadow-lg flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
                 </svg>
-                <span>Learn More</span>
+                <span>Start Your Journey</span>
+              </button>
+
+              <button
+                onClick={() => openLoginModal('admin')}
+                className="px-6 py-3 bg-white/20 backdrop-blur-md text-white rounded-md font-bold text-sm md:text-base hover:bg-white/30 transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span>STAGE Team</span>
               </button>
             </div>
 
@@ -251,11 +325,12 @@ export default function Home() {
           <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
             Join hundreds of creators bringing their stories to life on STAGE
           </p>
-          <Link href="/welcome">
-            <button className="px-12 py-6 bg-white text-red-600 rounded-xl font-black text-xl hover:bg-gray-100 transition-all duration-300 hover:scale-105 shadow-2xl">
-              Start Your Project Now →
-            </button>
-          </Link>
+          <button
+            onClick={() => openLoginModal('creator')}
+            className="px-12 py-6 bg-white text-red-600 rounded-xl font-black text-xl hover:bg-gray-100 transition-all duration-300 hover:scale-105 shadow-2xl"
+          >
+            Start Your Project Now →
+          </button>
         </div>
       </div>
 
@@ -319,6 +394,240 @@ export default function Home() {
           <p className="mt-2">Powered by Innovation. Driven by Creativity.</p>
         </div>
       </footer>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowLoginModal(false)}
+          ></div>
+
+          {/* Modal Content */}
+          <div className="relative w-full max-w-md mx-4 animate-fade-in">
+            {/* Login Type Selector */}
+            {!loginType ? (
+              <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl border border-white/10 p-8 shadow-2xl">
+                {/* Header */}
+                <div className="text-center mb-8">
+                  <Image
+                    src="/images/stage-logo-official.png"
+                    alt="STAGE"
+                    width={150}
+                    height={45}
+                    className="mx-auto mb-4"
+                  />
+                  <h2 className="text-2xl font-black text-white">Welcome to STAGE</h2>
+                  <p className="text-gray-400 mt-2">Choose your login type</p>
+                </div>
+
+                {/* Login Options */}
+                <div className="space-y-4">
+                  <button
+                    onClick={() => setLoginType('creator')}
+                    className="w-full p-6 bg-gradient-to-br from-red-500/20 to-pink-500/20 hover:from-red-500/30 hover:to-pink-500/30 border-2 border-red-500/50 hover:border-red-500 rounded-2xl transition-all group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <span className="text-2xl">🎬</span>
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-xl font-black text-white">Creator Login</h3>
+                        <p className="text-gray-400 text-sm">For filmmakers & content creators</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setLoginType('admin')}
+                    className="w-full p-6 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 hover:from-blue-500/30 hover:to-indigo-500/30 border-2 border-blue-500/50 hover:border-blue-500 rounded-2xl transition-all group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                        <span className="text-2xl">🛡️</span>
+                      </div>
+                      <div className="text-left">
+                        <h3 className="text-xl font-black text-white">STAGE Team</h3>
+                        <p className="text-gray-400 text-sm">For STAGE employees only</p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => setShowLoginModal(false)}
+                  className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : loginType === 'creator' ? (
+              /* Creator Login Form */
+              <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl border border-white/10 p-8 shadow-2xl">
+                {/* Header */}
+                <div className="text-center mb-8">
+                  <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <span className="text-4xl">🎬</span>
+                  </div>
+                  <h2 className="text-2xl font-black text-white">Creator Login</h2>
+                  <p className="text-gray-400 mt-2">Enter your email to continue</p>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleCreatorLogin} className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">Email Address</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      className="w-full px-5 py-4 bg-white/5 border-2 border-white/10 focus:border-red-500 rounded-xl text-white placeholder-gray-500 outline-none transition-all"
+                      required
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 text-sm font-semibold">
+                      {error}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className={`w-full py-4 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 ${isLoading ? 'opacity-70' : ''}`}
+                  >
+                    {isLoading ? (
+                      <>
+                        <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Logging in...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Continue to Portal</span>
+                        <span>→</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Back Button */}
+                <button
+                  onClick={() => setLoginType(null)}
+                  className="w-full mt-4 py-3 text-gray-400 hover:text-white font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>←</span>
+                  <span>Back to options</span>
+                </button>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => { setShowLoginModal(false); setLoginType(null); }}
+                  className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              /* Admin Login Form */
+              <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-3xl border border-white/10 p-8 shadow-2xl">
+                {/* Header */}
+                <div className="text-center mb-8">
+                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <span className="text-4xl">🛡️</span>
+                  </div>
+                  <h2 className="text-2xl font-black text-white">STAGE Team Login</h2>
+                  <p className="text-gray-400 mt-2">Authorized personnel only</p>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleAdminLogin} className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">STAGE Email</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@stage.in"
+                      className="w-full px-5 py-4 bg-white/5 border-2 border-white/10 focus:border-blue-500 rounded-xl text-white placeholder-gray-500 outline-none transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-300 mb-2">Password</label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full px-5 py-4 bg-white/5 border-2 border-white/10 focus:border-blue-500 rounded-xl text-white placeholder-gray-500 outline-none transition-all"
+                      required
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 text-sm font-semibold">
+                      {error}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className={`w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 ${isLoading ? 'opacity-70' : ''}`}
+                  >
+                    {isLoading ? (
+                      <>
+                        <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Authenticating...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Access Admin Panel</span>
+                        <span>→</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Back Button */}
+                <button
+                  onClick={() => setLoginType(null)}
+                  className="w-full mt-4 py-3 text-gray-400 hover:text-white font-semibold transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>←</span>
+                  <span>Back to options</span>
+                </button>
+
+                {/* Help Text */}
+                <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
+                  <p className="text-blue-400 text-xs font-semibold text-center">
+                    🔒 For security issues, contact: it@stage.in
+                  </p>
+                </div>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => { setShowLoginModal(false); setLoginType(null); }}
+                  className="absolute top-4 right-4 w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         @keyframes fade-in {
