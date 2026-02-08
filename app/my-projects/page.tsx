@@ -49,6 +49,8 @@ export default function MyProjectsPage() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [expandedNotification, setExpandedNotification] = useState<string | null>(null);
+  const [expandedActivity, setExpandedActivity] = useState<string | null>(null);
   const [previousStatuses, setPreviousStatuses] = useState<Record<string, string>>({});
   const [editAccessRequests, setEditAccessRequests] = useState<EditAccessRequest[]>([]);
   const [showRequestModal, setShowRequestModal] = useState<Project | null>(null);
@@ -666,56 +668,143 @@ export default function MyProjectsPage() {
                           )}
                         </div>
 
-                        {/* Status History from Notifications */}
+                        {/* Status History from Notifications - Expandable */}
                         {notifications
-                          .filter(n => n.projectId === selectedProject.id)
-                          .slice(0, 10)
-                          .map((notif: any, idx) => (
-                            <div key={notif.id} className="bg-white/5 rounded-xl p-4 border border-white/10">
-                              <div className="flex items-start gap-3">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                  notif.newStatus === 'approved' ? 'bg-green-500/20' :
-                                  notif.newStatus === 'in-production' ? 'bg-purple-500/20' :
-                                  notif.newStatus === 'rejected' ? 'bg-red-500/20' :
-                                  notif.newStatus === 'revision-requested' ? 'bg-orange-500/20' :
-                                  notif.newStatus === 'edit_granted' ? 'bg-green-500/20' :
-                                  notif.newStatus === 'edit_denied' ? 'bg-red-500/20' :
-                                  'bg-blue-500/20'
-                                }`}>
-                                  <span className="text-lg">
-                                    {notif.newStatus === 'approved' ? '✅' :
-                                     notif.newStatus === 'in-production' ? '🎬' :
-                                     notif.newStatus === 'rejected' ? '❌' :
-                                     notif.newStatus === 'revision-requested' ? '📝' :
-                                     notif.newStatus === 'edit_granted' ? '✏️' :
-                                     notif.newStatus === 'edit_denied' ? '🚫' :
-                                     notif.newStatus === 'request_sent' ? '📤' :
-                                     '📋'}
-                                  </span>
-                                </div>
-                                <div className="flex-1">
-                                  <div className="text-white font-semibold">
-                                    {notif.message.split('\n\n')[0]}
-                                  </div>
-                                  {/* Show admin comment if present */}
-                                  {notif.adminComment && (
-                                    <div className="mt-2 bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                                      <div className="flex items-start gap-2">
-                                        <span className="text-blue-400 text-sm">💬</span>
-                                        <div>
-                                          <div className="text-xs text-blue-400 font-bold mb-1">Admin Comment:</div>
-                                          <div className="text-white text-sm">{notif.adminComment}</div>
-                                        </div>
+                          .filter(n => n.projectId === selectedProject.id || n.projectName === selectedProject.projectName)
+                          .slice(0, 15)
+                          .map((notif: any, idx) => {
+                            const isExpanded = expandedActivity === notif.id;
+                            const hasAdminComment = notif.adminComment && notif.adminComment.trim().length > 0;
+
+                            return (
+                              <div key={notif.id} className={`rounded-xl overflow-hidden border transition-all ${
+                                hasAdminComment ? 'border-blue-500/30 bg-blue-500/5' : 'border-white/10 bg-white/5'
+                              }`}>
+                                {/* Activity Header - Clickable */}
+                                <div
+                                  onClick={() => setExpandedActivity(isExpanded ? null : notif.id)}
+                                  className="p-4 cursor-pointer hover:bg-white/5 transition-all"
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                      notif.newStatus === 'approved' ? 'bg-green-500/20' :
+                                      notif.newStatus === 'in-production' ? 'bg-purple-500/20' :
+                                      notif.newStatus === 'rejected' ? 'bg-red-500/20' :
+                                      notif.newStatus === 'revision-requested' ? 'bg-orange-500/20' :
+                                      notif.newStatus === 'edit_granted' ? 'bg-green-500/20' :
+                                      notif.newStatus === 'edit_denied' ? 'bg-red-500/20' :
+                                      'bg-blue-500/20'
+                                    }`}>
+                                      <span className="text-lg">
+                                        {notif.newStatus === 'approved' ? '✅' :
+                                         notif.newStatus === 'in-production' ? '🎬' :
+                                         notif.newStatus === 'rejected' ? '❌' :
+                                         notif.newStatus === 'revision-requested' ? '📝' :
+                                         notif.newStatus === 'edit_granted' ? '✏️' :
+                                         notif.newStatus === 'edit_denied' ? '🚫' :
+                                         notif.newStatus === 'request_sent' ? '📤' :
+                                         '📋'}
+                                      </span>
+                                    </div>
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                                          notif.newStatus === 'approved' ? 'bg-green-500/30 text-green-400' :
+                                          notif.newStatus === 'in-production' ? 'bg-purple-500/30 text-purple-400' :
+                                          notif.newStatus === 'rejected' ? 'bg-red-500/30 text-red-400' :
+                                          notif.newStatus === 'revision-requested' ? 'bg-orange-500/30 text-orange-400' :
+                                          'bg-blue-500/30 text-blue-400'
+                                        }`}>
+                                          {notif.newStatus?.replace('-', ' ').replace('_', ' ').toUpperCase()}
+                                        </span>
+                                        {hasAdminComment && (
+                                          <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
+                                            💬 Feedback
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="text-white font-semibold text-sm">
+                                        Status changed to {notif.newStatus?.replace('-', ' ').replace('_', ' ')}
+                                      </div>
+                                      <div className="text-gray-500 text-xs mt-1">
+                                        {new Date(notif.timestamp).toLocaleString('en-IN')}
                                       </div>
                                     </div>
-                                  )}
-                                  <div className="text-gray-500 text-xs mt-2">
-                                    {new Date(notif.timestamp).toLocaleString('en-IN')}
+                                    <svg
+                                      className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
                                   </div>
                                 </div>
+
+                                {/* Expanded Content */}
+                                {isExpanded && (
+                                  <div className="px-4 pb-4 border-t border-white/10">
+                                    {/* Status Change Details */}
+                                    <div className="bg-white/5 rounded-lg p-3 mt-3">
+                                      <div className="text-xs text-gray-500 font-semibold mb-2">STATUS TRANSITION</div>
+                                      <div className="flex items-center gap-3">
+                                        <span className="px-3 py-1 bg-gray-600/50 text-gray-300 rounded-lg text-sm font-bold">
+                                          {notif.oldStatus?.replace('-', ' ').replace('_', ' ').toUpperCase() || 'PREVIOUS'}
+                                        </span>
+                                        <span className="text-gray-500">→</span>
+                                        <span className={`px-3 py-1 rounded-lg text-sm font-bold ${
+                                          notif.newStatus === 'approved' ? 'bg-green-500/30 text-green-400' :
+                                          notif.newStatus === 'in-production' ? 'bg-purple-500/30 text-purple-400' :
+                                          notif.newStatus === 'rejected' ? 'bg-red-500/30 text-red-400' :
+                                          notif.newStatus === 'revision-requested' ? 'bg-orange-500/30 text-orange-400' :
+                                          'bg-blue-500/30 text-blue-400'
+                                        }`}>
+                                          {notif.newStatus?.replace('-', ' ').replace('_', ' ').toUpperCase()}
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    {/* Admin Feedback - Highlighted */}
+                                    {hasAdminComment && (
+                                      <div className="mt-3 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/50 rounded-xl p-4">
+                                        <div className="flex items-center gap-2 mb-3">
+                                          <div className="w-8 h-8 bg-blue-500/30 rounded-full flex items-center justify-center">
+                                            <span className="text-lg">💬</span>
+                                          </div>
+                                          <span className="text-lg font-black text-blue-400">Admin Feedback</span>
+                                        </div>
+                                        <div className="bg-black/30 rounded-lg p-4">
+                                          <p className="text-white font-semibold leading-relaxed whitespace-pre-wrap">
+                                            {notif.adminComment}
+                                          </p>
+                                        </div>
+                                        {notif.newStatus === 'revision-requested' && (
+                                          <div className="mt-3 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                                            <div className="flex items-center gap-2 text-orange-400 text-sm font-bold">
+                                              <span>⚠️</span>
+                                              <span>Action Required: Please address the feedback and resubmit</span>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* Full Timestamp */}
+                                    <div className="mt-3 text-xs text-gray-500 text-center">
+                                      {new Date(notif.timestamp).toLocaleString('en-IN', {
+                                        weekday: 'long',
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
 
                         {/* Submission Date */}
                         <div className="bg-white/5 rounded-xl p-4 border border-white/10">
@@ -879,53 +968,168 @@ export default function MyProjectsPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {notifications.map((notif) => (
-                    <div
-                      key={notif.id}
-                      onClick={() => markAsRead(notif.id)}
-                      className={`p-4 rounded-xl cursor-pointer transition-all border ${
-                        !notif.read
-                          ? 'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20'
-                          : 'bg-white/5 border-white/10 hover:bg-white/10'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                          notif.newStatus === 'approved' ? 'bg-green-500/20' :
-                          notif.newStatus === 'in-production' ? 'bg-purple-500/20' :
-                          notif.newStatus === 'rejected' ? 'bg-red-500/20' :
-                          notif.newStatus === 'revision-requested' ? 'bg-orange-500/20' :
-                          notif.newStatus === 'edit_granted' ? 'bg-green-500/20' :
-                          notif.newStatus === 'edit_denied' ? 'bg-red-500/20' :
-                          notif.newStatus === 'edit_revoked' ? 'bg-orange-500/20' :
-                          'bg-blue-500/20'
-                        }`}>
-                          <span className="text-2xl">
-                            {notif.newStatus === 'approved' ? '✅' :
-                             notif.newStatus === 'in-production' ? '🎬' :
-                             notif.newStatus === 'rejected' ? '❌' :
-                             notif.newStatus === 'revision-requested' ? '📝' :
-                             notif.newStatus === 'edit_granted' ? '✏️' :
-                             notif.newStatus === 'edit_denied' ? '🚫' :
-                             notif.newStatus === 'edit_revoked' ? '🔒' :
-                             notif.newStatus === 'request_sent' ? '📤' :
-                             '📋'}
-                          </span>
+                  {notifications.map((notif: any) => {
+                    const isExpanded = expandedNotification === notif.id;
+                    const hasAdminComment = notif.adminComment && notif.adminComment.trim().length > 0;
+
+                    return (
+                      <div
+                        key={notif.id}
+                        className={`rounded-xl overflow-hidden transition-all border ${
+                          !notif.read
+                            ? 'bg-blue-500/10 border-blue-500/30'
+                            : 'bg-white/5 border-white/10'
+                        }`}
+                      >
+                        {/* Notification Header - Clickable */}
+                        <div
+                          onClick={() => {
+                            markAsRead(notif.id);
+                            setExpandedNotification(isExpanded ? null : notif.id);
+                          }}
+                          className="p-4 cursor-pointer hover:bg-white/5 transition-all"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                              notif.newStatus === 'approved' ? 'bg-green-500/20' :
+                              notif.newStatus === 'in-production' ? 'bg-purple-500/20' :
+                              notif.newStatus === 'rejected' ? 'bg-red-500/20' :
+                              notif.newStatus === 'revision-requested' ? 'bg-orange-500/20' :
+                              notif.newStatus === 'edit_granted' ? 'bg-green-500/20' :
+                              notif.newStatus === 'edit_denied' ? 'bg-red-500/20' :
+                              notif.newStatus === 'edit_revoked' ? 'bg-orange-500/20' :
+                              'bg-blue-500/20'
+                            }`}>
+                              <span className="text-2xl">
+                                {notif.newStatus === 'approved' ? '✅' :
+                                 notif.newStatus === 'in-production' ? '🎬' :
+                                 notif.newStatus === 'rejected' ? '❌' :
+                                 notif.newStatus === 'revision-requested' ? '📝' :
+                                 notif.newStatus === 'edit_granted' ? '✏️' :
+                                 notif.newStatus === 'edit_denied' ? '🚫' :
+                                 notif.newStatus === 'edit_revoked' ? '🔒' :
+                                 notif.newStatus === 'request_sent' ? '📤' :
+                                 '📋'}
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className={`text-sm font-black ${!notif.read ? 'text-white' : 'text-gray-300'}`}>
+                                  {notif.projectName}
+                                </span>
+                                <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                                  notif.newStatus === 'approved' ? 'bg-green-500/30 text-green-400' :
+                                  notif.newStatus === 'in-production' ? 'bg-purple-500/30 text-purple-400' :
+                                  notif.newStatus === 'rejected' ? 'bg-red-500/30 text-red-400' :
+                                  notif.newStatus === 'revision-requested' ? 'bg-orange-500/30 text-orange-400' :
+                                  'bg-blue-500/30 text-blue-400'
+                                }`}>
+                                  {notif.newStatus?.replace('-', ' ').replace('_', ' ').toUpperCase()}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-400">
+                                {new Date(notif.timestamp).toLocaleString('en-IN')}
+                              </p>
+                              {hasAdminComment && !isExpanded && (
+                                <div className="mt-2 text-xs text-blue-400 flex items-center gap-1">
+                                  <span>💬</span>
+                                  <span>Admin feedback available - Click to expand</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {!notif.read && (
+                                <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0 animate-pulse"></div>
+                              )}
+                              <svg
+                                className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-semibold leading-relaxed ${!notif.read ? 'text-white' : 'text-gray-300'}`}>
-                            {notif.message}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-2">
-                            {new Date(notif.timestamp).toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                        {!notif.read && (
-                          <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0 animate-pulse"></div>
+
+                        {/* Expanded Content */}
+                        {isExpanded && (
+                          <div className="px-4 pb-4 border-t border-white/10">
+                            {/* Status Change Info */}
+                            <div className="bg-white/5 rounded-lg p-3 mt-3">
+                              <div className="text-xs text-gray-500 font-semibold mb-2">STATUS CHANGE</div>
+                              <div className="flex items-center gap-3">
+                                <span className="px-3 py-1 bg-gray-600/50 text-gray-300 rounded-lg text-sm font-bold">
+                                  {notif.oldStatus?.replace('-', ' ').replace('_', ' ').toUpperCase() || 'PREVIOUS'}
+                                </span>
+                                <span className="text-gray-500">→</span>
+                                <span className={`px-3 py-1 rounded-lg text-sm font-bold ${
+                                  notif.newStatus === 'approved' ? 'bg-green-500/30 text-green-400' :
+                                  notif.newStatus === 'in-production' ? 'bg-purple-500/30 text-purple-400' :
+                                  notif.newStatus === 'rejected' ? 'bg-red-500/30 text-red-400' :
+                                  notif.newStatus === 'revision-requested' ? 'bg-orange-500/30 text-orange-400' :
+                                  'bg-blue-500/30 text-blue-400'
+                                }`}>
+                                  {notif.newStatus?.replace('-', ' ').replace('_', ' ').toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Admin Comment/Feedback */}
+                            {hasAdminComment && (
+                              <div className="mt-3 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/30 rounded-xl p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="text-blue-400">💬</span>
+                                  <span className="text-sm font-black text-blue-400">Admin Feedback</span>
+                                </div>
+                                <p className="text-white font-semibold text-sm leading-relaxed whitespace-pre-wrap">
+                                  {notif.adminComment}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Action Required for Revision */}
+                            {notif.newStatus === 'revision-requested' && (
+                              <div className="mt-3 bg-gradient-to-br from-orange-500/10 to-amber-500/10 border border-orange-500/30 rounded-xl p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="text-orange-400">⚠️</span>
+                                  <span className="text-sm font-black text-orange-400">Action Required</span>
+                                </div>
+                                <p className="text-gray-300 text-sm mb-3">
+                                  Please review the feedback above and update your project accordingly.
+                                </p>
+                                <button
+                                  onClick={() => {
+                                    const project = projects.find(p => p.id === notif.projectId || p.projectName === notif.projectName);
+                                    if (project) {
+                                      setSelectedProject(project);
+                                      setShowNotifications(false);
+                                    }
+                                  }}
+                                  className="w-full px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold rounded-lg transition-all text-sm"
+                                >
+                                  ✏️ Edit Project & Resubmit
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Timestamp */}
+                            <div className="mt-3 text-xs text-gray-500 text-center">
+                              Updated: {new Date(notif.timestamp).toLocaleString('en-IN', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </div>
+                          </div>
                         )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
