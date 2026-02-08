@@ -485,7 +485,7 @@ interface SOPComment {
 
 export default function BudgetEntryStep({ formData, setFormData, onNext, onBack }: Props) {
   const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({});
-  const [acknowledged, setAcknowledged] = useState(false);
+  const [acknowledged, setAcknowledged] = useState((formData as any).sopAcknowledged || false);
   const [commentingSectionId, setCommentingSectionId] = useState<string | null>(null);
   const [currentComment, setCurrentComment] = useState('');
   const [sopComments, setSopComments] = useState<SOPComment[]>(
@@ -494,7 +494,13 @@ export default function BudgetEntryStep({ formData, setFormData, onNext, onBack 
   const sopSections = initialSOPSections;
 
   // Force console log to verify version
-  console.log('BudgetEntryStep v4.0 loaded - sections:', sopSections.length);
+  console.log('BudgetEntryStep v5.0 loaded - sections:', sopSections.length);
+
+  // Save acknowledgment to formData
+  const handleAcknowledgment = (checked: boolean) => {
+    setAcknowledged(checked);
+    setFormData({ ...formData, sopAcknowledged: checked } as any);
+  };
 
   // Save comments to formData whenever they change
   const saveComments = (comments: SOPComment[]) => {
@@ -832,7 +838,7 @@ export default function BudgetEntryStep({ formData, setFormData, onNext, onBack 
           <input
             type="checkbox"
             checked={acknowledged}
-            onChange={(e) => setAcknowledged(e.target.checked)}
+            onChange={(e) => handleAcknowledgment(e.target.checked)}
             className="w-8 h-8 text-green-600 border-3 border-gray-400 rounded-lg focus:ring-4 focus:ring-green-500 mt-1 cursor-pointer accent-green-600"
           />
           <div className="flex-1">

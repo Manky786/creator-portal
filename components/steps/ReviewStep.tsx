@@ -1391,16 +1391,52 @@ export default function ReviewStep({ formData, setFormData, onBack, onSubmit, on
               {completeness >= 70 ? 'Ready to submit!' : 'Submit anytime - update later!'}
             </div>
           </div>
-          <button
-            type="button"
-            onClick={handleSubmitClick}
-            className="px-12 py-4 rounded-xl text-lg font-black transition-all duration-200 flex items-center gap-3 bg-gradient-to-r from-green-500 via-emerald-600 to-green-600 text-white hover:from-green-600 hover:via-emerald-700 hover:to-green-700 shadow-lg hover:shadow-2xl hover:scale-105 border-2 border-white/20"
-          >
-            <span>🚀</span>
-            <span>Submit Project</span>
-          </button>
+          {(formData as any).sopAcknowledged ? (
+            <button
+              type="button"
+              onClick={handleSubmitClick}
+              className="px-12 py-4 rounded-xl text-lg font-black transition-all duration-200 flex items-center gap-3 bg-gradient-to-r from-green-500 via-emerald-600 to-green-600 text-white hover:from-green-600 hover:via-emerald-700 hover:to-green-700 shadow-lg hover:shadow-2xl hover:scale-105 border-2 border-white/20"
+            >
+              <span>🚀</span>
+              <span>Submit Project</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onGoToStep?.(9)}
+              className="px-12 py-4 rounded-xl text-lg font-black transition-all duration-200 flex items-center gap-3 bg-gradient-to-r from-red-500 via-orange-500 to-red-600 text-white hover:from-red-600 hover:via-orange-600 hover:to-red-700 shadow-lg hover:shadow-2xl animate-pulse border-2 border-white/20"
+            >
+              <span>⚠️</span>
+              <span>SOP Acknowledge करें</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {/* SOP Not Acknowledged Warning */}
+      {!(formData as any).sopAcknowledged && (
+        <div className="bg-gradient-to-r from-red-500 via-orange-500 to-red-600 rounded-2xl p-6 mb-6 shadow-xl border-2 border-red-400">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <span className="text-4xl">🚫</span>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-black text-white mb-1">SOP Acknowledgment Required!</h3>
+              <p className="text-red-100 font-semibold">
+                आपको project submit करने से पहले SOP Terms & Conditions acknowledge करना अनिवार्य है।
+                कृपया Step 9 (SOPs) पर जाएं और checkbox check करें।
+              </p>
+            </div>
+            <button
+              onClick={() => onGoToStep?.(9)}
+              className="px-6 py-3 bg-white text-red-600 font-black rounded-xl hover:bg-red-50 transition-all flex items-center gap-2 shadow-lg"
+            >
+              <span>📋</span>
+              <span>Go to SOPs</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Missing Fields Modal */}
       {showMissingModal && (
