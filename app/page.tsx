@@ -113,20 +113,27 @@ export default function Home() {
               <a href="#features" className="text-gray-400 hover:text-white transition-colors">Features</a>
               <a href="#process" className="text-gray-400 hover:text-white transition-colors">Process</a>
             </div>
-            <button
-              onClick={() => openLoginModal('creator')}
+            <Link
+              href="/welcome"
               className="px-6 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold rounded-lg transition-all flex items-center gap-2"
             >
               <span>👤</span>
-              <span>Login</span>
-            </button>
-            <button
-              onClick={() => openLoginModal('creator')}
+              <span>Creator</span>
+            </Link>
+            <Link
+              href="/admin"
+              className="px-6 py-2.5 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/50 text-white font-bold rounded-lg transition-all flex items-center gap-2"
+            >
+              <span>🛡️</span>
+              <span>Admin</span>
+            </Link>
+            <Link
+              href="/creator"
               className="px-8 py-3 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
             >
               <span>🚀</span>
               <span>Get Started</span>
-            </button>
+            </Link>
           </nav>
         </div>
       </header>
@@ -163,25 +170,25 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => openLoginModal('creator')}
+              <Link
+                href="/creator"
                 className="group px-6 py-3 bg-white text-black rounded-md font-bold text-sm md:text-base hover:bg-gray-200 transition-all duration-300 shadow-lg flex items-center justify-center gap-2"
               >
                 <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z"/>
                 </svg>
                 <span>Start Your Journey</span>
-              </button>
+              </Link>
 
-              <button
-                onClick={() => openLoginModal('admin')}
+              <Link
+                href="/admin"
                 className="px-6 py-3 bg-white/20 backdrop-blur-md text-white rounded-md font-bold text-sm md:text-base hover:bg-white/30 transition-all duration-300 flex items-center justify-center gap-2"
               >
                 <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 <span>STAGE Team</span>
-              </button>
+              </Link>
             </div>
 
             {/* Brand Ambassador Info */}
@@ -325,12 +332,12 @@ export default function Home() {
           <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
             Join hundreds of creators bringing their stories to life on STAGE
           </p>
-          <button
-            onClick={() => openLoginModal('creator')}
-            className="px-12 py-6 bg-white text-red-600 rounded-xl font-black text-xl hover:bg-gray-100 transition-all duration-300 hover:scale-105 shadow-2xl"
+          <Link
+            href="/creator"
+            className="inline-block px-12 py-6 bg-white text-red-600 rounded-xl font-black text-xl hover:bg-gray-100 transition-all duration-300 hover:scale-105 shadow-2xl"
           >
             Start Your Project Now →
-          </button>
+          </Link>
         </div>
       </div>
 
