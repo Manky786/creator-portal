@@ -614,10 +614,10 @@ export default function MyProjectsPage() {
                       </div>
                     )}
 
-                    {/* Status Update History */}
+                    {/* Status Update History & Activity Log */}
                     <div>
                       <h3 className="text-lg font-black text-white mb-3 flex items-center gap-2">
-                        📋 Status Update History
+                        📋 Activity Log & Admin Comments
                       </h3>
                       <div className="space-y-3">
                         {/* Current Status */}
@@ -650,20 +650,36 @@ export default function MyProjectsPage() {
                               <div className="text-gray-400 text-sm">Last updated</div>
                             </div>
                           </div>
+                          {/* Show last admin comment if exists */}
+                          {selectedProject.lastAdminComment && (
+                            <div className="mt-3 pt-3 border-t border-white/10">
+                              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                                <div className="flex items-start gap-2">
+                                  <span className="text-blue-400">💬</span>
+                                  <div>
+                                    <div className="text-xs text-blue-400 font-bold mb-1">Admin Comment:</div>
+                                    <div className="text-white text-sm font-semibold">{selectedProject.lastAdminComment}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {/* Status History from Notifications */}
                         {notifications
                           .filter(n => n.projectId === selectedProject.id)
-                          .slice(0, 5)
-                          .map((notif, idx) => (
+                          .slice(0, 10)
+                          .map((notif: any, idx) => (
                             <div key={notif.id} className="bg-white/5 rounded-xl p-4 border border-white/10">
-                              <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              <div className="flex items-start gap-3">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                                   notif.newStatus === 'approved' ? 'bg-green-500/20' :
                                   notif.newStatus === 'in-production' ? 'bg-purple-500/20' :
                                   notif.newStatus === 'rejected' ? 'bg-red-500/20' :
                                   notif.newStatus === 'revision-requested' ? 'bg-orange-500/20' :
+                                  notif.newStatus === 'edit_granted' ? 'bg-green-500/20' :
+                                  notif.newStatus === 'edit_denied' ? 'bg-red-500/20' :
                                   'bg-blue-500/20'
                                 }`}>
                                   <span className="text-lg">
@@ -671,12 +687,29 @@ export default function MyProjectsPage() {
                                      notif.newStatus === 'in-production' ? '🎬' :
                                      notif.newStatus === 'rejected' ? '❌' :
                                      notif.newStatus === 'revision-requested' ? '📝' :
+                                     notif.newStatus === 'edit_granted' ? '✏️' :
+                                     notif.newStatus === 'edit_denied' ? '🚫' :
+                                     notif.newStatus === 'request_sent' ? '📤' :
                                      '📋'}
                                   </span>
                                 </div>
                                 <div className="flex-1">
-                                  <div className="text-white font-semibold">{notif.message}</div>
-                                  <div className="text-gray-500 text-xs mt-1">
+                                  <div className="text-white font-semibold">
+                                    {notif.message.split('\n\n')[0]}
+                                  </div>
+                                  {/* Show admin comment if present */}
+                                  {notif.adminComment && (
+                                    <div className="mt-2 bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                                      <div className="flex items-start gap-2">
+                                        <span className="text-blue-400 text-sm">💬</span>
+                                        <div>
+                                          <div className="text-xs text-blue-400 font-bold mb-1">Admin Comment:</div>
+                                          <div className="text-white text-sm">{notif.adminComment}</div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                  <div className="text-gray-500 text-xs mt-2">
                                     {new Date(notif.timestamp).toLocaleString('en-IN')}
                                   </div>
                                 </div>

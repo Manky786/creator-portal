@@ -831,6 +831,11 @@ export default function AdminDashboard() {
   const [activityNote, setActivityNote] = useState('');
   const [activityNoteType, setActivityNoteType] = useState('note');
 
+  // Status change with comment modal states
+  const [showStatusChangeModal, setShowStatusChangeModal] = useState(false);
+  const [statusChangeComment, setStatusChangeComment] = useState('');
+  const [pendingStatusChange, setPendingStatusChange] = useState<{ submissionId: number; newStatus: string } | null>(null);
+
   // Search & Sort states
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'budget' | 'status'>('date');
@@ -1702,8 +1707,19 @@ END:VCARD`;
     return [];
   };
 
+  // Open status change modal with comment field
   const handleStatusChange = (submissionId: number, newStatus: string) => {
-    // Find the submission for auto-export
+    setPendingStatusChange({ submissionId, newStatus });
+    setStatusChangeComment('');
+    setShowStatusChangeModal(true);
+    setShowStatusMenu(null);
+  };
+
+  // Confirm status change with comment
+  const confirmStatusChange = () => {
+    if (!pendingStatusChange) return;
+
+    const { submissionId, newStatus } = pendingStatusChange;
     const submission = submissions.find(s => s.id === submissionId);
     const oldStatus = submission?.status || 'pending';
 
@@ -1719,7 +1735,7 @@ END:VCARD`;
       setSelectedSubmission({ ...selectedSubmission, status: newStatus, statusChangedDate: new Date().toISOString() });
     }
 
-    // Add Activity Log
+    // Add Activity Log with comment
     if (submission && oldStatus !== newStatus) {
       const statusLabels: Record<string, string> = {
         'approved': 'Approved',
@@ -1731,15 +1747,20 @@ END:VCARD`;
         'on-hold': 'On Hold',
         'pending': 'Pending',
       };
+
+      const description = statusChangeComment.trim()
+        ? `Project status updated from "${statusLabels[oldStatus] || oldStatus}" to "${statusLabels[newStatus] || newStatus}".\n\n💬 Admin Comment: ${statusChangeComment}`
+        : `Project status updated from "${statusLabels[oldStatus] || oldStatus}" to "${statusLabels[newStatus] || newStatus}"`;
+
       addActivityLog(
         submissionId,
         `Status Changed: ${statusLabels[oldStatus] || oldStatus} → ${statusLabels[newStatus] || newStatus}`,
-        `Project status updated from "${statusLabels[oldStatus] || oldStatus}" to "${statusLabels[newStatus] || newStatus}"`,
+        description,
         'status'
       );
 
-      // Create notification for creator
-      createCreatorNotification(submission, oldStatus, newStatus);
+      // Create notification for creator with comment
+      createCreatorNotification(submission, oldStatus, newStatus, statusChangeComment.trim());
     }
 
     // Auto-export agreement when moving to production
@@ -1759,12 +1780,15 @@ END:VCARD`;
       }
     }
 
-    setShowStatusMenu(null);
+    // Reset modal state
+    setShowStatusChangeModal(false);
+    setStatusChangeComment('');
+    setPendingStatusChange(null);
     console.log(`Changed submission ${submissionId} to status: ${newStatus}`);
   };
 
   // Create notification for creator when status changes
-  const createCreatorNotification = (submission: any, oldStatus: string, newStatus: string) => {
+  const createCreatorNotification = (submission: any, oldStatus: string, newStatus: string, adminComment?: string) => {
     const statusMessages: Record<string, string> = {
       'approved': `🎉 Congratulations! Your project "${submission.projectName}" has been APPROVED by STAGE!`,
       'in-production': `🎬 Exciting news! Your project "${submission.projectName}" is now IN PRODUCTION!`,
@@ -1776,13 +1800,19 @@ END:VCARD`;
       'pending': `Your project "${submission.projectName}" status has been reset to pending.`,
     };
 
+    const baseMessage = statusMessages[newStatus] || `Status updated for "${submission.projectName}": ${newStatus}`;
+    const fullMessage = adminComment
+      ? `${baseMessage}\n\n💬 Admin Comment: "${adminComment}"`
+      : baseMessage;
+
     const notification = {
       id: `notif_${Date.now()}_${submission.id}`,
       projectId: submission.id,
       projectName: submission.projectName || 'Untitled Project',
       oldStatus: oldStatus,
       newStatus: newStatus,
-      message: statusMessages[newStatus] || `Status updated for "${submission.projectName}": ${newStatus}`,
+      message: fullMessage,
+      adminComment: adminComment || '',
       timestamp: new Date().toISOString(),
       read: false,
       creatorEmail: submission.officialEmail || '',
@@ -1793,10 +1823,10 @@ END:VCARD`;
     const updatedNotifications = [notification, ...existingNotifications];
     localStorage.setItem('stage_notifications', JSON.stringify(updatedNotifications));
 
-    // Update localStorage submissions with new status
+    // Update localStorage submissions with new status and admin comment
     const localSubmissions = JSON.parse(localStorage.getItem('stage_submissions') || '[]');
     const updatedSubmissions = localSubmissions.map((s: any) =>
-      s.id === submission.id ? { ...s, status: newStatus } : s
+      s.id === submission.id ? { ...s, status: newStatus, lastAdminComment: adminComment || '' } : s
     );
     localStorage.setItem('stage_submissions', JSON.stringify(updatedSubmissions));
 
@@ -2179,10 +2209,10 @@ END:VCARD`;
                     <tr>
                       <td style="border: 1px solid #ddd; padding: 6px;"></td>
                       <td style="border: 1px solid #ddd; padding: 6px;">${item.description || 'N/A'}</td>
-                      <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">${item.days || '-'}</td>
-                      <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">${item.people || item.rooms || item.quantity || '-'}</td>
+                      <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">${item.noOfDays || item.days || '-'}</td>
+                      <td style="border: 1px solid #ddd; padding: 6px; text-align: center;">${item.noOfPeople || item.people || item.noOfRooms || '-'}</td>
                       <td style="border: 1px solid #ddd; padding: 6px; text-align: right;">${item.perDay ? '₹' + item.perDay.toLocaleString('en-IN') : '-'}</td>
-                      <td style="border: 1px solid #ddd; padding: 6px; text-align: right;">${item.lumpsum ? '₹' + item.lumpsum.toLocaleString('en-IN') : '-'}</td>
+                      <td style="border: 1px solid #ddd; padding: 6px; text-align: right;">${(item.lumpsumFixed || item.lumpsum) ? '₹' + (item.lumpsumFixed || item.lumpsum).toLocaleString('en-IN') : '-'}</td>
                       <td style="border: 1px solid #ddd; padding: 6px; text-align: right; font-weight: bold;">₹${(item.total || 0).toLocaleString('en-IN')}</td>
                     </tr>
                   `).join('')}
@@ -5851,10 +5881,10 @@ END:VCARD`;
                                             {filledItems.map((item: any, itemIndex: number) => (
                                               <tr key={itemIndex} className="border-b border-gray-100 hover:bg-gray-50">
                                                 <td className="p-2 font-semibold text-gray-900">{item.description || 'N/A'}</td>
-                                                <td className="p-2 text-center text-gray-700">{item.days || '-'}</td>
-                                                <td className="p-2 text-center text-gray-700">{item.people || item.rooms || '-'}</td>
+                                                <td className="p-2 text-center text-gray-700">{item.noOfDays || item.days || '-'}</td>
+                                                <td className="p-2 text-center text-gray-700">{item.noOfPeople || item.people || item.noOfRooms || '-'}</td>
                                                 <td className="p-2 text-right text-gray-700">{item.perDay ? `₹${item.perDay.toLocaleString('en-IN')}` : '-'}</td>
-                                                <td className="p-2 text-right text-gray-700">{item.lumpsum ? `₹${item.lumpsum.toLocaleString('en-IN')}` : '-'}</td>
+                                                <td className="p-2 text-right text-gray-700">{(item.lumpsumFixed || item.lumpsum) ? `₹${(item.lumpsumFixed || item.lumpsum).toLocaleString('en-IN')}` : '-'}</td>
                                                 <td className="p-2 text-right font-bold text-blue-900">₹{(item.total || 0).toLocaleString('en-IN')}</td>
                                               </tr>
                                             ))}
@@ -7972,32 +8002,6 @@ END:VCARD`;
                       )}
                     </div>
 
-                    {/* Payment Terms & Conditions */}
-                    <div className="bg-white rounded-xl p-6 border-2 border-gray-200 shadow-lg">
-                      <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
-                        <span className="text-xl">📋</span>
-                        <span>Payment Terms & Conditions</span>
-                      </h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                          <div className="text-xs font-bold text-blue-700 mb-2 uppercase">Payment Mode</div>
-                          <div className="text-base font-semibold text-gray-900">{selectedSubmission.paymentMode || 'Bank Transfer (NEFT/RTGS)'}</div>
-                        </div>
-                        <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                          <div className="text-xs font-bold text-purple-700 mb-2 uppercase">Payment Terms</div>
-                          <div className="text-base font-semibold text-gray-900">{selectedSubmission.paymentTerms || 'Net 30 days from invoice'}</div>
-                        </div>
-                        <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
-                          <div className="text-xs font-bold text-amber-700 mb-2 uppercase">GST Rate</div>
-                          <div className="text-base font-semibold text-gray-900">18% (CGST 9% + SGST 9%)</div>
-                        </div>
-                        <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-                          <div className="text-xs font-bold text-green-700 mb-2 uppercase">TDS Deduction</div>
-                          <div className="text-base font-semibold text-gray-900">{selectedSubmission.tdsRate || '2%'} as per Section 194J</div>
-                        </div>
-                      </div>
-                    </div>
-
                     {/* GST Summary */}
                     <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border-2 border-amber-200 shadow-lg">
                       <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
@@ -8547,10 +8551,10 @@ END:VCARD`;
                                             {filledItems.map((item: any, itemIdx: number) => (
                                               <tr key={itemIdx} className="text-gray-300 border-t border-white/5">
                                                 <td className="p-1 text-white">{item.description || 'N/A'}</td>
-                                                <td className="p-1 text-center">{item.days || '-'}</td>
-                                                <td className="p-1 text-center">{item.people || item.quantity || '-'}</td>
+                                                <td className="p-1 text-center">{item.noOfDays || item.days || '-'}</td>
+                                                <td className="p-1 text-center">{item.noOfPeople || item.people || item.noOfRooms || '-'}</td>
                                                 <td className="p-1 text-right">{item.perDay ? `₹${item.perDay.toLocaleString('en-IN')}` : '-'}</td>
-                                                <td className="p-1 text-right">{item.lumpsum ? `₹${item.lumpsum.toLocaleString('en-IN')}` : '-'}</td>
+                                                <td className="p-1 text-right">{(item.lumpsumFixed || item.lumpsum) ? `₹${(item.lumpsumFixed || item.lumpsum).toLocaleString('en-IN')}` : '-'}</td>
                                                 <td className="p-1 text-right font-bold text-emerald-400">₹{(item.total || 0).toLocaleString('en-IN')}</td>
                                               </tr>
                                             ))}
@@ -9454,6 +9458,123 @@ END:VCARD`;
                         </div>
                       ))}
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Status Change Modal with Comment */}
+        {showStatusChangeModal && pendingStatusChange && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-white/10">
+              {/* Modal Header */}
+              <div className={`p-6 ${
+                pendingStatusChange.newStatus === 'approved' ? 'bg-gradient-to-r from-green-600 to-emerald-600' :
+                pendingStatusChange.newStatus === 'in-production' ? 'bg-gradient-to-r from-cyan-600 to-blue-600' :
+                pendingStatusChange.newStatus === 'revision-requested' ? 'bg-gradient-to-r from-orange-600 to-amber-600' :
+                pendingStatusChange.newStatus === 'rejected' || pendingStatusChange.newStatus === 'scrapped' ? 'bg-gradient-to-r from-red-600 to-pink-600' :
+                'bg-gradient-to-r from-purple-600 to-pink-600'
+              }`}>
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
+                    <span className="text-3xl">
+                      {pendingStatusChange.newStatus === 'approved' ? '✅' :
+                       pendingStatusChange.newStatus === 'in-production' ? '🎬' :
+                       pendingStatusChange.newStatus === 'revision-requested' ? '📝' :
+                       pendingStatusChange.newStatus === 'rejected' || pendingStatusChange.newStatus === 'scrapped' ? '❌' :
+                       pendingStatusChange.newStatus === 'on-hold' ? '⏸️' :
+                       pendingStatusChange.newStatus === 'under-review' ? '👁️' :
+                       '📋'}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-white">Change Status</h3>
+                    <p className="text-white/80 text-sm font-semibold">
+                      {submissions.find(s => s.id === pendingStatusChange.submissionId)?.projectName || 'Project'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6">
+                {/* Status Change Info */}
+                <div className="bg-white/5 rounded-xl p-4 mb-6 border border-white/10">
+                  <div className="flex items-center gap-3">
+                    <div className="text-center">
+                      <div className="text-xs text-gray-500 font-semibold mb-1">Current</div>
+                      <div className="px-3 py-1.5 bg-gray-600/50 text-gray-300 font-bold rounded-lg text-sm">
+                        {submissions.find(s => s.id === pendingStatusChange.submissionId)?.status?.toUpperCase().replace('-', ' ') || 'PENDING'}
+                      </div>
+                    </div>
+                    <div className="text-2xl text-gray-500">→</div>
+                    <div className="text-center">
+                      <div className="text-xs text-gray-500 font-semibold mb-1">New Status</div>
+                      <div className={`px-3 py-1.5 font-bold rounded-lg text-sm ${
+                        pendingStatusChange.newStatus === 'approved' ? 'bg-green-500/30 text-green-300' :
+                        pendingStatusChange.newStatus === 'in-production' ? 'bg-cyan-500/30 text-cyan-300' :
+                        pendingStatusChange.newStatus === 'revision-requested' ? 'bg-orange-500/30 text-orange-300' :
+                        pendingStatusChange.newStatus === 'rejected' || pendingStatusChange.newStatus === 'scrapped' ? 'bg-red-500/30 text-red-300' :
+                        pendingStatusChange.newStatus === 'on-hold' ? 'bg-gray-500/30 text-gray-300' :
+                        'bg-blue-500/30 text-blue-300'
+                      }`}>
+                        {pendingStatusChange.newStatus.toUpperCase().replace('-', ' ')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Comment Field */}
+                <div className="mb-6">
+                  <label className="block text-white font-bold mb-2">
+                    💬 Add Comment for Creator
+                    <span className="text-gray-400 font-normal text-sm ml-2">(Optional)</span>
+                  </label>
+                  <textarea
+                    value={statusChangeComment}
+                    onChange={(e) => setStatusChangeComment(e.target.value)}
+                    placeholder={
+                      pendingStatusChange.newStatus === 'revision-requested'
+                        ? "Please describe what changes or revisions are needed..."
+                        : pendingStatusChange.newStatus === 'approved'
+                        ? "Add any feedback or congratulations message..."
+                        : pendingStatusChange.newStatus === 'rejected' || pendingStatusChange.newStatus === 'scrapped'
+                        ? "Provide reason for rejection (if any)..."
+                        : "Add any notes or comments for the creator..."
+                    }
+                    rows={4}
+                    className="w-full bg-white/10 border border-white/20 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all resize-none"
+                  />
+                  <p className="text-gray-500 text-xs mt-2">
+                    This comment will be visible to the creator in their activity log and notifications.
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowStatusChangeModal(false);
+                      setStatusChangeComment('');
+                      setPendingStatusChange(null);
+                    }}
+                    className="flex-1 px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={confirmStatusChange}
+                    className={`flex-1 px-4 py-3 font-black rounded-xl transition-all shadow-lg hover:shadow-xl ${
+                      pendingStatusChange.newStatus === 'approved' ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700' :
+                      pendingStatusChange.newStatus === 'in-production' ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700' :
+                      pendingStatusChange.newStatus === 'revision-requested' ? 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700' :
+                      pendingStatusChange.newStatus === 'rejected' || pendingStatusChange.newStatus === 'scrapped' ? 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700' :
+                      'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700'
+                    } text-white`}
+                  >
+                    Confirm Change
+                  </button>
                 </div>
               </div>
             </div>
