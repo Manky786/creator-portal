@@ -1623,6 +1623,26 @@ END:VCARD`;
   // Count new submissions
   const newSubmissionsCount = submissions.filter(s => isNewSubmission(s.submittedDate, s.id)).length;
 
+  // Generate default payment tranches based on project format
+  const getDefaultTranches = (format: string, totalBudget: number) => {
+    const isMicrodrama = format?.toLowerCase().includes('micro');
+
+    if (isMicrodrama) {
+      return [
+        { name: 'Tranche 1 - Agreement Signing', description: 'Due upon the signing of the agreement, against a duly approved invoice. Payment will be made within 15 days of the approved invoice date.', percentage: 50, amount: Math.round(totalBudget * 0.5), status: 'pending' },
+        { name: 'Tranche 2 - Final Deliverables', description: 'Due after the submission and approval of all final deliverables (TC, QC, and any other agreed-upon items), against a duly approved invoice. Payment will be processed within 15 days of the approved invoice date.', percentage: 50, amount: Math.round(totalBudget * 0.5), status: 'pending' },
+      ];
+    }
+
+    // Default 4-tranche structure for Feature/Series/Mini
+    return [
+      { name: 'Tranche 1 - Agreement Signing', description: 'Upon signing of the agreement. Payment released within 15 days of approved invoice.', percentage: 25, amount: Math.round(totalBudget * 0.25), status: 'pending' },
+      { name: 'Tranche 2 - Offline Edit Approval', description: 'Following the successful completion and approval of the offline edit. Payment released within 15 days of approved invoice.', percentage: 25, amount: Math.round(totalBudget * 0.25), status: 'pending' },
+      { name: 'Tranche 3 - Final Delivery & QC', description: 'After final Technical Check (TC), Quality Check (QC), and approval of all project deliverables. Payment released within 15 days of approved invoice.', percentage: 40, amount: Math.round(totalBudget * 0.40), status: 'pending' },
+      { name: 'Tranche 4 - Post-Delivery Payment', description: 'Payable 60 days after the final delivery, contingent upon the receipt of a duly approved invoice. Payment released within 15 days thereafter.', percentage: 10, amount: Math.round(totalBudget * 0.10), status: 'pending' },
+    ];
+  };
+
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'approved':
@@ -7853,19 +7873,30 @@ END:VCARD`;
 
                     {/* Payment Tranches */}
                     <div className="bg-white rounded-xl p-6 border-2 border-gray-200 shadow-lg">
-                      <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
-                        <span className="text-xl">📊</span>
-                        <span>Payment Tranches</span>
-                        {selectedSubmission.cashFlowTranches && (
-                          <span className="ml-2 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
-                            {selectedSubmission.cashFlowTranches.length} Tranches
-                          </span>
-                        )}
-                      </h3>
+                      {(() => {
+                        // Use saved tranches or generate default based on format
+                        const displayTranches = (selectedSubmission.cashFlowTranches && selectedSubmission.cashFlowTranches.length > 0)
+                          ? selectedSubmission.cashFlowTranches
+                          : getDefaultTranches(selectedSubmission.format, selectedSubmission.totalBudget || 0);
+                        const isDefaultTranches = !selectedSubmission.cashFlowTranches || selectedSubmission.cashFlowTranches.length === 0;
 
-                      {selectedSubmission.cashFlowTranches && selectedSubmission.cashFlowTranches.length > 0 ? (
-                        <div className="space-y-3">
-                          {selectedSubmission.cashFlowTranches.map((tranche: any, idx: number) => {
+                        return (
+                          <>
+                            <h3 className="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
+                              <span className="text-xl">📊</span>
+                              <span>Payment Tranches</span>
+                              <span className="ml-2 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
+                                {displayTranches.length} Tranches
+                              </span>
+                              {isDefaultTranches && (
+                                <span className="ml-2 px-3 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
+                                  Default Structure
+                                </span>
+                              )}
+                            </h3>
+
+                            <div className="space-y-3">
+                              {displayTranches.map((tranche: any, idx: number) => {
                             const baseAmount = tranche.amount || (selectedSubmission.totalBudget * (tranche.percentage || 0) / 100);
                             const gstAmount = baseAmount * 0.18;
                             const totalWithGst = baseAmount + gstAmount;
@@ -7970,36 +8001,36 @@ END:VCARD`;
                             );
                           })}
 
-                          {/* Total Summary */}
-                          <div className="bg-gradient-to-r from-emerald-100 to-green-100 rounded-xl p-4 border-2 border-emerald-300">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <span className="text-2xl">💰</span>
-                                <span className="text-lg font-black text-gray-900">Total</span>
-                                <span className="px-3 py-1 bg-emerald-200 text-emerald-900 rounded-full text-sm font-bold">
-                                  {selectedSubmission.cashFlowTranches.reduce((sum: number, t: any) => sum + (t.percentage || 0), 0)}%
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-6">
-                                <div className="text-right">
-                                  <div className="text-xs text-gray-600 font-semibold">Base Total</div>
-                                  <div className="font-bold text-gray-900">₹{(selectedSubmission.totalBudget || 0).toLocaleString('en-IN')}</div>
-                                </div>
-                                <div className="text-right">
-                                  <div className="text-xs text-amber-700 font-semibold">GST Total</div>
-                                  <div className="font-bold text-amber-800">₹{((selectedSubmission.totalBudget || 0) * 0.18).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
-                                </div>
-                                <div className="text-right">
-                                  <div className="text-xs text-emerald-700 font-semibold">Grand Total</div>
-                                  <div className="text-xl font-black text-emerald-900">₹{((selectedSubmission.totalBudget || 0) * 1.18).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                              {/* Total Summary */}
+                              <div className="bg-gradient-to-r from-emerald-100 to-green-100 rounded-xl p-4 border-2 border-emerald-300">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-2xl">💰</span>
+                                    <span className="text-lg font-black text-gray-900">Total</span>
+                                    <span className="px-3 py-1 bg-emerald-200 text-emerald-900 rounded-full text-sm font-bold">
+                                      {displayTranches.reduce((sum: number, t: any) => sum + (t.percentage || 0), 0)}%
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-6">
+                                    <div className="text-right">
+                                      <div className="text-xs text-gray-600 font-semibold">Base Total</div>
+                                      <div className="font-bold text-gray-900">₹{(selectedSubmission.totalBudget || 0).toLocaleString('en-IN')}</div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-xs text-amber-700 font-semibold">GST Total</div>
+                                      <div className="font-bold text-amber-800">₹{((selectedSubmission.totalBudget || 0) * 0.18).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-xs text-emerald-700 font-semibold">Grand Total</div>
+                                      <div className="text-xl font-black text-emerald-900">₹{((selectedSubmission.totalBudget || 0) * 1.18).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</div>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 text-gray-500 font-semibold">No payment tranches defined</div>
-                      )}
+                          </>
+                        );
+                      })()}
                     </div>
 
                     {/* GST Summary */}

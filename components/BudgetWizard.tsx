@@ -72,7 +72,7 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
   const handleSubmit = async () => {
     // Check SOP acknowledgment first
     if (!(formData as any).sopAcknowledged) {
-      setSubmitError('⚠️ आपको SOP Terms & Conditions acknowledge करना अनिवार्य है। कृपया Step 9 (SOPs) पर जाएं और acknowledgment checkbox check करें।');
+      setSubmitError('⚠️ SOP Terms & Conditions acknowledgment is mandatory before submission. Please go to Step 9 (SOPs) and check the acknowledgment checkbox.');
       return;
     }
 

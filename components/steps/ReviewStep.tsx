@@ -1407,7 +1407,7 @@ export default function ReviewStep({ formData, setFormData, onBack, onSubmit, on
               className="px-12 py-4 rounded-xl text-lg font-black transition-all duration-200 flex items-center gap-3 bg-gradient-to-r from-red-500 via-orange-500 to-red-600 text-white hover:from-red-600 hover:via-orange-600 hover:to-red-700 shadow-lg hover:shadow-2xl animate-pulse border-2 border-white/20"
             >
               <span>⚠️</span>
-              <span>SOP Acknowledge करें</span>
+              <span>Acknowledge SOPs</span>
             </button>
           )}
         </div>
@@ -1423,8 +1423,8 @@ export default function ReviewStep({ formData, setFormData, onBack, onSubmit, on
             <div className="flex-1">
               <h3 className="text-xl font-black text-white mb-1">SOP Acknowledgment Required!</h3>
               <p className="text-red-100 font-semibold">
-                आपको project submit करने से पहले SOP Terms & Conditions acknowledge करना अनिवार्य है।
-                कृपया Step 9 (SOPs) पर जाएं और checkbox check करें।
+                You must acknowledge the SOP Terms & Conditions before submitting your project.
+                Please go to Step 9 (SOPs) and check the acknowledgment checkbox.
               </p>
             </div>
             <button
