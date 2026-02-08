@@ -9059,139 +9059,80 @@ END:VCARD`;
               {/* Modal Footer Actions */}
               <div className="flex-shrink-0 bg-gradient-to-r from-gray-900/95 to-black/95 backdrop-blur-xl border-t border-white/10 p-3 md:p-4">
                 <div className="flex items-center gap-2 md:gap-3">
+                  {/* Close Button */}
                   <button
                     onClick={() => {
                       setSelectedSubmission(null);
                       setDetailView('overview');
                     }}
-                    className="px-4 py-2 md:px-5 md:py-2.5 bg-white/5 hover:bg-white/10 text-white text-sm font-bold rounded-lg border border-white/20 transition-all"
+                    className="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white text-sm font-bold rounded-lg border border-white/20 transition-all"
                   >
                     Close
                   </button>
 
-                  {/* Quick Action Buttons Based on Status */}
+                  {/* Current Status Display */}
+                  <div className={`px-4 py-2.5 rounded-lg border-2 flex items-center gap-2 ${getStatusConfig(selectedSubmission.status).badge}`}>
+                    <span className="text-lg">{getStatusConfig(selectedSubmission.status).icon.split(' ')[0]}</span>
+                    <span className="font-black text-sm">{getStatusConfig(selectedSubmission.status).text}</span>
+                  </div>
+
+                  {/* Change Status Button - Opens Modal with All Options */}
+                  <button
+                    onClick={() => setShowStatusMenu(selectedSubmission.id)}
+                    className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-black rounded-lg shadow-lg transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>🔄</span>
+                    <span>Change Status</span>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Quick Status Actions - Context Aware */}
                   {selectedSubmission.status === 'pending' && (
-                    <>
-                      <button
-                        onClick={() => handleStatusChange(selectedSubmission.id, 'approved')}
-                        className="flex-1 px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
-                      >
-                        ✓ Approve Project
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange(selectedSubmission.id, 'revision-requested')}
-                        className="px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
-                      >
-                        📝 Request Revision
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange(selectedSubmission.id, 'on-hold')}
-                        className="px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
-                      >
-                        ⏸️ Put On Hold
-                      </button>
-                    </>
+                    <button
+                      onClick={() => handleStatusChange(selectedSubmission.id, 'under-review')}
+                      className="px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
+                    >
+                      👁️ Start Review
+                    </button>
                   )}
 
                   {selectedSubmission.status === 'under-review' && (
-                    <>
-                      <button
-                        onClick={() => handleStatusChange(selectedSubmission.id, 'approved')}
-                        className="flex-1 px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
-                      >
-                        ✓ Approve Project
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange(selectedSubmission.id, 'revision-requested')}
-                        className="px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
-                      >
-                        📝 Revision Needed
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange(selectedSubmission.id, 'scrapped')}
-                        className="px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
-                      >
-                        🗑️ Scrap
-                      </button>
-                    </>
+                    <button
+                      onClick={() => handleStatusChange(selectedSubmission.id, 'approved')}
+                      className="px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
+                    >
+                      ✅ Approve
+                    </button>
                   )}
 
                   {selectedSubmission.status === 'approved' && (
-                    <>
-                      <div className="flex-1 text-center">
-                        <span className="text-green-400 font-black text-sm md:text-base">✓ Project Approved</span>
-                      </div>
-                      <button
-                        onClick={() => handleStatusChange(selectedSubmission.id, 'in-production')}
-                        className="px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
-                      >
-                        🎬 Move to Production
-                      </button>
-                    </>
+                    <button
+                      onClick={() => handleStatusChange(selectedSubmission.id, 'agreement-signed')}
+                      className="px-4 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
+                    >
+                      📄 Sign Agreement
+                    </button>
                   )}
 
-                  {selectedSubmission.status === 'revision-requested' && (
-                    <>
-                      <button
-                        onClick={() => handleStatusChange(selectedSubmission.id, 'under-review')}
-                        className="flex-1 px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
-                      >
-                        👁️ Move to Review
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange(selectedSubmission.id, 'on-hold')}
-                        className="px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
-                      >
-                        ⏸️ Put On Hold
-                      </button>
-                    </>
-                  )}
-
-                  {selectedSubmission.status === 'on-hold' && (
-                    <>
-                      <button
-                        onClick={() => handleStatusChange(selectedSubmission.id, 'under-review')}
-                        className="flex-1 px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
-                      >
-                        👁️ Resume Review
-                      </button>
-                      <button
-                        onClick={() => handleStatusChange(selectedSubmission.id, 'scrapped')}
-                        className="px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
-                      >
-                        🗑️ Scrap Project
-                      </button>
-                    </>
-                  )}
-
-                  {selectedSubmission.status === 'in-production' && (
-                    <div className="flex-1 text-center">
-                      <span className="text-cyan-400 font-black text-sm md:text-base">🎬 In Production</span>
-                    </div>
-                  )}
-
-                  {selectedSubmission.status === 'scrapped' && (
-                    <>
-                      <div className="flex-1 text-center">
-                        <span className="text-gray-400 font-black text-sm md:text-base">🗑️ Project Scrapped</span>
-                      </div>
-                      <button
-                        onClick={() => handleStatusChange(selectedSubmission.id, 'pending')}
-                        className="px-4 py-2 md:px-5 md:py-2.5 bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
-                      >
-                        ↩️ Restore to Pending
-                      </button>
-                    </>
+                  {selectedSubmission.status === 'agreement-signed' && (
+                    <button
+                      onClick={() => handleStatusChange(selectedSubmission.id, 'in-production')}
+                      className="px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white text-sm font-black rounded-lg shadow-lg transition-all"
+                    >
+                      🎬 Start Production
+                    </button>
                   )}
 
                   {/* Delete Button - Always Available */}
                   <div className="relative">
                     <button
                       onClick={() => setShowDeleteConfirm(selectedSubmission.id)}
-                      className="px-4 py-2 md:px-5 md:py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-black rounded-lg shadow-lg transition-all border-2 border-red-500"
+                      className="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-sm font-black rounded-lg shadow-lg transition-all border-2 border-red-500"
                       title="Delete Project"
                     >
-                      🗑️ Delete
+                      🗑️
                     </button>
                     {showDeleteConfirm === selectedSubmission.id && (
                       <div className="absolute right-0 bottom-full mb-2 bg-gray-900 border-2 border-red-500 rounded-lg shadow-2xl z-50 p-4 min-w-[300px]">
