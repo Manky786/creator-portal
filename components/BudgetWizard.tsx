@@ -143,19 +143,130 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
     const existingSubmissions = JSON.parse(localStorage.getItem('stage_submissions') || '[]');
 
     if (editingId) {
-      // Update existing submission
+      // Update existing submission - track changes
       const index = existingSubmissions.findIndex((s: any) => s.id === editingId);
       if (index !== -1) {
-        existingSubmissions[index] = data;
+        const oldData = existingSubmissions[index];
+        const changes = detectChanges(oldData, data);
+
+        // Add change history to submission
+        const changeHistory = oldData.changeHistory || [];
+        if (changes.length > 0) {
+          changeHistory.push({
+            id: `change_${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            changedBy: 'creator',
+            changes: changes,
+            summary: `Creator updated ${changes.length} field${changes.length > 1 ? 's' : ''}`
+          });
+        }
+
+        existingSubmissions[index] = { ...data, changeHistory };
+
+        // Create notification for admin about creator changes
+        if (changes.length > 0) {
+          createAdminNotification(data, changes);
+        }
       } else {
-        existingSubmissions.unshift(data); // Add to beginning if not found
+        existingSubmissions.unshift(data);
       }
     } else {
       // New submission - add to beginning
       existingSubmissions.unshift(data);
+
+      // Create notification for admin about new submission
+      createNewSubmissionNotification(data);
     }
 
     localStorage.setItem('stage_submissions', JSON.stringify(existingSubmissions));
+  };
+
+  // Detect what fields changed between old and new data
+  const detectChanges = (oldData: any, newData: any): Array<{field: string, oldValue: any, newValue: any, label: string}> => {
+    const changes: Array<{field: string, oldValue: any, newValue: any, label: string}> = [];
+
+    const fieldLabels: Record<string, string> = {
+      projectName: 'Project Name',
+      productionCompany: 'Production Company',
+      culture: 'Culture',
+      format: 'Format',
+      genre: 'Genre',
+      subGenre: 'Sub-Genre',
+      estimatedBudget: 'Total Budget',
+      totalDuration: 'Total Duration',
+      shootDays: 'Shoot Days',
+      shootStartDate: 'Shoot Start Date',
+      shootEndDate: 'Shoot End Date',
+      creatorName: 'Creator Name',
+      officialEmail: 'Email',
+      phone: 'Phone',
+      director: 'Director',
+      dop: 'DOP',
+      editor: 'Editor',
+      musicComposer: 'Music Composer',
+      logline: 'Logline',
+      synopsis: 'Synopsis',
+      targetAudience: 'Target Audience',
+    };
+
+    const fieldsToTrack = Object.keys(fieldLabels);
+
+    for (const field of fieldsToTrack) {
+      const oldVal = oldData[field];
+      const newVal = newData[field];
+
+      // Simple comparison for strings/numbers
+      if (typeof oldVal !== 'object' && typeof newVal !== 'object') {
+        if (String(oldVal || '') !== String(newVal || '') && (oldVal || newVal)) {
+          changes.push({
+            field,
+            oldValue: oldVal || '(empty)',
+            newValue: newVal || '(empty)',
+            label: fieldLabels[field] || field
+          });
+        }
+      }
+    }
+
+    return changes;
+  };
+
+  // Create notification for admin when creator makes changes
+  const createAdminNotification = (data: any, changes: Array<{field: string, oldValue: any, newValue: any, label: string}>) => {
+    const notification = {
+      id: `admin_notif_${Date.now()}_${data.id}`,
+      type: 'creator_edit',
+      projectId: data.id,
+      projectName: data.projectName || 'Untitled Project',
+      creatorEmail: data.officialEmail || '',
+      message: `✏️ Creator updated "${data.projectName}" - ${changes.length} field${changes.length > 1 ? 's' : ''} changed`,
+      changes: changes,
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+
+    const existingNotifications = JSON.parse(localStorage.getItem('stage_admin_notifications') || '[]');
+    localStorage.setItem('stage_admin_notifications', JSON.stringify([notification, ...existingNotifications]));
+  };
+
+  // Create notification for admin about new submission
+  const createNewSubmissionNotification = (data: any) => {
+    const notification = {
+      id: `admin_notif_${Date.now()}_${data.id}`,
+      type: 'new_submission',
+      projectId: data.id,
+      projectName: data.projectName || 'Untitled Project',
+      creatorEmail: data.officialEmail || '',
+      culture: data.culture,
+      format: data.format,
+      budget: data.estimatedBudget,
+      message: `🆕 New project submitted: "${data.projectName}" by ${data.creatorName || 'Creator'}`,
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
+
+    const existingNotifications = JSON.parse(localStorage.getItem('stage_admin_notifications') || '[]');
+    localStorage.setItem('stage_admin_notifications', JSON.stringify([notification, ...existingNotifications]));
   };
 
   const CurrentStepComponent = steps[currentStep - 1].component;

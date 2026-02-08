@@ -842,6 +842,10 @@ export default function AdminDashboard() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showAnalytics, setShowAnalytics] = useState(false);
 
+  // Admin Notifications (from creators)
+  const [adminNotifications, setAdminNotifications] = useState<any[]>([]);
+  const [showCreatorUpdatesPanel, setShowCreatorUpdatesPanel] = useState(false);
+
   // Talent Library states
   const [talentLibrary, setTalentLibrary] = useState<any[]>([]);
   const [selectedTalent, setSelectedTalent] = useState<any>(null);
@@ -1489,6 +1493,10 @@ END:VCARD`;
         setSubmissions([...transformedSubmissions, ...sampleSubmissions]);
       }
       setLocalSubmissionsLoaded(true);
+
+      // Load admin notifications (from creators)
+      const savedAdminNotifs = JSON.parse(localStorage.getItem('stage_admin_notifications') || '[]');
+      setAdminNotifications(savedAdminNotifs);
     }
   }, [localSubmissionsLoaded]);
 
@@ -3054,6 +3062,19 @@ END:VCARD`;
                   {pendingEditRequestsCount > 0 && (
                     <div className="absolute -top-1 -right-1 min-w-[18px] md:min-w-[24px] h-[18px] md:h-6 px-1 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
                       <span className="text-[10px] md:text-xs font-black text-white">{pendingEditRequestsCount}</span>
+                    </div>
+                  )}
+                </button>
+                {/* Creator Updates Button */}
+                <button
+                  className="relative p-2 md:p-2.5 bg-white/10 backdrop-blur-lg rounded-lg border border-white/20 hover:bg-white/20 transition-all"
+                  onClick={() => setShowCreatorUpdatesPanel(!showCreatorUpdatesPanel)}
+                  title="Creator Updates & Changes"
+                >
+                  <span className="text-lg md:text-2xl">📝</span>
+                  {adminNotifications.filter(n => !n.read).length > 0 && (
+                    <div className="absolute -top-1 -right-1 min-w-[18px] md:min-w-[24px] h-[18px] md:h-6 px-1 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                      <span className="text-[10px] md:text-xs font-black text-white">{adminNotifications.filter(n => !n.read).length}</span>
                     </div>
                   )}
                 </button>
@@ -8829,7 +8850,7 @@ END:VCARD`;
                         <div className="space-y-0">
                           {/* Generate activity from available data */}
                           {(() => {
-                            const activities: { date: string; time: string; action: string; description: string; user: string; type: string; timestamp?: string }[] = [];
+                            const activities: { date: string; time: string; action: string; description: string; user: string; type: string; timestamp?: string; changes?: any[] }[] = [];
 
                             // 1. Load real activity logs from localStorage
                             const savedLogs = getActivityLogs(selectedSubmission.id);
@@ -8837,8 +8858,24 @@ END:VCARD`;
                               activities.push(...savedLogs);
                             }
 
-                            // 2. If no saved logs, add default submission entry
-                            if (savedLogs.length === 0) {
+                            // 2. Load change history from submission
+                            if (selectedSubmission.changeHistory && selectedSubmission.changeHistory.length > 0) {
+                              selectedSubmission.changeHistory.forEach((change: any) => {
+                                activities.push({
+                                  date: formatDate(change.timestamp),
+                                  time: new Date(change.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
+                                  action: change.changedBy === 'creator' ? 'Creator Updated Project' : 'Project Updated',
+                                  description: change.summary || `${change.changes?.length || 0} field(s) changed`,
+                                  user: change.changedBy === 'creator' ? (selectedSubmission.creator || 'Creator') : 'Admin',
+                                  type: 'edit',
+                                  timestamp: change.timestamp,
+                                  changes: change.changes
+                                });
+                              });
+                            }
+
+                            // 3. If no activities, add default submission entry
+                            if (activities.length === 0) {
                               // Add initial submission entry
                               activities.push({
                                 date: formatDate(selectedSubmission.submittedDate),
@@ -8851,7 +8888,7 @@ END:VCARD`;
                               });
                             }
 
-                            // 3. Sort by timestamp (newest first)
+                            // 4. Sort by timestamp (newest first)
                             activities.sort((a, b) => {
                               const dateA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
                               const dateB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
@@ -8869,6 +8906,7 @@ END:VCARD`;
                                 <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg ${
                                   activity.type === 'submit' ? 'bg-green-500/20 border-2 border-green-500 text-green-400' :
                                   activity.type === 'status' ? 'bg-blue-500/20 border-2 border-blue-500 text-blue-400' :
+                                  activity.type === 'edit' ? 'bg-orange-500/20 border-2 border-orange-500 text-orange-400' :
                                   activity.type === 'assign' ? 'bg-purple-500/20 border-2 border-purple-500 text-purple-400' :
                                   activity.type === 'feedback' ? 'bg-amber-500/20 border-2 border-amber-500 text-amber-400' :
                                   activity.type === 'review' ? 'bg-cyan-500/20 border-2 border-cyan-500 text-cyan-400' :
@@ -8879,6 +8917,7 @@ END:VCARD`;
                                 }`}>
                                   {activity.type === 'submit' ? '📤' :
                                    activity.type === 'status' ? '🔄' :
+                                   activity.type === 'edit' ? '✏️' :
                                    activity.type === 'assign' ? '👤' :
                                    activity.type === 'feedback' ? '💬' :
                                    activity.type === 'review' ? '👁️' :
@@ -8895,10 +8934,39 @@ END:VCARD`;
                                       <span className="text-gray-500 text-xs font-semibold">{activity.date} • {activity.time}</span>
                                     </div>
                                     <p className="text-gray-400 text-sm mb-2">{activity.description}</p>
-                                    <div className="flex items-center gap-2">
+
+                                    {/* Show changes if available */}
+                                    {activity.changes && activity.changes.length > 0 && (
+                                      <div className="mt-3 bg-black/30 rounded-lg p-3 space-y-2 border border-orange-500/30">
+                                        <div className="text-xs font-bold text-orange-400 mb-2 flex items-center gap-2">
+                                          <span>📝</span> Fields Changed:
+                                        </div>
+                                        {activity.changes.map((change: any, idx: number) => (
+                                          <div key={idx} className="text-xs py-1 border-b border-white/5 last:border-0">
+                                            <span className="text-gray-400 font-semibold">{change.label}:</span>
+                                            <div className="flex items-center gap-2 mt-1 ml-4">
+                                              <span className="text-red-400 bg-red-500/10 px-2 py-0.5 rounded line-through">
+                                                {String(change.oldValue).substring(0, 40)}{String(change.oldValue).length > 40 ? '...' : ''}
+                                              </span>
+                                              <span className="text-gray-500">→</span>
+                                              <span className="text-green-400 bg-green-500/10 px-2 py-0.5 rounded">
+                                                {String(change.newValue).substring(0, 40)}{String(change.newValue).length > 40 ? '...' : ''}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+
+                                    <div className="flex items-center gap-2 mt-2">
                                       <span className="text-xs px-2 py-1 bg-white/10 rounded-full text-gray-300 font-semibold">
                                         By: {activity.user}
                                       </span>
+                                      {activity.type === 'edit' && (
+                                        <span className="text-xs px-2 py-1 bg-orange-500/20 rounded-full text-orange-400 font-semibold">
+                                          Creator Edit
+                                        </span>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -9607,6 +9675,151 @@ END:VCARD`;
                     Confirm Change
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Creator Updates Panel */}
+        {showCreatorUpdatesPanel && (
+          <div className="fixed inset-0 z-50 flex justify-end">
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowCreatorUpdatesPanel(false)}
+            ></div>
+
+            {/* Panel */}
+            <div className="relative w-full max-w-lg bg-gradient-to-br from-gray-900 to-gray-800 h-full overflow-y-auto border-l border-white/10 shadow-2xl">
+              {/* Header */}
+              <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-cyan-600 p-6 z-10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                      <span className="text-2xl">📝</span>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-white">Creator Updates</h3>
+                      <p className="text-blue-200 text-sm font-semibold">
+                        {adminNotifications.filter(n => !n.read).length} unread update{adminNotifications.filter(n => !n.read).length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowCreatorUpdatesPanel(false)}
+                    className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all"
+                  >
+                    <span className="text-xl">✕</span>
+                  </button>
+                </div>
+                {/* Actions */}
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={() => {
+                      const updated = adminNotifications.map(n => ({ ...n, read: true }));
+                      setAdminNotifications(updated);
+                      localStorage.setItem('stage_admin_notifications', JSON.stringify(updated));
+                    }}
+                    className="flex-1 px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-sm font-bold rounded-lg transition-all"
+                  >
+                    ✓ Mark all as read
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAdminNotifications([]);
+                      localStorage.setItem('stage_admin_notifications', JSON.stringify([]));
+                    }}
+                    className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white/80 text-sm font-bold rounded-lg transition-all"
+                  >
+                    🗑️ Clear
+                  </button>
+                </div>
+              </div>
+
+              {/* Notifications List */}
+              <div className="p-4 space-y-3">
+                {adminNotifications.length === 0 ? (
+                  <div className="text-center py-16">
+                    <span className="text-6xl">📭</span>
+                    <p className="text-gray-400 mt-4 font-bold text-lg">No creator updates</p>
+                    <p className="text-gray-500 text-sm mt-2">Updates from creators will appear here</p>
+                  </div>
+                ) : (
+                  adminNotifications.map((notif: any) => (
+                    <div
+                      key={notif.id}
+                      className={`rounded-xl p-4 border-2 transition-all cursor-pointer ${
+                        notif.read
+                          ? 'bg-white/5 border-white/10'
+                          : 'bg-blue-500/10 border-blue-500/50'
+                      }`}
+                      onClick={() => {
+                        // Mark as read
+                        const updated = adminNotifications.map(n =>
+                          n.id === notif.id ? { ...n, read: true } : n
+                        );
+                        setAdminNotifications(updated);
+                        localStorage.setItem('stage_admin_notifications', JSON.stringify(updated));
+
+                        // Find and select the project
+                        const project = submissions.find(s =>
+                          s.id === notif.projectId ||
+                          s.projectName === notif.projectName
+                        );
+                        if (project) {
+                          setSelectedSubmission(project);
+                          setDetailView('activity');
+                          setShowCreatorUpdatesPanel(false);
+                        }
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          notif.type === 'creator_edit' ? 'bg-blue-500/30' :
+                          notif.type === 'new_submission' ? 'bg-green-500/30' :
+                          'bg-purple-500/30'
+                        }`}>
+                          <span className="text-lg">
+                            {notif.type === 'creator_edit' ? '✏️' :
+                             notif.type === 'new_submission' ? '🆕' : '📋'}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-bold text-sm">{notif.projectName}</div>
+                          <div className="text-gray-400 text-xs mt-0.5">{notif.creatorEmail}</div>
+                          <div className="text-gray-300 text-sm mt-2">{notif.message}</div>
+
+                          {/* Show changes if available */}
+                          {notif.changes && notif.changes.length > 0 && (
+                            <div className="mt-3 bg-black/30 rounded-lg p-3 space-y-2">
+                              <div className="text-xs font-bold text-blue-400 mb-2">Changes Made:</div>
+                              {notif.changes.slice(0, 5).map((change: any, idx: number) => (
+                                <div key={idx} className="text-xs">
+                                  <span className="text-gray-400">{change.label}:</span>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-red-400 line-through">{String(change.oldValue).substring(0, 30)}{String(change.oldValue).length > 30 ? '...' : ''}</span>
+                                    <span className="text-gray-500">→</span>
+                                    <span className="text-green-400">{String(change.newValue).substring(0, 30)}{String(change.newValue).length > 30 ? '...' : ''}</span>
+                                  </div>
+                                </div>
+                              ))}
+                              {notif.changes.length > 5 && (
+                                <div className="text-xs text-gray-500">+{notif.changes.length - 5} more changes</div>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="text-gray-500 text-xs mt-2">
+                            {new Date(notif.timestamp).toLocaleString('en-IN')}
+                          </div>
+                        </div>
+                        {!notif.read && (
+                          <div className="w-3 h-3 bg-blue-500 rounded-full flex-shrink-0"></div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
