@@ -1,0 +1,51 @@
+{
+  "name": "STAGE Creator Portal",
+  "short_name": "STAGE Creator",
+  "description": "Submit your content proposals to STAGE - India's premier regional OTT platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#E11D48",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/stage-logo-official.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/stage-logo-official.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["entertainment", "business", "productivity"],
+  "lang": "en-IN",
+  "dir": "ltr",
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Submit Project",
+      "short_name": "Submit",
+      "description": "Submit a new project proposal",
+      "url": "/creator",
+      "icons": [{ "src": "/images/stage-logo-official.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "My Projects",
+      "short_name": "Projects",
+      "description": "View your submitted projects",
+      "url": "/my-projects",
+      "icons": [{ "src": "/images/stage-logo-official.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Admin Panel",
+      "short_name": "Admin",
+      "description": "Admin dashboard",
+      "url": "/admin",
+      "icons": [{ "src": "/images/stage-logo-official.png", "sizes": "96x96" }]
+    }
+  ]
+}

@@ -840,7 +840,17 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'budget' | 'status'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(true); // Show by default
+
+  // Advanced Filter states
+  const [dateRangeFrom, setDateRangeFrom] = useState('');
+  const [dateRangeTo, setDateRangeTo] = useState('');
+  const [budgetMin, setBudgetMin] = useState('');
+  const [budgetMax, setBudgetMax] = useState('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Document Preview state
+  const [previewDocument, setPreviewDocument] = useState<{ url: string; name: string; type: string } | null>(null);
 
   // Admin Notifications (from creators)
   const [adminNotifications, setAdminNotifications] = useState<any[]>([]);
@@ -2933,12 +2943,38 @@ END:VCARD`;
       const searchMatch = searchQuery === '' ||
         s.projectName?.toLowerCase().includes(searchLower) ||
         s.creator?.toLowerCase().includes(searchLower) ||
+        s.creatorName?.toLowerCase().includes(searchLower) ||
         s.director?.toLowerCase().includes(searchLower) ||
         s.culture?.toLowerCase().includes(searchLower) ||
         s.format?.toLowerCase().includes(searchLower) ||
-        s.genre?.toLowerCase().includes(searchLower);
+        s.genre?.toLowerCase().includes(searchLower) ||
+        s.officialEmail?.toLowerCase().includes(searchLower);
 
-      return statusMatch && formatMatch && cultureMatch && searchMatch;
+      // Date range filter
+      let dateMatch = true;
+      if (dateRangeFrom) {
+        const fromDate = new Date(dateRangeFrom);
+        const submitDate = new Date(s.submittedDate || s.submitted_at);
+        dateMatch = dateMatch && submitDate >= fromDate;
+      }
+      if (dateRangeTo) {
+        const toDate = new Date(dateRangeTo);
+        toDate.setHours(23, 59, 59); // Include the entire day
+        const submitDate = new Date(s.submittedDate || s.submitted_at);
+        dateMatch = dateMatch && submitDate <= toDate;
+      }
+
+      // Budget range filter
+      let budgetMatch = true;
+      const projectBudget = s.totalBudget || s.estimatedBudget || 0;
+      if (budgetMin) {
+        budgetMatch = budgetMatch && projectBudget >= parseInt(budgetMin);
+      }
+      if (budgetMax) {
+        budgetMatch = budgetMatch && projectBudget <= parseInt(budgetMax);
+      }
+
+      return statusMatch && formatMatch && cultureMatch && searchMatch && dateMatch && budgetMatch;
     })
     .sort((a, b) => {
       let comparison = 0;
@@ -3340,6 +3376,7 @@ END:VCARD`;
                 { status: 'pending', label: 'Pending', count: stats.pending, color: 'bg-yellow-600/20 hover:bg-yellow-600/40 border border-yellow-600/50' },
                 { status: 'under-review', label: 'Under Review', count: stats.underReview, color: 'bg-blue-600/20 hover:bg-blue-600/40 border border-blue-600/50' },
                 { status: 'approved', label: 'Approved', count: stats.approved, color: 'bg-green-600/20 hover:bg-green-600/40 border border-green-600/50' },
+                { status: 'agreement-signed', label: 'Agreement', count: submissions.filter(s => s.status === 'agreement-signed').length, color: 'bg-teal-600/20 hover:bg-teal-600/40 border border-teal-600/50' },
                 { status: 'in-production', label: 'In Production', count: stats.inProduction, color: 'bg-cyan-600/20 hover:bg-cyan-600/40 border border-cyan-600/50' },
                 { status: 'revision-requested', label: 'Revision', count: stats.revisionRequested, color: 'bg-purple-600/20 hover:bg-purple-600/40 border border-purple-600/50' },
                 { status: 'on-hold', label: 'On Hold', count: stats.onHold, color: 'bg-orange-600/20 hover:bg-orange-600/40 border border-orange-600/50' },
@@ -3409,6 +3446,16 @@ END:VCARD`;
                   {sortOrder === 'asc' ? '↑' : '↓'}
                 </button>
                 <button
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className={`px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+                    showAdvancedFilters
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white'
+                      : 'bg-white/5 border border-white/20 text-white hover:bg-white/10'
+                  }`}
+                >
+                  🎛️ Filters
+                </button>
+                <button
                   onClick={() => setShowAnalytics(!showAnalytics)}
                   className={`px-4 py-3 rounded-xl font-bold text-sm transition-all ${
                     showAnalytics
@@ -3420,6 +3467,190 @@ END:VCARD`;
                 </button>
               </div>
             </div>
+
+            {/* Advanced Filters Panel */}
+            {showAdvancedFilters && (
+              <div className="mb-6 bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-2xl border border-purple-500/30 p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-black text-white flex items-center gap-2">
+                    <span>🎛️</span> Advanced Filters
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setDateRangeFrom('');
+                      setDateRangeTo('');
+                      setBudgetMin('');
+                      setBudgetMax('');
+                      setFilterStatus('all');
+                      setFilterFormat('all');
+                      setFilterCulture('all');
+                    }}
+                    className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-sm font-bold rounded-lg transition-all"
+                  >
+                    Clear All
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Date Range From */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2">📅 From Date</label>
+                    <input
+                      type="date"
+                      value={dateRangeFrom}
+                      onChange={(e) => setDateRangeFrom(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+
+                  {/* Date Range To */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2">📅 To Date</label>
+                    <input
+                      type="date"
+                      value={dateRangeTo}
+                      onChange={(e) => setDateRangeTo(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+
+                  {/* Budget Min */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2">💰 Min Budget (₹)</label>
+                    <input
+                      type="number"
+                      value={budgetMin}
+                      onChange={(e) => setBudgetMin(e.target.value)}
+                      placeholder="e.g., 1000000"
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 placeholder-gray-500"
+                    />
+                  </div>
+
+                  {/* Budget Max */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2">💰 Max Budget (₹)</label>
+                    <input
+                      type="number"
+                      value={budgetMax}
+                      onChange={(e) => setBudgetMax(e.target.value)}
+                      placeholder="e.g., 50000000"
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 placeholder-gray-500"
+                    />
+                  </div>
+
+                  {/* Culture Filter */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2">🌍 Culture</label>
+                    <select
+                      value={filterCulture}
+                      onChange={(e) => setFilterCulture(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 appearance-none cursor-pointer"
+                    >
+                      <option value="all">All Cultures</option>
+                      <option value="haryanvi">Haryanvi</option>
+                      <option value="rajasthani">Rajasthani</option>
+                      <option value="bhojpuri">Bhojpuri</option>
+                      <option value="gujarati">Gujarati</option>
+                    </select>
+                  </div>
+
+                  {/* Format Filter */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2">🎬 Format</label>
+                    <select
+                      value={filterFormat}
+                      onChange={(e) => setFilterFormat(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 appearance-none cursor-pointer"
+                    >
+                      <option value="all">All Formats</option>
+                      <option value="Feature Film">Feature Film</option>
+                      <option value="Mini Film">Mini Film</option>
+                      <option value="Long Series">Long Series</option>
+                      <option value="Limited Series">Limited Series</option>
+                      <option value="Microdrama">Microdrama</option>
+                    </select>
+                  </div>
+
+                  {/* Status Filter */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2">📋 Status</label>
+                    <select
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 appearance-none cursor-pointer"
+                    >
+                      <option value="all">All Statuses</option>
+                      <option value="pending">Pending</option>
+                      <option value="under-review">Under Review</option>
+                      <option value="approved">Approved</option>
+                      <option value="agreement-signed">Agreement Signed</option>
+                      <option value="in-production">In Production</option>
+                      <option value="revision-requested">Revision Requested</option>
+                      <option value="on-hold">On Hold</option>
+                      <option value="scrapped">Scrapped</option>
+                    </select>
+                  </div>
+
+                  {/* Quick Budget Presets */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-400 mb-2">⚡ Quick Budget</label>
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={() => { setBudgetMin(''); setBudgetMax('5000000'); }}
+                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg transition-all"
+                      >
+                        Under 50L
+                      </button>
+                      <button
+                        onClick={() => { setBudgetMin('5000000'); setBudgetMax('20000000'); }}
+                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg transition-all"
+                      >
+                        50L - 2Cr
+                      </button>
+                      <button
+                        onClick={() => { setBudgetMin('20000000'); setBudgetMax(''); }}
+                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg transition-all"
+                      >
+                        Above 2Cr
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Active Filters Summary */}
+                {(dateRangeFrom || dateRangeTo || budgetMin || budgetMax) && (
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-gray-400 text-sm">Active filters:</span>
+                      {dateRangeFrom && (
+                        <span className="px-2 py-1 bg-purple-500/30 text-purple-300 text-xs font-bold rounded-lg flex items-center gap-1">
+                          From: {dateRangeFrom}
+                          <button onClick={() => setDateRangeFrom('')} className="hover:text-white">×</button>
+                        </span>
+                      )}
+                      {dateRangeTo && (
+                        <span className="px-2 py-1 bg-purple-500/30 text-purple-300 text-xs font-bold rounded-lg flex items-center gap-1">
+                          To: {dateRangeTo}
+                          <button onClick={() => setDateRangeTo('')} className="hover:text-white">×</button>
+                        </span>
+                      )}
+                      {budgetMin && (
+                        <span className="px-2 py-1 bg-green-500/30 text-green-300 text-xs font-bold rounded-lg flex items-center gap-1">
+                          Min: ₹{parseInt(budgetMin).toLocaleString('en-IN')}
+                          <button onClick={() => setBudgetMin('')} className="hover:text-white">×</button>
+                        </span>
+                      )}
+                      {budgetMax && (
+                        <span className="px-2 py-1 bg-green-500/30 text-green-300 text-xs font-bold rounded-lg flex items-center gap-1">
+                          Max: ₹{parseInt(budgetMax).toLocaleString('en-IN')}
+                          <button onClick={() => setBudgetMax('')} className="hover:text-white">×</button>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Analytics Dashboard */}
             {showAnalytics && (
@@ -3612,6 +3843,118 @@ END:VCARD`;
                           </div>
                         ))}
                     </div>
+                  </div>
+                </div>
+
+                {/* Submission Trends Chart - Full Width */}
+                <div className="mt-6 bg-white/5 rounded-xl p-5 border border-white/10">
+                  <h3 className="text-lg font-bold text-white mb-4">Submission Trends (Last 7 Days)</h3>
+                  <div className="h-48 flex items-end gap-2">
+                    {(() => {
+                      // Generate last 7 days
+                      const days = [];
+                      for (let i = 6; i >= 0; i--) {
+                        const date = new Date();
+                        date.setDate(date.getDate() - i);
+                        const dateStr = date.toISOString().split('T')[0];
+                        const dayName = date.toLocaleDateString('en-IN', { weekday: 'short' });
+                        const count = submissions.filter(s => {
+                          const submitDate = (s.submittedDate || s.submitted_at || '').split('T')[0];
+                          return submitDate === dateStr;
+                        }).length;
+                        days.push({ date: dateStr, day: dayName, count });
+                      }
+                      const maxCount = Math.max(...days.map(d => d.count), 1);
+
+                      return days.map((day, idx) => (
+                        <div key={day.date} className="flex-1 flex flex-col items-center gap-2">
+                          <div className="w-full flex flex-col items-center justify-end h-36">
+                            <span className="text-xs font-bold text-white mb-1">{day.count}</span>
+                            <div
+                              className={`w-full rounded-t-lg transition-all duration-500 ${
+                                idx === 6 ? 'bg-gradient-to-t from-red-500 to-pink-500' : 'bg-gradient-to-t from-blue-500 to-cyan-500'
+                              }`}
+                              style={{ height: `${day.count > 0 ? (day.count / maxCount) * 100 : 5}%`, minHeight: '8px' }}
+                            />
+                          </div>
+                          <div className="text-center">
+                            <div className={`text-xs font-bold ${idx === 6 ? 'text-white' : 'text-gray-400'}`}>{day.day}</div>
+                            <div className="text-[10px] text-gray-600">{day.date.slice(5)}</div>
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                  <div className="mt-4 flex items-center justify-center gap-6 text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+                      <span className="text-gray-400">Past Days</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded bg-gradient-to-r from-red-500 to-pink-500"></div>
+                      <span className="text-gray-400">Today</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Budget Trend Chart */}
+                <div className="mt-6 bg-white/5 rounded-xl p-5 border border-white/10">
+                  <h3 className="text-lg font-bold text-white mb-4">Budget Distribution by Format</h3>
+                  <div className="space-y-4">
+                    {[
+                      { name: 'Feature Film', icon: '🎬', color: 'from-red-500 to-pink-500' },
+                      { name: 'Mini Film', icon: '🎞️', color: 'from-amber-500 to-orange-500' },
+                      { name: 'Long Series', icon: '📺', color: 'from-green-500 to-emerald-500' },
+                      { name: 'Limited Series', icon: '🎭', color: 'from-purple-500 to-indigo-500' },
+                      { name: 'Microdrama', icon: '⚡', color: 'from-cyan-500 to-blue-500' },
+                    ].map((format) => {
+                      const formatBudget = submissions
+                        .filter(s => s.format === format.name)
+                        .reduce((sum, s) => sum + (s.totalBudget || s.estimatedBudget || 0), 0);
+                      const percentage = stats.totalBudget > 0 ? (formatBudget / stats.totalBudget) * 100 : 0;
+                      return (
+                        <div key={format.name}>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm text-gray-400 flex items-center gap-2">
+                              <span>{format.icon}</span>
+                              <span>{format.name}</span>
+                            </span>
+                            <span className="text-sm font-bold text-emerald-400">{formatBudgetInWords(formatBudget)}</span>
+                          </div>
+                          <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full bg-gradient-to-r ${format.color} rounded-full transition-all duration-700`}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">{Math.round(percentage)}% of total budget</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Quick Stats Row */}
+                <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-gradient-to-br from-blue-600/20 to-indigo-600/20 border border-blue-500/30 rounded-xl p-4 text-center">
+                    <div className="text-3xl mb-1">📊</div>
+                    <div className="text-2xl font-black text-blue-400">{stats.total}</div>
+                    <div className="text-xs text-gray-400">Total Projects</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-600/20 to-emerald-600/20 border border-green-500/30 rounded-xl p-4 text-center">
+                    <div className="text-3xl mb-1">✅</div>
+                    <div className="text-2xl font-black text-green-400">{stats.approved + submissions.filter(s => s.status === 'agreement-signed').length}</div>
+                    <div className="text-xs text-gray-400">Approved + Agreement</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-xl p-4 text-center">
+                    <div className="text-3xl mb-1">⏳</div>
+                    <div className="text-2xl font-black text-yellow-400">{stats.pending}</div>
+                    <div className="text-xs text-gray-400">Awaiting Review</div>
+                  </div>
+                  <div className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-xl p-4 text-center">
+                    <div className="text-3xl mb-1">🎬</div>
+                    <div className="text-2xl font-black text-purple-400">{stats.inProduction}</div>
+                    <div className="text-xs text-gray-400">In Production</div>
                   </div>
                 </div>
               </div>
@@ -8132,49 +8475,92 @@ END:VCARD`;
                       <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-lg">
                         <h3 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
                           <span className="text-2xl">📎</span>
-                          <span>Uploaded Files</span>
+                          <span>Uploaded Files ({selectedSubmission.uploadedFiles.length})</span>
                         </h3>
-                        <div className="space-y-4">
-                          {selectedSubmission.uploadedFiles.map((file: any, index: number) => (
-                            <div key={index} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 flex items-center justify-between border-2 border-blue-200 hover:shadow-md transition-shadow">
-                              <div className="flex items-center gap-4">
-                                <span className="text-2xl">📄</span>
-                                <div>
-                                  <div className="text-base font-bold text-gray-900">{file.name}</div>
-                                  <div className="text-sm text-gray-600 font-semibold">
-                                    {(file.size / 1024 / 1024).toFixed(2)} MB • Uploaded{' '}
-                                    {formatDate(file.uploadDate)}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {selectedSubmission.uploadedFiles.map((file: any, index: number) => {
+                            const isPDF = file.name?.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf';
+                            const isImage = file.type?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp)$/i.test(file.name || '');
+                            const isPreviewable = isPDF || isImage;
+
+                            return (
+                              <div key={index} className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-200 hover:shadow-md transition-shadow">
+                                <div className="flex items-start gap-3">
+                                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-2xl ${
+                                    isPDF ? 'bg-red-100' : isImage ? 'bg-green-100' : 'bg-gray-100'
+                                  }`}>
+                                    {isPDF ? '📕' : isImage ? '🖼️' : '📄'}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-sm font-bold text-gray-900 truncate" title={file.name}>{file.name}</div>
+                                    <div className="text-xs text-gray-600 font-semibold mt-1">
+                                      {(file.size / 1024 / 1024).toFixed(2)} MB • {formatDate(file.uploadDate)}
+                                    </div>
+                                    <div className="flex gap-2 mt-3">
+                                      {isPreviewable && (
+                                        <button
+                                          onClick={() => setPreviewDocument({
+                                            url: file.url || file.dataUrl || `#preview-${index}`,
+                                            name: file.name,
+                                            type: isPDF ? 'pdf' : 'image'
+                                          })}
+                                          className="px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-xs font-bold rounded-lg transition-all shadow-sm"
+                                        >
+                                          👁️ Preview
+                                        </button>
+                                      )}
+                                      <button className="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold rounded-lg transition-all shadow-sm">
+                                        ⬇️ Download
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                              <button className="px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold rounded-lg transition-all shadow-md hover:shadow-lg">
-                                Download
-                              </button>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
 
                     {/* Cloud Links */}
                     {selectedSubmission.cloudLinks && selectedSubmission.cloudLinks.length > 0 && (
-                      <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border-2 border-purple-200 shadow-lg">
+                      <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200 shadow-lg">
                         <h3 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
                           <span className="text-2xl">☁️</span>
-                          <span>Cloud Links</span>
+                          <span>Cloud Links ({selectedSubmission.cloudLinks.length})</span>
                         </h3>
-                        <div className="space-y-4">
-                          {selectedSubmission.cloudLinks.map((link: string, index: number) => (
-                            <div key={index} className="bg-white rounded-xl p-5 flex items-center justify-between border-2 border-purple-200 hover:shadow-md transition-shadow">
-                              <div className="flex items-center gap-4 flex-1 min-w-0">
-                                <span className="text-2xl">🔗</span>
-                                <div className="text-base font-semibold text-blue-600 truncate">{link}</div>
+                        <div className="space-y-3">
+                          {selectedSubmission.cloudLinks.map((link: string, index: number) => {
+                            const isGoogleDrive = link.includes('drive.google.com');
+                            const isDropbox = link.includes('dropbox.com');
+                            const isOneDrive = link.includes('onedrive') || link.includes('sharepoint');
+
+                            return (
+                              <div key={index} className="bg-white rounded-xl p-4 flex items-center justify-between border-2 border-purple-200 hover:shadow-md transition-shadow">
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl ${
+                                    isGoogleDrive ? 'bg-blue-100' : isDropbox ? 'bg-blue-50' : isOneDrive ? 'bg-sky-100' : 'bg-gray-100'
+                                  }`}>
+                                    {isGoogleDrive ? '📁' : isDropbox ? '📦' : isOneDrive ? '☁️' : '🔗'}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-sm font-bold text-gray-700">
+                                      {isGoogleDrive ? 'Google Drive' : isDropbox ? 'Dropbox' : isOneDrive ? 'OneDrive' : 'External Link'}
+                                    </div>
+                                    <div className="text-xs text-blue-600 truncate">{link}</div>
+                                  </div>
+                                </div>
+                                <a
+                                  href={link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="ml-3 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white text-xs font-bold rounded-lg transition-all shadow-md hover:shadow-lg whitespace-nowrap"
+                                >
+                                  🔗 Open
+                                </a>
                               </div>
-                              <button className="ml-3 px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold rounded-lg transition-all shadow-md hover:shadow-lg whitespace-nowrap">
-                                Open Link
-                              </button>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -9824,6 +10210,109 @@ END:VCARD`;
                     </div>
                   ))
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Document Preview Modal */}
+        {previewDocument && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+            <div className="relative w-full max-w-5xl h-[90vh] bg-gradient-to-br from-gray-900 to-black border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+              {/* Preview Header */}
+              <div className="flex-shrink-0 bg-gradient-to-r from-purple-600 to-pink-600 p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <span className="text-xl">{previewDocument.type === 'pdf' ? '📕' : '🖼️'}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-white">{previewDocument.name}</h3>
+                    <p className="text-purple-200 text-sm font-semibold">
+                      {previewDocument.type === 'pdf' ? 'PDF Document' : 'Image File'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => window.open(previewDocument.url, '_blank')}
+                    className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-bold rounded-lg transition-all text-sm"
+                  >
+                    ↗️ Open in New Tab
+                  </button>
+                  <button
+                    onClick={() => setPreviewDocument(null)}
+                    className="p-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all"
+                  >
+                    <span className="text-xl">✕</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Preview Content */}
+              <div className="flex-1 overflow-hidden bg-gray-800">
+                {previewDocument.type === 'pdf' ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center">
+                    {previewDocument.url.startsWith('#') ? (
+                      <div className="text-center p-8">
+                        <div className="text-6xl mb-4">📄</div>
+                        <h3 className="text-xl font-bold text-white mb-2">PDF Preview</h3>
+                        <p className="text-gray-400 mb-6">
+                          PDF preview requires the file to be hosted. For local files, please download to view.
+                        </p>
+                        <div className="flex gap-3 justify-center">
+                          <button className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl">
+                            ⬇️ Download PDF
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <iframe
+                        src={previewDocument.url}
+                        className="w-full h-full"
+                        title={previewDocument.name}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center p-4">
+                    {previewDocument.url.startsWith('#') ? (
+                      <div className="text-center p-8">
+                        <div className="text-6xl mb-4">🖼️</div>
+                        <h3 className="text-xl font-bold text-white mb-2">Image Preview</h3>
+                        <p className="text-gray-400 mb-6">
+                          Image preview requires the file URL. For local files, please download to view.
+                        </p>
+                        <button className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl">
+                          ⬇️ Download Image
+                        </button>
+                      </div>
+                    ) : (
+                      <img
+                        src={previewDocument.url}
+                        alt={previewDocument.name}
+                        className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Preview Footer */}
+              <div className="flex-shrink-0 bg-black/50 p-3 flex items-center justify-between">
+                <div className="text-gray-400 text-sm font-semibold">
+                  {previewDocument.type === 'pdf' ? '📕 PDF Document' : '🖼️ Image File'}
+                </div>
+                <div className="flex gap-2">
+                  <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold rounded-lg transition-all">
+                    ⬇️ Download
+                  </button>
+                  <button
+                    onClick={() => setPreviewDocument(null)}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white text-sm font-bold rounded-lg transition-all"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
