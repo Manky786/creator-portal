@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { BudgetFormData } from '@/types/budget';
 import { amountInWords } from '@/utils/numberToWords';
 
@@ -20,7 +21,8 @@ interface Props {
   isLastStep: boolean;
 }
 
-export default function BasicInfoStep({ formData, setFormData, onNext }: Props) {
+export default function BasicInfoStep({ formData, setFormData, onNext, onBack, isFirstStep }: Props) {
+  const router = useRouter();
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(formData.uploadedFiles || []);
   const [cloudLinks, setCloudLinks] = useState<string[]>(formData.cloudLinks || []);
   const [newLink, setNewLink] = useState('');
@@ -857,7 +859,14 @@ export default function BasicInfoStep({ formData, setFormData, onNext }: Props) 
       </div>
 
       {/* Navigation */}
-      <div className="mt-6 flex justify-end">
+      <div className="mt-6 flex justify-between items-center">
+        <button
+          onClick={() => router.push('/welcome')}
+          className="px-8 py-4 rounded-xl text-lg font-black transition-all duration-200 flex items-center gap-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white hover:from-gray-600 hover:to-gray-700 shadow-lg hover:shadow-2xl hover:scale-105 border-2 border-white/20"
+        >
+          <span className="text-xl">←</span>
+          <span>Back to Welcome</span>
+        </button>
         <button
           onClick={onNext}
           className="px-10 py-4 rounded-xl text-lg font-black transition-all duration-200 flex items-center gap-3 bg-gradient-to-r from-red-500 to-pink-600 text-white hover:from-red-600 hover:to-pink-700 shadow-lg hover:shadow-2xl hover:scale-105 border-2 border-white/20"
