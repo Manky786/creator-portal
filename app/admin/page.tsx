@@ -811,7 +811,7 @@ const sampleSubmissions = [
 ];
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library' | 'projects'>('overview');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterFormat, setFilterFormat] = useState<string>('all');
   const [filterCulture, setFilterCulture] = useState<string>('all');
@@ -3087,6 +3087,19 @@ END:VCARD`;
                       <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full"></div>
                     )}
                   </button>
+                  <button
+                    onClick={() => setActiveTab('projects')}
+                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
+                      activeTab === 'projects'
+                        ? 'text-white bg-red-600 shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    📊 Projects
+                    {activeTab === 'projects' && (
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full"></div>
+                    )}
+                  </button>
                 </nav>
               </div>
               {/* Action Buttons - Mobile Responsive */}
@@ -3146,6 +3159,7 @@ END:VCARD`;
                 { id: 'analytics', label: '📈 Analytics' },
                 { id: 'budget', label: '💰 Budget' },
                 { id: 'library', label: '📚 Library' },
+                { id: 'projects', label: '📊 Projects' },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -5051,6 +5065,201 @@ END:VCARD`;
                     </div>
                   )}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* PROJECTS TAB - Excel-like Spreadsheet View */}
+          {activeTab === 'projects' && (
+            <div className="space-y-6">
+              {/* Projects Header */}
+              <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl p-6 shadow-lg text-white">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-bold opacity-90 mb-1">Projects Tracker</h2>
+                    <div className="text-3xl font-black">📊 All Projects Overview</div>
+                    <p className="text-sm font-semibold opacity-80 mt-2">
+                      {submissions.length} projects • Excel-style view with all details
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => {
+                        const XLSX = require('xlsx');
+                        const exportData = submissions.map(s => ({
+                          'Project Name': s.projectName || '-',
+                          'Culture': s.culture || '-',
+                          'Format': s.format || '-',
+                          'Production POC': s.productionHead || s.executiveProducer || '-',
+                          'Content POC': s.creativeDirector || s.showRunner || '-',
+                          'Status': s.status || 'pending_review',
+                          'Budget': s.totalBudget ? `₹${(s.totalBudget/10000000).toFixed(2)} Cr` : '-',
+                          'Creator': s.creatorName || '-',
+                          'Submitted': s.submitted_at ? new Date(s.submitted_at).toLocaleDateString('en-IN') : '-'
+                        }));
+                        const ws = XLSX.utils.json_to_sheet(exportData);
+                        const wb = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(wb, ws, 'Projects');
+                        XLSX.writeFile(wb, 'STAGE_Projects_Overview.xlsx');
+                      }}
+                      className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl font-bold transition-all flex items-center gap-2"
+                    >
+                      <span>📥</span> Download Excel
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Excel-like Table */}
+              <div className="bg-white rounded-xl border-2 border-gray-200 shadow-lg overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-gray-800 to-gray-900 text-white">
+                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 sticky left-0 bg-gray-800 z-10">#</th>
+                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[200px]">Project Name</th>
+                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[120px]">Culture</th>
+                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[130px]">Format</th>
+                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[150px]">Production POC</th>
+                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[150px]">Content POC</th>
+                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[130px]">Status</th>
+                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[100px]">Budget</th>
+                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider min-w-[150px]">Creator</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {submissions.map((project, index) => {
+                        const statusColors: Record<string, string> = {
+                          'approved': 'bg-green-100 text-green-800 border-green-300',
+                          'pending_review': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+                          'under-review': 'bg-blue-100 text-blue-800 border-blue-300',
+                          'rejected': 'bg-red-100 text-red-800 border-red-300',
+                          'revision-requested': 'bg-orange-100 text-orange-800 border-orange-300',
+                          'agreement-signed': 'bg-teal-100 text-teal-800 border-teal-300',
+                          'in-production': 'bg-purple-100 text-purple-800 border-purple-300',
+                          'on-hold': 'bg-gray-100 text-gray-800 border-gray-300',
+                        };
+                        const cultureColors: Record<string, string> = {
+                          'Haryanvi': 'bg-amber-100 text-amber-800',
+                          'Rajasthani': 'bg-orange-100 text-orange-800',
+                          'Bhojpuri': 'bg-rose-100 text-rose-800',
+                          'Gujarati': 'bg-emerald-100 text-emerald-800',
+                        };
+                        const formatColors: Record<string, string> = {
+                          'Feature Film': 'bg-purple-100 text-purple-800',
+                          'Mini Film': 'bg-indigo-100 text-indigo-800',
+                          'Long Series': 'bg-blue-100 text-blue-800',
+                          'Limited Series': 'bg-cyan-100 text-cyan-800',
+                          'Microdrama': 'bg-pink-100 text-pink-800',
+                        };
+                        return (
+                          <tr
+                            key={project.id}
+                            className={`border-b border-gray-200 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
+                          >
+                            <td className="px-4 py-3 font-bold text-gray-500 border-r border-gray-200 sticky left-0 bg-inherit z-10">{index + 1}</td>
+                            <td className="px-4 py-3 border-r border-gray-200">
+                              <div className="font-bold text-gray-900">{project.projectName || '-'}</div>
+                              <div className="text-xs text-gray-500">{project.companyName || ''}</div>
+                            </td>
+                            <td className="px-4 py-3 border-r border-gray-200">
+                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${cultureColors[project.culture] || 'bg-gray-100 text-gray-800'}`}>
+                                {project.culture || '-'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 border-r border-gray-200">
+                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${formatColors[project.format] || 'bg-gray-100 text-gray-800'}`}>
+                                {project.format || '-'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 border-r border-gray-200">
+                              <div className="font-semibold text-gray-900">{project.productionHead || project.executiveProducer || '-'}</div>
+                              <div className="text-xs text-gray-500">{project.productionHead ? 'Production Head' : project.executiveProducer ? 'Exec Producer' : ''}</div>
+                            </td>
+                            <td className="px-4 py-3 border-r border-gray-200">
+                              <div className="font-semibold text-gray-900">{project.creativeDirector || project.showRunner || '-'}</div>
+                              <div className="text-xs text-gray-500">{project.creativeDirector ? 'Creative Director' : project.showRunner ? 'Show Runner' : ''}</div>
+                            </td>
+                            <td className="px-4 py-3 border-r border-gray-200">
+                              <span className={`px-2 py-1 rounded-lg text-xs font-bold border ${statusColors[project.status] || 'bg-gray-100 text-gray-800 border-gray-300'}`}>
+                                {(project.status || 'pending_review').replace(/-|_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 border-r border-gray-200">
+                              <div className="font-bold text-gray-900">
+                                {project.totalBudget ? `₹${(project.totalBudget / 10000000).toFixed(2)} Cr` : '-'}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="font-semibold text-gray-900">{project.creatorName || '-'}</div>
+                              <div className="text-xs text-gray-500">{project.officialEmail || ''}</div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Summary Footer */}
+                <div className="bg-gray-100 px-4 py-3 border-t-2 border-gray-300">
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-gray-600">Total:</span>
+                      <span className="font-black text-gray-900">{submissions.length} Projects</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-amber-400"></span>
+                      <span className="font-semibold text-gray-700">Haryanvi: {submissions.filter(s => s.culture === 'Haryanvi').length}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-orange-400"></span>
+                      <span className="font-semibold text-gray-700">Rajasthani: {submissions.filter(s => s.culture === 'Rajasthani').length}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-rose-400"></span>
+                      <span className="font-semibold text-gray-700">Bhojpuri: {submissions.filter(s => s.culture === 'Bhojpuri').length}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-emerald-400"></span>
+                      <span className="font-semibold text-gray-700">Gujarati: {submissions.filter(s => s.culture === 'Gujarati').length}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Culture-wise Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'].map(culture => {
+                  const cultureProjects = submissions.filter(s => s.culture === culture);
+                  const gradients: Record<string, string> = {
+                    'Haryanvi': 'from-amber-500 to-yellow-600',
+                    'Rajasthani': 'from-orange-500 to-red-600',
+                    'Bhojpuri': 'from-rose-500 to-pink-600',
+                    'Gujarati': 'from-emerald-500 to-teal-600',
+                  };
+                  return (
+                    <div key={culture} className={`bg-gradient-to-br ${gradients[culture]} rounded-xl p-4 text-white shadow-lg`}>
+                      <h3 className="text-lg font-black mb-2">{culture}</h3>
+                      <div className="text-3xl font-black">{cultureProjects.length}</div>
+                      <p className="text-sm opacity-80">Projects</p>
+                      <div className="mt-3 pt-3 border-t border-white/20 text-xs space-y-1">
+                        <div className="flex justify-between">
+                          <span>Approved:</span>
+                          <span className="font-bold">{cultureProjects.filter(p => p.status === 'approved').length}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>In Production:</span>
+                          <span className="font-bold">{cultureProjects.filter(p => p.status === 'in-production').length}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Under Review:</span>
+                          <span className="font-bold">{cultureProjects.filter(p => p.status === 'under-review' || p.status === 'pending_review').length}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
