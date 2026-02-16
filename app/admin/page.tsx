@@ -5069,7 +5069,7 @@ END:VCARD`;
             </div>
           )}
 
-          {/* PROJECTS TAB - Excel-like Spreadsheet View */}
+          {/* PROJECTS TAB - Editable Excel-like Spreadsheet View */}
           {activeTab === 'projects' && (
             <div className="space-y-6">
               {/* Projects Header */}
@@ -5079,7 +5079,7 @@ END:VCARD`;
                     <h2 className="text-lg font-bold opacity-90 mb-1">Projects Tracker</h2>
                     <div className="text-3xl font-black">📊 All Projects Overview</div>
                     <p className="text-sm font-semibold opacity-80 mt-2">
-                      {submissions.length} projects • Excel-style view with all details
+                      {submissions.length} projects • Click any cell to edit • Auto-saves
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -5088,14 +5088,14 @@ END:VCARD`;
                         const XLSX = require('xlsx');
                         const exportData = submissions.map(s => ({
                           'Project Name': s.projectName || '-',
+                          'Creator': s.creatorName || '-',
                           'Culture': s.culture || '-',
                           'Format': s.format || '-',
-                          'Production POC': s.productionHead || s.executiveProducer || '-',
-                          'Content POC': s.creativeDirector || s.showRunner || '-',
+                          'Production POC': s.productionPOC || s.productionHead || s.executiveProducer || '-',
+                          'Content POC': s.contentPOC || s.creativeDirector || s.showRunner || '-',
+                          'Tentative Shoot Dates': s.tentativeShootDates || (s.shootStartDate && s.shootEndDate ? `${s.shootStartDate} to ${s.shootEndDate}` : '-'),
                           'Status': s.status || 'pending_review',
                           'Budget': s.totalBudget ? `₹${(s.totalBudget/10000000).toFixed(2)} Cr` : '-',
-                          'Creator': s.creatorName || '-',
-                          'Submitted': s.submitted_at ? new Date(s.submitted_at).toLocaleDateString('en-IN') : '-'
                         }));
                         const ws = XLSX.utils.json_to_sheet(exportData);
                         const wb = XLSX.utils.book_new();
@@ -5110,89 +5110,167 @@ END:VCARD`;
                 </div>
               </div>
 
-              {/* Excel-like Table */}
+              {/* Editable Excel-like Table */}
               <div className="bg-white rounded-xl border-2 border-gray-200 shadow-lg overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-gradient-to-r from-gray-800 to-gray-900 text-white">
-                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 sticky left-0 bg-gray-800 z-10">#</th>
-                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[200px]">Project Name</th>
-                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[120px]">Culture</th>
-                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[130px]">Format</th>
-                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[150px]">Production POC</th>
-                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[150px]">Content POC</th>
-                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[130px]">Status</th>
-                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[100px]">Budget</th>
-                        <th className="px-4 py-3 text-left font-black text-xs uppercase tracking-wider min-w-[150px]">Creator</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 sticky left-0 bg-gray-800 z-10 w-10">#</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[180px]">Project Name</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[140px]">Creator</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[130px]">Culture ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[140px]">Format ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[160px]">Production POC ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[160px]">Content POC ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[180px]">Shoot Dates ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[140px]">Status ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider min-w-[100px]">Budget</th>
                       </tr>
                     </thead>
                     <tbody>
                       {submissions.map((project, index) => {
-                        const statusColors: Record<string, string> = {
-                          'approved': 'bg-green-100 text-green-800 border-green-300',
-                          'pending_review': 'bg-yellow-100 text-yellow-800 border-yellow-300',
-                          'under-review': 'bg-blue-100 text-blue-800 border-blue-300',
-                          'rejected': 'bg-red-100 text-red-800 border-red-300',
-                          'revision-requested': 'bg-orange-100 text-orange-800 border-orange-300',
-                          'agreement-signed': 'bg-teal-100 text-teal-800 border-teal-300',
-                          'in-production': 'bg-purple-100 text-purple-800 border-purple-300',
-                          'on-hold': 'bg-gray-100 text-gray-800 border-gray-300',
+                        const updateProject = (field: string, value: string) => {
+                          const updatedSubmissions = submissions.map(s =>
+                            s.id === project.id ? { ...s, [field]: value } : s
+                          );
+                          setSubmissions(updatedSubmissions);
+                          // Save to localStorage
+                          const existingLocal = JSON.parse(localStorage.getItem('stage_submissions') || '[]');
+                          const updatedLocal = existingLocal.map((s: any) =>
+                            s.id === project.id ? { ...s, [field]: value } : s
+                          );
+                          localStorage.setItem('stage_submissions', JSON.stringify(updatedLocal));
                         };
+
+                        const cultureOptions = ['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'];
+                        const formatOptions = ['Feature Film', 'Mini Film', 'Long Series', 'Limited Series', 'Microdrama'];
+                        const statusOptions = [
+                          { value: 'pending_review', label: 'Pending Review' },
+                          { value: 'under-review', label: 'Under Review' },
+                          { value: 'approved', label: 'Approved' },
+                          { value: 'rejected', label: 'Rejected' },
+                          { value: 'revision-requested', label: 'Revision Requested' },
+                          { value: 'agreement-signed', label: 'Agreement Signed' },
+                          { value: 'in-production', label: 'In Production' },
+                          { value: 'on-hold', label: 'On Hold' },
+                        ];
+
                         const cultureColors: Record<string, string> = {
-                          'Haryanvi': 'bg-amber-100 text-amber-800',
-                          'Rajasthani': 'bg-orange-100 text-orange-800',
-                          'Bhojpuri': 'bg-rose-100 text-rose-800',
-                          'Gujarati': 'bg-emerald-100 text-emerald-800',
+                          'Haryanvi': 'bg-amber-50 border-amber-300 text-amber-800',
+                          'Rajasthani': 'bg-orange-50 border-orange-300 text-orange-800',
+                          'Bhojpuri': 'bg-rose-50 border-rose-300 text-rose-800',
+                          'Gujarati': 'bg-emerald-50 border-emerald-300 text-emerald-800',
                         };
-                        const formatColors: Record<string, string> = {
-                          'Feature Film': 'bg-purple-100 text-purple-800',
-                          'Mini Film': 'bg-indigo-100 text-indigo-800',
-                          'Long Series': 'bg-blue-100 text-blue-800',
-                          'Limited Series': 'bg-cyan-100 text-cyan-800',
-                          'Microdrama': 'bg-pink-100 text-pink-800',
+                        const statusColors: Record<string, string> = {
+                          'approved': 'bg-green-50 border-green-400 text-green-800',
+                          'pending_review': 'bg-yellow-50 border-yellow-400 text-yellow-800',
+                          'under-review': 'bg-blue-50 border-blue-400 text-blue-800',
+                          'rejected': 'bg-red-50 border-red-400 text-red-800',
+                          'revision-requested': 'bg-orange-50 border-orange-400 text-orange-800',
+                          'agreement-signed': 'bg-teal-50 border-teal-400 text-teal-800',
+                          'in-production': 'bg-purple-50 border-purple-400 text-purple-800',
+                          'on-hold': 'bg-gray-50 border-gray-400 text-gray-800',
                         };
+
                         return (
                           <tr
                             key={project.id}
-                            className={`border-b border-gray-200 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
+                            className={`border-b border-gray-200 hover:bg-blue-50/30 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
                           >
-                            <td className="px-4 py-3 font-bold text-gray-500 border-r border-gray-200 sticky left-0 bg-inherit z-10">{index + 1}</td>
-                            <td className="px-4 py-3 border-r border-gray-200">
-                              <div className="font-bold text-gray-900">{project.projectName || '-'}</div>
+                            <td className="px-3 py-2 font-bold text-gray-400 border-r border-gray-200 sticky left-0 bg-inherit z-10 text-center">{index + 1}</td>
+
+                            {/* Project Name - Read Only */}
+                            <td className="px-3 py-2 border-r border-gray-200">
+                              <div className="font-bold text-gray-900 text-sm">{project.projectName || '-'}</div>
                               <div className="text-xs text-gray-500">{project.companyName || ''}</div>
                             </td>
-                            <td className="px-4 py-3 border-r border-gray-200">
-                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${cultureColors[project.culture] || 'bg-gray-100 text-gray-800'}`}>
-                                {project.culture || '-'}
-                              </span>
+
+                            {/* Creator - Read Only */}
+                            <td className="px-3 py-2 border-r border-gray-200">
+                              <div className="font-semibold text-gray-900 text-sm">{project.creatorName || '-'}</div>
+                              <div className="text-xs text-gray-500 truncate max-w-[130px]">{project.officialEmail || ''}</div>
                             </td>
-                            <td className="px-4 py-3 border-r border-gray-200">
-                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${formatColors[project.format] || 'bg-gray-100 text-gray-800'}`}>
-                                {project.format || '-'}
-                              </span>
+
+                            {/* Culture - Editable Dropdown */}
+                            <td className="px-2 py-2 border-r border-gray-200">
+                              <select
+                                value={project.culture || ''}
+                                onChange={(e) => updateProject('culture', e.target.value)}
+                                className={`w-full px-2 py-1.5 text-xs font-bold rounded-lg border-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 ${cultureColors[project.culture] || 'bg-gray-50 border-gray-300 text-gray-700'}`}
+                              >
+                                <option value="">Select...</option>
+                                {cultureOptions.map(opt => (
+                                  <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                              </select>
                             </td>
-                            <td className="px-4 py-3 border-r border-gray-200">
-                              <div className="font-semibold text-gray-900">{project.productionHead || project.executiveProducer || '-'}</div>
-                              <div className="text-xs text-gray-500">{project.productionHead ? 'Production Head' : project.executiveProducer ? 'Exec Producer' : ''}</div>
+
+                            {/* Format - Editable Dropdown */}
+                            <td className="px-2 py-2 border-r border-gray-200">
+                              <select
+                                value={project.format || ''}
+                                onChange={(e) => updateProject('format', e.target.value)}
+                                className="w-full px-2 py-1.5 text-xs font-bold rounded-lg border-2 border-gray-300 bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400"
+                              >
+                                <option value="">Select...</option>
+                                {formatOptions.map(opt => (
+                                  <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                              </select>
                             </td>
-                            <td className="px-4 py-3 border-r border-gray-200">
-                              <div className="font-semibold text-gray-900">{project.creativeDirector || project.showRunner || '-'}</div>
-                              <div className="text-xs text-gray-500">{project.creativeDirector ? 'Creative Director' : project.showRunner ? 'Show Runner' : ''}</div>
+
+                            {/* Production POC - Editable Text */}
+                            <td className="px-2 py-2 border-r border-gray-200">
+                              <input
+                                type="text"
+                                value={project.productionPOC || project.productionHead || project.executiveProducer || ''}
+                                onChange={(e) => updateProject('productionPOC', e.target.value)}
+                                placeholder="Enter name..."
+                                className="w-full px-2 py-1.5 text-xs font-semibold rounded-lg border-2 border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 placeholder:text-gray-400"
+                              />
                             </td>
-                            <td className="px-4 py-3 border-r border-gray-200">
-                              <span className={`px-2 py-1 rounded-lg text-xs font-bold border ${statusColors[project.status] || 'bg-gray-100 text-gray-800 border-gray-300'}`}>
-                                {(project.status || 'pending_review').replace(/-|_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                              </span>
+
+                            {/* Content POC - Editable Text */}
+                            <td className="px-2 py-2 border-r border-gray-200">
+                              <input
+                                type="text"
+                                value={project.contentPOC || project.creativeDirector || project.showRunner || ''}
+                                onChange={(e) => updateProject('contentPOC', e.target.value)}
+                                placeholder="Enter name..."
+                                className="w-full px-2 py-1.5 text-xs font-semibold rounded-lg border-2 border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 placeholder:text-gray-400"
+                              />
                             </td>
-                            <td className="px-4 py-3 border-r border-gray-200">
-                              <div className="font-bold text-gray-900">
+
+                            {/* Tentative Shoot Dates - Editable Text */}
+                            <td className="px-2 py-2 border-r border-gray-200">
+                              <input
+                                type="text"
+                                value={project.tentativeShootDates || (project.shootStartDate && project.shootEndDate ? `${project.shootStartDate} - ${project.shootEndDate}` : '')}
+                                onChange={(e) => updateProject('tentativeShootDates', e.target.value)}
+                                placeholder="e.g., Mar 15 - Apr 30"
+                                className="w-full px-2 py-1.5 text-xs font-semibold rounded-lg border-2 border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 placeholder:text-gray-400"
+                              />
+                            </td>
+
+                            {/* Status - Editable Dropdown */}
+                            <td className="px-2 py-2 border-r border-gray-200">
+                              <select
+                                value={project.status || 'pending_review'}
+                                onChange={(e) => updateProject('status', e.target.value)}
+                                className={`w-full px-2 py-1.5 text-xs font-bold rounded-lg border-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 ${statusColors[project.status] || 'bg-gray-50 border-gray-300 text-gray-700'}`}
+                              >
+                                {statusOptions.map(opt => (
+                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                              </select>
+                            </td>
+
+                            {/* Budget - Read Only */}
+                            <td className="px-3 py-2">
+                              <div className="font-bold text-gray-900 text-sm">
                                 {project.totalBudget ? `₹${(project.totalBudget / 10000000).toFixed(2)} Cr` : '-'}
                               </div>
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="font-semibold text-gray-900">{project.creatorName || '-'}</div>
-                              <div className="text-xs text-gray-500">{project.officialEmail || ''}</div>
                             </td>
                           </tr>
                         );
@@ -5223,6 +5301,9 @@ END:VCARD`;
                     <div className="flex items-center gap-2">
                       <span className="w-3 h-3 rounded-full bg-emerald-400"></span>
                       <span className="font-semibold text-gray-700">Gujarati: {submissions.filter(s => s.culture === 'Gujarati').length}</span>
+                    </div>
+                    <div className="ml-auto text-xs text-gray-500 flex items-center gap-1">
+                      <span>✏️</span> = Editable field • Changes auto-save
                     </div>
                   </div>
                 </div>
