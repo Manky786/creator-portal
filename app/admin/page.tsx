@@ -5157,21 +5157,37 @@ END:VCARD`;
             const cultureOptions = ['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'];
             const formatOptions = ['Feature Film', 'Mini Film', 'Long Series', 'Limited Series', 'Microdrama'];
 
+            // Dark theme status colors - readable
             const statusColors: Record<string, string> = {
-              'loi_sent': 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-              'onboarding_form_sent': 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30',
-              'budget_discussion': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
-              'sent_for_agreement': 'bg-orange-500/20 text-orange-300 border-orange-500/30',
-              'agreement_done': 'bg-green-500/20 text-green-300 border-green-500/30',
-              'insurance_pending': 'bg-red-500/20 text-red-300 border-red-500/30',
-              'insurance_done': 'bg-teal-500/20 text-teal-300 border-teal-500/30',
-              'shoot_started': 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-              'shoot_completed': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-              'pending_review': 'bg-gray-500/20 text-gray-300 border-gray-500/30',
-              'under_review': 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-              'approved': 'bg-green-500/20 text-green-300 border-green-500/30',
-              'rejected': 'bg-red-500/20 text-red-300 border-red-500/30',
-              'on_hold': 'bg-gray-500/20 text-gray-300 border-gray-500/30',
+              'loi_sent': 'bg-blue-600 text-white',
+              'onboarding_form_sent': 'bg-indigo-600 text-white',
+              'budget_discussion': 'bg-yellow-500 text-black',
+              'sent_for_agreement': 'bg-orange-500 text-white',
+              'agreement_done': 'bg-green-600 text-white',
+              'insurance_pending': 'bg-red-500 text-white',
+              'insurance_done': 'bg-teal-600 text-white',
+              'shoot_started': 'bg-purple-600 text-white',
+              'shoot_completed': 'bg-emerald-600 text-white',
+              'pending_review': 'bg-gray-500 text-white',
+              'under_review': 'bg-cyan-600 text-white',
+              'approved': 'bg-green-500 text-white',
+              'rejected': 'bg-red-600 text-white',
+              'on_hold': 'bg-gray-600 text-white',
+            };
+
+            // Delete POC function
+            const deletePOC = (pocName: string) => {
+              if (['Mayank', 'Haidar', 'Sumit'].includes(pocName)) {
+                alert('Cannot delete default team members');
+                return;
+              }
+              setCustomPOCs(customPOCs.filter(p => p !== pocName));
+              // Unassign from all projects
+              submissions.forEach(project => {
+                if (project.productionPOC === pocName) {
+                  updateProject(project.id, 'productionPOC', '');
+                }
+              });
             };
 
             return (
@@ -5254,22 +5270,22 @@ END:VCARD`;
                 })}
               </div>
 
-              {/* Clean Table Design */}
-              <div className="bg-slate-900/50 rounded-2xl border border-slate-700/50 shadow-xl overflow-hidden backdrop-blur-sm">
+              {/* Dark Theme Table - Full Column Names */}
+              <div className="bg-slate-900 rounded-2xl border border-slate-700 shadow-2xl overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full">
+                  <table className="w-full min-w-[1400px]">
                     <thead>
-                      <tr className="bg-slate-800/50 border-b border-slate-700/50">
-                        <th className="px-2 py-4 text-center text-slate-400 text-xs font-medium uppercase tracking-wider w-10">⋮</th>
-                        <th className="px-3 py-4 text-left text-slate-400 text-xs font-medium uppercase tracking-wider w-12">#</th>
-                        <th className="px-4 py-4 text-left text-slate-400 text-xs font-medium uppercase tracking-wider">Project</th>
-                        <th className="px-4 py-4 text-left text-slate-400 text-xs font-medium uppercase tracking-wider">Creator</th>
-                        <th className="px-4 py-4 text-left text-slate-400 text-xs font-medium uppercase tracking-wider">Culture</th>
-                        <th className="px-4 py-4 text-left text-slate-400 text-xs font-medium uppercase tracking-wider">Format</th>
-                        <th className="px-4 py-4 text-left text-slate-400 text-xs font-medium uppercase tracking-wider">POC</th>
-                        <th className="px-4 py-4 text-left text-slate-400 text-xs font-medium uppercase tracking-wider">Shoot Dates</th>
-                        <th className="px-4 py-4 text-left text-slate-400 text-xs font-medium uppercase tracking-wider">Status</th>
-                        <th className="px-4 py-4 text-right text-slate-400 text-xs font-medium uppercase tracking-wider">Budget</th>
+                      <tr className="bg-slate-800 border-b border-slate-700">
+                        <th className="px-3 py-4 text-center text-slate-300 text-xs font-bold uppercase tracking-wider w-14">Move</th>
+                        <th className="px-3 py-4 text-center text-slate-300 text-xs font-bold uppercase tracking-wider w-14">S.No</th>
+                        <th className="px-4 py-4 text-left text-slate-300 text-xs font-bold uppercase tracking-wider min-w-[220px]">Project Name</th>
+                        <th className="px-4 py-4 text-left text-slate-300 text-xs font-bold uppercase tracking-wider min-w-[160px]">Creator Name</th>
+                        <th className="px-4 py-4 text-left text-slate-300 text-xs font-bold uppercase tracking-wider min-w-[130px]">Culture</th>
+                        <th className="px-4 py-4 text-left text-slate-300 text-xs font-bold uppercase tracking-wider min-w-[150px]">Format</th>
+                        <th className="px-4 py-4 text-left text-slate-300 text-xs font-bold uppercase tracking-wider min-w-[160px]">Production POC</th>
+                        <th className="px-4 py-4 text-left text-slate-300 text-xs font-bold uppercase tracking-wider min-w-[220px]">Tentative Shoot Dates</th>
+                        <th className="px-4 py-4 text-left text-slate-300 text-xs font-bold uppercase tracking-wider min-w-[200px]">Status</th>
+                        <th className="px-4 py-4 text-right text-slate-300 text-xs font-bold uppercase tracking-wider min-w-[150px]">Budget (₹)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/50">
@@ -5557,7 +5573,7 @@ END:VCARD`;
                         onClick={() => setSelectedPOC(selectedPOC === poc ? null : poc)}
                         className={`bg-gradient-to-br ${gradient} rounded-2xl p-5 text-white cursor-pointer hover:scale-[1.02] transition-all ${selectedPOC === poc ? 'ring-2 ring-white/50 scale-[1.02]' : ''}`}
                       >
-                        {/* Header */}
+                        {/* Header with Delete Button */}
                         <div className="flex items-center gap-3 mb-4">
                           <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-xl font-bold backdrop-blur-sm">
                             {poc.charAt(0)}
@@ -5566,9 +5582,26 @@ END:VCARD`;
                             <h3 className="text-lg font-bold">{poc}</h3>
                             <p className="text-xs opacity-70">Production POC</p>
                           </div>
-                          <div className="text-right">
-                            <div className="text-3xl font-bold">{pocProjects.length}</div>
-                            <div className="text-xs opacity-70">projects</div>
+                          <div className="text-right flex items-start gap-2">
+                            <div>
+                              <div className="text-3xl font-bold">{pocProjects.length}</div>
+                              <div className="text-xs opacity-70">projects</div>
+                            </div>
+                            {/* Delete POC Button - Only for custom POCs */}
+                            {!['Mayank', 'Haidar', 'Sumit'].includes(poc) && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (confirm(`Remove ${poc} from team? Their projects will be unassigned.`)) {
+                                    deletePOC(poc);
+                                  }
+                                }}
+                                className="w-8 h-8 bg-red-500/20 hover:bg-red-500 rounded-lg flex items-center justify-center text-red-300 hover:text-white transition-all"
+                                title="Remove POC"
+                              >
+                                ×
+                              </button>
+                            )}
                           </div>
                         </div>
 
