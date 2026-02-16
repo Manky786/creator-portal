@@ -97,24 +97,33 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
         // Get current user
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Prepare submission data
+        // Prepare submission data matching Supabase table schema
         const submissionData = {
-          ...formData,
-          submitted_at: new Date().toISOString(),
+          project_name: formData.projectName || '',
+          creator_name: formData.creatorName || '',
+          creator_email: user?.email || formData.officialEmail || 'anonymous',
+          phone: formData.phone || '',
+          culture: formData.culture || '',
+          format: formData.format || '',
+          budget: parseFloat(String(formData.totalBudget || 0).replace(/[^\d.]/g, '')) || 0,
+          form_data: formData, // Store complete form data as JSONB
           status: 'pending_review',
-          user_id: user?.id || null,
-          user_email: user?.email || formData.officialEmail || 'anonymous',
         };
 
-        // Try to save to Supabase projects table
+        // Try to save to Supabase Project submissions table
         const { error } = await supabase
-          .from('projects')
+          .from('Project submissions')
           .insert([submissionData]);
 
         if (error) {
           console.warn('Supabase save failed, using local storage:', error);
           // Fall back to localStorage
-          saveToLocalSubmissions(submissionData, undefined, creatorComment);
+          const localData = {
+            ...formData,
+            submitted_at: new Date().toISOString(),
+            status: 'pending_review',
+          };
+          saveToLocalSubmissions(localData, undefined, creatorComment);
         }
       } else {
         // No Supabase - save to localStorage submissions
