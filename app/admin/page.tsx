@@ -5069,244 +5069,342 @@ END:VCARD`;
             </div>
           )}
 
-          {/* PROJECTS TAB - Editable Excel-like Spreadsheet View */}
-          {activeTab === 'projects' && (
-            <div className="space-y-6">
-              {/* Projects Header */}
-              <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 rounded-2xl p-6 shadow-lg text-white">
+          {/* PROJECTS TAB - Dark Theme Editable Spreadsheet */}
+          {activeTab === 'projects' && (() => {
+            const [projectsCultureFilter, setProjectsCultureFilter] = React.useState<string>('all');
+            const [customStatusInput, setCustomStatusInput] = React.useState<Record<string, string>>({});
+
+            const filteredProjects = projectsCultureFilter === 'all'
+              ? submissions
+              : submissions.filter(s => s.culture === projectsCultureFilter);
+
+            const updateProject = (projectId: string, field: string, value: string) => {
+              const updatedSubmissions = submissions.map(s =>
+                s.id === projectId ? { ...s, [field]: value } : s
+              );
+              setSubmissions(updatedSubmissions);
+              const existingLocal = JSON.parse(localStorage.getItem('stage_submissions') || '[]');
+              const updatedLocal = existingLocal.map((s: any) =>
+                s.id === projectId ? { ...s, [field]: value } : s
+              );
+              localStorage.setItem('stage_submissions', JSON.stringify(updatedLocal));
+            };
+
+            const statusOptions = [
+              { value: 'loi_sent', label: 'LOI Sent' },
+              { value: 'onboarding_form_sent', label: 'Onboarding Form Sent' },
+              { value: 'budget_discussion', label: 'Budget Discussion' },
+              { value: 'sent_for_agreement', label: 'Sent for Agreement' },
+              { value: 'agreement_done', label: 'Agreement Done' },
+              { value: 'insurance_pending', label: 'Insurance Pending' },
+              { value: 'insurance_done', label: 'Insurance Done' },
+              { value: 'shoot_started', label: 'Shoot Started' },
+              { value: 'shoot_completed', label: 'Shoot Completed' },
+              { value: 'pending_review', label: 'Pending Review' },
+              { value: 'under_review', label: 'Under Review' },
+              { value: 'approved', label: 'Approved' },
+              { value: 'rejected', label: 'Rejected' },
+              { value: 'on_hold', label: 'On Hold' },
+            ];
+
+            const pocOptions = ['Mayank', 'Haidar', 'Sumit'];
+            const cultureOptions = ['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'];
+            const formatOptions = ['Feature Film', 'Mini Film', 'Long Series', 'Limited Series', 'Microdrama'];
+
+            const statusColors: Record<string, string> = {
+              'loi_sent': 'bg-blue-600 text-white',
+              'onboarding_form_sent': 'bg-indigo-600 text-white',
+              'budget_discussion': 'bg-yellow-500 text-black',
+              'sent_for_agreement': 'bg-orange-500 text-white',
+              'agreement_done': 'bg-green-600 text-white',
+              'insurance_pending': 'bg-red-500 text-white',
+              'insurance_done': 'bg-teal-600 text-white',
+              'shoot_started': 'bg-purple-600 text-white',
+              'shoot_completed': 'bg-emerald-600 text-white',
+              'pending_review': 'bg-gray-500 text-white',
+              'under_review': 'bg-cyan-600 text-white',
+              'approved': 'bg-green-500 text-white',
+              'rejected': 'bg-red-600 text-white',
+              'on_hold': 'bg-gray-600 text-white',
+            };
+
+            return (
+            <div className="space-y-4">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 shadow-xl border border-gray-700">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-lg font-bold opacity-90 mb-1">Projects Tracker</h2>
-                    <div className="text-3xl font-black">📊 All Projects Overview</div>
-                    <p className="text-sm font-semibold opacity-80 mt-2">
-                      {submissions.length} projects • Click any cell to edit • Auto-saves
+                    <h2 className="text-lg font-bold text-gray-400 mb-1">Projects Tracker</h2>
+                    <div className="text-3xl font-black text-white">📊 All Projects Overview</div>
+                    <p className="text-sm font-semibold text-gray-400 mt-2">
+                      {filteredProjects.length} projects • Click to edit • Auto-saves
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={() => {
-                        const XLSX = require('xlsx');
-                        const exportData = submissions.map(s => ({
-                          'Project Name': s.projectName || '-',
-                          'Creator': s.creatorName || '-',
-                          'Culture': s.culture || '-',
-                          'Format': s.format || '-',
-                          'Production POC': s.productionPOC || s.productionHead || s.executiveProducer || '-',
-                          'Content POC': s.contentPOC || s.creativeDirector || s.showRunner || '-',
-                          'Tentative Shoot Dates': s.tentativeShootDates || (s.shootStartDate && s.shootEndDate ? `${s.shootStartDate} to ${s.shootEndDate}` : '-'),
-                          'Status': s.status || 'pending_review',
-                          'Budget': s.totalBudget ? `₹${(s.totalBudget/10000000).toFixed(2)} Cr` : '-',
-                        }));
-                        const ws = XLSX.utils.json_to_sheet(exportData);
-                        const wb = XLSX.utils.book_new();
-                        XLSX.utils.book_append_sheet(wb, ws, 'Projects');
-                        XLSX.writeFile(wb, 'STAGE_Projects_Overview.xlsx');
-                      }}
-                      className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl font-bold transition-all flex items-center gap-2"
-                    >
-                      <span>📥</span> Download Excel
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => {
+                      const XLSX = require('xlsx');
+                      const exportData = filteredProjects.map(s => ({
+                        'Project Name': s.projectName || '-',
+                        'Creator': s.creatorName || '-',
+                        'Culture': s.culture || '-',
+                        'Format': s.format || '-',
+                        'Production POC': s.productionPOC || '-',
+                        'Content POC': s.contentPOC || '-',
+                        'Shoot Dates': s.tentativeShootDates || '-',
+                        'Status': statusOptions.find(o => o.value === s.status)?.label || s.customStatus || s.status || '-',
+                        'Budget (Lakhs)': s.totalBudget ? `₹${(s.totalBudget/100000).toLocaleString('en-IN')}` : '-',
+                      }));
+                      const ws = XLSX.utils.json_to_sheet(exportData);
+                      const wb = XLSX.utils.book_new();
+                      XLSX.utils.book_append_sheet(wb, ws, 'Projects');
+                      XLSX.writeFile(wb, `STAGE_Projects_${projectsCultureFilter === 'all' ? 'All' : projectsCultureFilter}.xlsx`);
+                    }}
+                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 rounded-xl font-bold text-white transition-all flex items-center gap-2 shadow-lg"
+                  >
+                    <span>📥</span> Download Excel
+                  </button>
                 </div>
               </div>
 
-              {/* Editable Excel-like Table */}
-              <div className="bg-white rounded-xl border-2 border-gray-200 shadow-lg overflow-hidden">
+              {/* Culture Filter Tabs */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setProjectsCultureFilter('all')}
+                  className={`px-5 py-2.5 rounded-xl font-bold transition-all ${
+                    projectsCultureFilter === 'all'
+                      ? 'bg-white text-gray-900 shadow-lg'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-600'
+                  }`}
+                >
+                  All ({submissions.length})
+                </button>
+                {cultureOptions.map(culture => {
+                  const count = submissions.filter(s => s.culture === culture).length;
+                  const colors: Record<string, string> = {
+                    'Haryanvi': projectsCultureFilter === culture ? 'bg-amber-500 text-white' : 'bg-amber-900/50 text-amber-300 hover:bg-amber-800 border-amber-700',
+                    'Rajasthani': projectsCultureFilter === culture ? 'bg-orange-500 text-white' : 'bg-orange-900/50 text-orange-300 hover:bg-orange-800 border-orange-700',
+                    'Bhojpuri': projectsCultureFilter === culture ? 'bg-rose-500 text-white' : 'bg-rose-900/50 text-rose-300 hover:bg-rose-800 border-rose-700',
+                    'Gujarati': projectsCultureFilter === culture ? 'bg-emerald-500 text-white' : 'bg-emerald-900/50 text-emerald-300 hover:bg-emerald-800 border-emerald-700',
+                  };
+                  return (
+                    <button
+                      key={culture}
+                      onClick={() => setProjectsCultureFilter(culture)}
+                      className={`px-5 py-2.5 rounded-xl font-bold transition-all border ${colors[culture]}`}
+                    >
+                      {culture} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Dark Theme Table */}
+              <div className="bg-gray-900 rounded-xl border border-gray-700 shadow-2xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="bg-gradient-to-r from-gray-800 to-gray-900 text-white">
-                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 sticky left-0 bg-gray-800 z-10 w-10">#</th>
-                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[180px]">Project Name</th>
-                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[140px]">Creator</th>
-                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[130px]">Culture ✏️</th>
-                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[140px]">Format ✏️</th>
-                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[160px]">Production POC ✏️</th>
-                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[160px]">Content POC ✏️</th>
-                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[180px]">Shoot Dates ✏️</th>
-                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[140px]">Status ✏️</th>
-                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider min-w-[100px]">Budget</th>
+                      <tr className="bg-gray-800 text-gray-200">
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 w-10">#</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[180px]">Project Name ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[130px]">Creator</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[120px]">Culture ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[130px]">Format ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[140px]">Production POC ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[140px]">Content POC ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[150px]">Shoot Dates ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[180px]">Status ✏️</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider min-w-[120px]">Budget (₹)</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {submissions.map((project, index) => {
-                        const updateProject = (field: string, value: string) => {
-                          const updatedSubmissions = submissions.map(s =>
-                            s.id === project.id ? { ...s, [field]: value } : s
-                          );
-                          setSubmissions(updatedSubmissions);
-                          // Save to localStorage
-                          const existingLocal = JSON.parse(localStorage.getItem('stage_submissions') || '[]');
-                          const updatedLocal = existingLocal.map((s: any) =>
-                            s.id === project.id ? { ...s, [field]: value } : s
-                          );
-                          localStorage.setItem('stage_submissions', JSON.stringify(updatedLocal));
-                        };
+                      {filteredProjects.map((project, index) => (
+                        <tr
+                          key={project.id}
+                          className={`border-b border-gray-700 hover:bg-gray-800/50 transition-colors ${index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-850'}`}
+                        >
+                          <td className="px-3 py-2 font-bold text-gray-500 border-r border-gray-700 text-center">{index + 1}</td>
 
-                        const cultureOptions = ['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'];
-                        const formatOptions = ['Feature Film', 'Mini Film', 'Long Series', 'Limited Series', 'Microdrama'];
-                        const statusOptions = [
-                          { value: 'pending_review', label: 'Pending Review' },
-                          { value: 'under-review', label: 'Under Review' },
-                          { value: 'approved', label: 'Approved' },
-                          { value: 'rejected', label: 'Rejected' },
-                          { value: 'revision-requested', label: 'Revision Requested' },
-                          { value: 'agreement-signed', label: 'Agreement Signed' },
-                          { value: 'in-production', label: 'In Production' },
-                          { value: 'on-hold', label: 'On Hold' },
-                        ];
+                          {/* Project Name - Editable */}
+                          <td className="px-2 py-2 border-r border-gray-700">
+                            <input
+                              type="text"
+                              value={project.projectName || ''}
+                              onChange={(e) => updateProject(project.id, 'projectName', e.target.value)}
+                              className="w-full px-2 py-1.5 text-sm font-bold rounded-lg bg-gray-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Project name..."
+                            />
+                          </td>
 
-                        const cultureColors: Record<string, string> = {
-                          'Haryanvi': 'bg-amber-50 border-amber-300 text-amber-800',
-                          'Rajasthani': 'bg-orange-50 border-orange-300 text-orange-800',
-                          'Bhojpuri': 'bg-rose-50 border-rose-300 text-rose-800',
-                          'Gujarati': 'bg-emerald-50 border-emerald-300 text-emerald-800',
-                        };
-                        const statusColors: Record<string, string> = {
-                          'approved': 'bg-green-50 border-green-400 text-green-800',
-                          'pending_review': 'bg-yellow-50 border-yellow-400 text-yellow-800',
-                          'under-review': 'bg-blue-50 border-blue-400 text-blue-800',
-                          'rejected': 'bg-red-50 border-red-400 text-red-800',
-                          'revision-requested': 'bg-orange-50 border-orange-400 text-orange-800',
-                          'agreement-signed': 'bg-teal-50 border-teal-400 text-teal-800',
-                          'in-production': 'bg-purple-50 border-purple-400 text-purple-800',
-                          'on-hold': 'bg-gray-50 border-gray-400 text-gray-800',
-                        };
+                          {/* Creator */}
+                          <td className="px-3 py-2 border-r border-gray-700">
+                            <div className="font-semibold text-white text-sm">{project.creatorName || '-'}</div>
+                          </td>
 
-                        return (
-                          <tr
-                            key={project.id}
-                            className={`border-b border-gray-200 hover:bg-blue-50/30 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
-                          >
-                            <td className="px-3 py-2 font-bold text-gray-400 border-r border-gray-200 sticky left-0 bg-inherit z-10 text-center">{index + 1}</td>
+                          {/* Culture - Dropdown */}
+                          <td className="px-2 py-2 border-r border-gray-700">
+                            <select
+                              value={project.culture || ''}
+                              onChange={(e) => updateProject(project.id, 'culture', e.target.value)}
+                              className="w-full px-2 py-1.5 text-xs font-bold rounded-lg bg-gray-800 border border-gray-600 text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Select...</option>
+                              {cultureOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                            </select>
+                          </td>
 
-                            {/* Project Name - Read Only */}
-                            <td className="px-3 py-2 border-r border-gray-200">
-                              <div className="font-bold text-gray-900 text-sm">{project.projectName || '-'}</div>
-                              <div className="text-xs text-gray-500">{project.companyName || ''}</div>
-                            </td>
+                          {/* Format - Dropdown */}
+                          <td className="px-2 py-2 border-r border-gray-700">
+                            <select
+                              value={project.format || ''}
+                              onChange={(e) => updateProject(project.id, 'format', e.target.value)}
+                              className="w-full px-2 py-1.5 text-xs font-bold rounded-lg bg-gray-800 border border-gray-600 text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">Select...</option>
+                              {formatOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                            </select>
+                          </td>
 
-                            {/* Creator - Read Only */}
-                            <td className="px-3 py-2 border-r border-gray-200">
-                              <div className="font-semibold text-gray-900 text-sm">{project.creatorName || '-'}</div>
-                              <div className="text-xs text-gray-500 truncate max-w-[130px]">{project.officialEmail || ''}</div>
-                            </td>
-
-                            {/* Culture - Editable Dropdown */}
-                            <td className="px-2 py-2 border-r border-gray-200">
-                              <select
-                                value={project.culture || ''}
-                                onChange={(e) => updateProject('culture', e.target.value)}
-                                className={`w-full px-2 py-1.5 text-xs font-bold rounded-lg border-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 ${cultureColors[project.culture] || 'bg-gray-50 border-gray-300 text-gray-700'}`}
-                              >
-                                <option value="">Select...</option>
-                                {cultureOptions.map(opt => (
-                                  <option key={opt} value={opt}>{opt}</option>
-                                ))}
-                              </select>
-                            </td>
-
-                            {/* Format - Editable Dropdown */}
-                            <td className="px-2 py-2 border-r border-gray-200">
-                              <select
-                                value={project.format || ''}
-                                onChange={(e) => updateProject('format', e.target.value)}
-                                className="w-full px-2 py-1.5 text-xs font-bold rounded-lg border-2 border-gray-300 bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 hover:border-blue-400"
-                              >
-                                <option value="">Select...</option>
-                                {formatOptions.map(opt => (
-                                  <option key={opt} value={opt}>{opt}</option>
-                                ))}
-                              </select>
-                            </td>
-
-                            {/* Production POC - Editable Text */}
-                            <td className="px-2 py-2 border-r border-gray-200">
+                          {/* Production POC - Dropdown + Custom */}
+                          <td className="px-2 py-2 border-r border-gray-700">
+                            <select
+                              value={pocOptions.includes(project.productionPOC) ? project.productionPOC : (project.productionPOC ? 'custom' : '')}
+                              onChange={(e) => {
+                                if (e.target.value === 'custom') {
+                                  // Keep existing custom value or empty
+                                } else {
+                                  updateProject(project.id, 'productionPOC', e.target.value);
+                                }
+                              }}
+                              className="w-full px-2 py-1.5 text-xs font-bold rounded-lg bg-gray-800 border border-gray-600 text-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 mb-1"
+                            >
+                              <option value="">Select...</option>
+                              {pocOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              <option value="custom">+ Add Custom</option>
+                            </select>
+                            {(!pocOptions.includes(project.productionPOC) && project.productionPOC) || (!pocOptions.includes(project.productionPOC) && !project.productionPOC) ? (
                               <input
                                 type="text"
-                                value={project.productionPOC || project.productionHead || project.executiveProducer || ''}
-                                onChange={(e) => updateProject('productionPOC', e.target.value)}
+                                value={project.productionPOC || ''}
+                                onChange={(e) => updateProject(project.id, 'productionPOC', e.target.value)}
                                 placeholder="Enter name..."
-                                className="w-full px-2 py-1.5 text-xs font-semibold rounded-lg border-2 border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 placeholder:text-gray-400"
+                                className="w-full px-2 py-1 text-xs rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                               />
-                            </td>
+                            ) : null}
+                          </td>
 
-                            {/* Content POC - Editable Text */}
-                            <td className="px-2 py-2 border-r border-gray-200">
+                          {/* Content POC - Text Input */}
+                          <td className="px-2 py-2 border-r border-gray-700">
+                            <input
+                              type="text"
+                              value={project.contentPOC || ''}
+                              onChange={(e) => updateProject(project.id, 'contentPOC', e.target.value)}
+                              placeholder="Enter name..."
+                              className="w-full px-2 py-1.5 text-xs font-semibold rounded-lg bg-gray-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </td>
+
+                          {/* Shoot Dates */}
+                          <td className="px-2 py-2 border-r border-gray-700">
+                            <input
+                              type="text"
+                              value={project.tentativeShootDates || ''}
+                              onChange={(e) => updateProject(project.id, 'tentativeShootDates', e.target.value)}
+                              placeholder="e.g., Mar 15 - Apr 30"
+                              className="w-full px-2 py-1.5 text-xs font-semibold rounded-lg bg-gray-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </td>
+
+                          {/* Status - Dropdown + Custom */}
+                          <td className="px-2 py-2 border-r border-gray-700">
+                            <select
+                              value={statusOptions.find(o => o.value === project.status) ? project.status : 'custom'}
+                              onChange={(e) => {
+                                if (e.target.value !== 'custom') {
+                                  updateProject(project.id, 'status', e.target.value);
+                                  updateProject(project.id, 'customStatus', '');
+                                }
+                              }}
+                              className={`w-full px-2 py-1.5 text-xs font-bold rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 mb-1 ${statusColors[project.status] || 'bg-gray-700 text-white'}`}
+                            >
+                              {statusOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                              <option value="custom">+ Custom Status</option>
+                            </select>
+                            {(project.status === 'custom' || project.customStatus || !statusOptions.find(o => o.value === project.status)) && (
                               <input
                                 type="text"
-                                value={project.contentPOC || project.creativeDirector || project.showRunner || ''}
-                                onChange={(e) => updateProject('contentPOC', e.target.value)}
-                                placeholder="Enter name..."
-                                className="w-full px-2 py-1.5 text-xs font-semibold rounded-lg border-2 border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 placeholder:text-gray-400"
+                                value={project.customStatus || ''}
+                                onChange={(e) => {
+                                  updateProject(project.id, 'customStatus', e.target.value);
+                                  updateProject(project.id, 'status', 'custom');
+                                }}
+                                placeholder="Enter status..."
+                                className="w-full px-2 py-1 text-xs rounded bg-gray-700 border border-gray-600 text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                               />
-                            </td>
+                            )}
+                          </td>
 
-                            {/* Tentative Shoot Dates - Editable Text */}
-                            <td className="px-2 py-2 border-r border-gray-200">
-                              <input
-                                type="text"
-                                value={project.tentativeShootDates || (project.shootStartDate && project.shootEndDate ? `${project.shootStartDate} - ${project.shootEndDate}` : '')}
-                                onChange={(e) => updateProject('tentativeShootDates', e.target.value)}
-                                placeholder="e.g., Mar 15 - Apr 30"
-                                className="w-full px-2 py-1.5 text-xs font-semibold rounded-lg border-2 border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:border-blue-400 placeholder:text-gray-400"
-                              />
-                            </td>
-
-                            {/* Status - Editable Dropdown */}
-                            <td className="px-2 py-2 border-r border-gray-200">
-                              <select
-                                value={project.status || 'pending_review'}
-                                onChange={(e) => updateProject('status', e.target.value)}
-                                className={`w-full px-2 py-1.5 text-xs font-bold rounded-lg border-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 ${statusColors[project.status] || 'bg-gray-50 border-gray-300 text-gray-700'}`}
-                              >
-                                {statusOptions.map(opt => (
-                                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                ))}
-                              </select>
-                            </td>
-
-                            {/* Budget - Read Only */}
-                            <td className="px-3 py-2">
-                              <div className="font-bold text-gray-900 text-sm">
-                                {project.totalBudget ? `₹${(project.totalBudget / 10000000).toFixed(2)} Cr` : '-'}
+                          {/* Budget in Lakhs */}
+                          <td className="px-3 py-2">
+                            <div className="font-black text-emerald-400 text-sm">
+                              {project.totalBudget ? `₹${(project.totalBudget / 100000).toLocaleString('en-IN')} L` : '-'}
+                            </div>
+                            {project.totalBudget && (
+                              <div className="text-xs text-gray-500">
+                                ({(project.totalBudget / 10000000).toFixed(2)} Cr)
                               </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                            )}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
 
-                {/* Summary Footer */}
-                <div className="bg-gray-100 px-4 py-3 border-t-2 border-gray-300">
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-gray-600">Total:</span>
-                      <span className="font-black text-gray-900">{submissions.length} Projects</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-amber-400"></span>
-                      <span className="font-semibold text-gray-700">Haryanvi: {submissions.filter(s => s.culture === 'Haryanvi').length}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-orange-400"></span>
-                      <span className="font-semibold text-gray-700">Rajasthani: {submissions.filter(s => s.culture === 'Rajasthani').length}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-rose-400"></span>
-                      <span className="font-semibold text-gray-700">Bhojpuri: {submissions.filter(s => s.culture === 'Bhojpuri').length}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-emerald-400"></span>
-                      <span className="font-semibold text-gray-700">Gujarati: {submissions.filter(s => s.culture === 'Gujarati').length}</span>
-                    </div>
-                    <div className="ml-auto text-xs text-gray-500 flex items-center gap-1">
-                      <span>✏️</span> = Editable field • Changes auto-save
-                    </div>
+                {/* Footer */}
+                <div className="bg-gray-800 px-4 py-3 border-t border-gray-700">
+                  <div className="flex flex-wrap gap-4 text-sm text-gray-300">
+                    <span className="font-bold text-white">Total: {filteredProjects.length} Projects</span>
+                    <span className="text-gray-500">|</span>
+                    <span>✏️ = Editable</span>
+                    <span className="text-gray-500">|</span>
+                    <span>Auto-saves on change</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Production POC Tracking Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {pocOptions.map(poc => {
+                  const pocProjects = submissions.filter(s => s.productionPOC === poc);
+                  const colors: Record<string, string> = {
+                    'Mayank': 'from-blue-600 to-indigo-700',
+                    'Haidar': 'from-purple-600 to-pink-700',
+                    'Sumit': 'from-teal-600 to-cyan-700',
+                  };
+                  return (
+                    <div key={poc} className={`bg-gradient-to-br ${colors[poc]} rounded-xl p-5 text-white shadow-xl`}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-black">
+                          {poc.charAt(0)}
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-black">{poc}</h3>
+                          <p className="text-sm opacity-80">Production POC</p>
+                        </div>
+                      </div>
+                      <div className="text-4xl font-black mb-2">{pocProjects.length}</div>
+                      <p className="text-sm opacity-80 mb-3">Projects Assigned</p>
+                      <div className="border-t border-white/20 pt-3 space-y-1 text-xs">
+                        {['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'].map(culture => (
+                          <div key={culture} className="flex justify-between">
+                            <span>{culture}:</span>
+                            <span className="font-bold">{pocProjects.filter(p => p.culture === culture).length}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Culture-wise Summary Cards */}
@@ -5314,9 +5412,9 @@ END:VCARD`;
                 {['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'].map(culture => {
                   const cultureProjects = submissions.filter(s => s.culture === culture);
                   const gradients: Record<string, string> = {
-                    'Haryanvi': 'from-amber-500 to-yellow-600',
-                    'Rajasthani': 'from-orange-500 to-red-600',
-                    'Bhojpuri': 'from-rose-500 to-pink-600',
+                    'Haryanvi': 'from-amber-600 to-yellow-700',
+                    'Rajasthani': 'from-orange-600 to-red-700',
+                    'Bhojpuri': 'from-rose-600 to-pink-700',
                     'Gujarati': 'from-emerald-500 to-teal-600',
                   };
                   return (
@@ -5343,7 +5441,8 @@ END:VCARD`;
                 })}
               </div>
             </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* Add Talent Modal */}
