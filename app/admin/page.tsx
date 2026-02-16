@@ -5080,459 +5080,434 @@ END:VCARD`;
             </div>
           )}
 
-          {/* PROJECTS TAB - Clean, Classy Dark Theme */}
+          {/* PROJECTS TAB - Light Pastel Theme like Excel */}
           {activeTab === 'projects' && (() => {
             const filteredProjects = projectsCultureFilter === 'all'
               ? submissions
               : submissions.filter(s => s.culture === projectsCultureFilter);
 
-            // Standard OTT budget format - clean and aligned
-            const formatBudgetDetailed = (amount: number) => {
+            // Budget format
+            const formatBudget = (amount: number) => {
               if (!amount || amount === 0) return '—';
-              // Show in Lakhs with 2 decimal places for OTT standard
               const lakhs = amount / 100000;
-              if (lakhs >= 100) {
-                // Show in Crores if >= 1 Cr
-                return `₹${(lakhs / 100).toFixed(2)} Cr`;
-              }
+              if (lakhs >= 100) return `₹${(lakhs / 100).toFixed(2)} Cr`;
               return `₹${lakhs.toFixed(2)} L`;
             };
 
-            const updateProject = (projectId: string | number, field: string, value: string | number | object) => {
+            const updateProject = (projectId: string | number, field: string, value: string | number) => {
               const updatedSubmissions = submissions.map(s =>
                 s.id === projectId ? { ...s, [field]: value } : s
               );
               setSubmissions(updatedSubmissions);
-              const existingLocal = JSON.parse(localStorage.getItem('stage_submissions') || '[]');
-              const updatedLocal = existingLocal.map((s: any) =>
-                s.id === projectId ? { ...s, [field]: value } : s
-              );
-              localStorage.setItem('stage_submissions', JSON.stringify(updatedLocal));
-            };
-
-            const addBudgetExtra = (projectId: string | number, label: string, amount: number) => {
-              const project = submissions.find(s => s.id === projectId);
-              const existingExtras = project?.budgetExtras || [];
-              const newExtras = [...existingExtras, { id: Date.now(), label, amount }];
-              updateProject(projectId, 'budgetExtras', newExtras);
-            };
-
-            const removeBudgetExtra = (projectId: string | number, extraId: number) => {
-              const project = submissions.find(s => s.id === projectId);
-              const existingExtras = project?.budgetExtras || [];
-              const newExtras = existingExtras.filter((e: any) => e.id !== extraId);
-              updateProject(projectId, 'budgetExtras', newExtras);
-            };
-
-            const getTotalBudgetWithExtras = (project: any) => {
-              const baseBudget = parseFloat(project.totalBudget) || 0;
-              const extras = project.budgetExtras || [];
-              const extrasTotal = extras.reduce((sum: number, e: any) => sum + (parseFloat(e.amount) || 0), 0);
-              return baseBudget + extrasTotal;
+              localStorage.setItem('stage_submissions', JSON.stringify(updatedSubmissions));
             };
 
             const statusOptions = [
-              { value: 'loi_sent', label: 'LOI Sent', color: 'blue' },
-              { value: 'onboarding_form_sent', label: 'Onboarding Form Sent', color: 'indigo' },
-              { value: 'budget_discussion', label: 'Budget Discussion', color: 'yellow' },
-              { value: 'sent_for_agreement', label: 'Sent for Agreement', color: 'orange' },
-              { value: 'agreement_done', label: 'Agreement Done', color: 'green' },
-              { value: 'insurance_pending', label: 'Insurance Pending', color: 'red' },
-              { value: 'insurance_done', label: 'Insurance Done', color: 'teal' },
-              { value: 'shoot_started', label: 'Shoot Started', color: 'purple' },
-              { value: 'shoot_completed', label: 'Shoot Completed', color: 'emerald' },
-              { value: 'pending_review', label: 'Pending Review', color: 'gray' },
-              { value: 'under_review', label: 'Under Review', color: 'cyan' },
-              { value: 'approved', label: 'Approved', color: 'green' },
-              { value: 'rejected', label: 'Rejected', color: 'red' },
-              { value: 'on_hold', label: 'On Hold', color: 'gray' },
+              { value: 'loi_sent', label: 'LOI Sent' },
+              { value: 'onboarding_form_sent', label: 'Onboarding Form Sent' },
+              { value: 'budget_discussion', label: 'Budget Discussion' },
+              { value: 'sent_for_agreement', label: 'Sent for Agreement' },
+              { value: 'agreement_done', label: 'Agreement Done' },
+              { value: 'insurance_pending', label: 'Insurance Pending' },
+              { value: 'insurance_done', label: 'Insurance Done' },
+              { value: 'shoot_started', label: 'Shoot Started' },
+              { value: 'shoot_completed', label: 'Shoot Completed' },
+              { value: 'post_production', label: 'Post Production' },
+              { value: 'delivered', label: 'Delivered' },
+              { value: 'approved', label: 'Approved' },
+              { value: 'rejected', label: 'Rejected' },
+              { value: 'on_hold', label: 'On Hold' },
             ];
 
             const allPOCs = [...['Mayank', 'Haidar', 'Sumit'], ...customPOCs];
             const cultureOptions = ['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'];
             const formatOptions = ['Feature Film', 'Mini Film', 'Long Series', 'Limited Series', 'Microdrama'];
 
-            // Dark theme status colors - readable
+            // Pastel status colors
             const statusColors: Record<string, string> = {
-              'loi_sent': 'bg-blue-600 text-white',
-              'onboarding_form_sent': 'bg-indigo-600 text-white',
-              'budget_discussion': 'bg-yellow-500 text-black',
-              'sent_for_agreement': 'bg-orange-500 text-white',
-              'agreement_done': 'bg-green-600 text-white',
-              'insurance_pending': 'bg-red-500 text-white',
-              'insurance_done': 'bg-teal-600 text-white',
-              'shoot_started': 'bg-purple-600 text-white',
-              'shoot_completed': 'bg-emerald-600 text-white',
-              'pending_review': 'bg-gray-500 text-white',
-              'under_review': 'bg-cyan-600 text-white',
-              'approved': 'bg-green-500 text-white',
-              'rejected': 'bg-red-600 text-white',
-              'on_hold': 'bg-gray-600 text-white',
+              'loi_sent': 'bg-blue-100 text-blue-800',
+              'onboarding_form_sent': 'bg-indigo-100 text-indigo-800',
+              'budget_discussion': 'bg-yellow-100 text-yellow-800',
+              'sent_for_agreement': 'bg-orange-100 text-orange-800',
+              'agreement_done': 'bg-green-100 text-green-800',
+              'insurance_pending': 'bg-red-100 text-red-800',
+              'insurance_done': 'bg-teal-100 text-teal-800',
+              'shoot_started': 'bg-purple-100 text-purple-800',
+              'shoot_completed': 'bg-emerald-100 text-emerald-800',
+              'post_production': 'bg-pink-100 text-pink-800',
+              'delivered': 'bg-cyan-100 text-cyan-800',
+              'approved': 'bg-green-100 text-green-800',
+              'rejected': 'bg-red-100 text-red-800',
+              'on_hold': 'bg-gray-100 text-gray-800',
+              'custom': 'bg-violet-100 text-violet-800',
             };
 
-            // Delete POC function - works for all POCs
+            // Culture colors
+            const cultureColors: Record<string, string> = {
+              'Haryanvi': 'bg-amber-100 text-amber-800',
+              'Rajasthani': 'bg-orange-100 text-orange-800',
+              'Bhojpuri': 'bg-rose-100 text-rose-800',
+              'Gujarati': 'bg-emerald-100 text-emerald-800',
+            };
+
+            // Format colors
+            const formatColors: Record<string, string> = {
+              'Feature Film': 'bg-blue-100 text-blue-800',
+              'Mini Film': 'bg-purple-100 text-purple-800',
+              'Long Series': 'bg-green-100 text-green-800',
+              'Limited Series': 'bg-cyan-100 text-cyan-800',
+              'Microdrama': 'bg-pink-100 text-pink-800',
+            };
+
+            // Delete POC
             const deletePOC = (pocName: string) => {
-              // Unassign from all projects first
               const updatedSubmissions = submissions.map(s =>
                 s.productionPOC === pocName ? { ...s, productionPOC: '' } : s
               );
               setSubmissions(updatedSubmissions);
               localStorage.setItem('stage_submissions', JSON.stringify(updatedSubmissions));
-
-              // Remove from custom POCs if it's custom
               if (customPOCs.includes(pocName)) {
                 setCustomPOCs(customPOCs.filter(p => p !== pocName));
               }
             };
 
+            // Export function
+            const exportData = (format: 'excel' | 'pdf', filterType?: string, filterValue?: string) => {
+              let dataToExport = [...submissions];
+
+              if (filterType && filterValue) {
+                dataToExport = dataToExport.filter(s => s[filterType] === filterValue);
+              }
+
+              const exportRows = dataToExport.map((s, idx) => ({
+                'S.No': idx + 1,
+                'Project Name': s.projectName || '-',
+                'Creator': s.creatorName || s.creator || '-',
+                'Culture': s.culture || '-',
+                'Format': s.format || '-',
+                'Production POC': s.productionPOC || '-',
+                'Shoot Start Date': s.shootStartDate || '-',
+                'Status': statusOptions.find(o => o.value === s.status)?.label || s.customStatus || s.status || '-',
+                'Budget (Lakhs)': s.totalBudget ? (parseFloat(s.totalBudget) / 100000).toFixed(2) : '0',
+              }));
+
+              if (format === 'excel') {
+                const XLSX = require('xlsx');
+                const ws = XLSX.utils.json_to_sheet(exportRows);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Projects');
+                const fileName = filterType && filterValue
+                  ? `STAGE_${filterValue}_Projects.xlsx`
+                  : 'STAGE_All_Projects.xlsx';
+                XLSX.writeFile(wb, fileName);
+              } else if (format === 'pdf') {
+                // PDF Export - opens printable HTML in new window
+                const totalBudgetValue = dataToExport.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0);
+                const filterTitle = filterType && filterValue ? filterValue + ' ' : 'All ';
+                const dateStr = new Date().toLocaleDateString('en-IN', { dateStyle: 'full' });
+                const rowsHtml = exportRows.map(r =>
+                  '<tr><td>' + r['S.No'] + '</td><td>' + r['Project Name'] + '</td><td>' + r['Creator'] + '</td><td>' + r['Culture'] + '</td><td>' + r['Format'] + '</td><td>' + r['Production POC'] + '</td><td>' + r['Shoot Start Date'] + '</td><td>' + r['Status'] + '</td><td class="budget">' + r['Budget (Lakhs)'] + ' L</td></tr>'
+                ).join('');
+                const html = '<!DOCTYPE html><html><head><title>STAGE ' + filterTitle + 'Projects Report</title><style>body{font-family:Arial,sans-serif;padding:30px;color:#333}h1{color:#1e40af;margin-bottom:5px}.subtitle{color:#666;margin-bottom:20px;font-size:14px}table{width:100%;border-collapse:collapse;margin:20px 0;font-size:12px}th{background:#f1f5f9;padding:10px;text-align:left;border:1px solid #e2e8f0;font-weight:600}td{padding:8px 10px;border:1px solid #e2e8f0}tr:nth-child(even){background:#f8fafc}.summary{background:#f0fdf4;padding:15px;border-radius:8px;margin-top:20px}.summary-title{font-weight:bold;color:#166534}.budget{text-align:right;font-weight:600;color:#166534}@media print{body{padding:20px}}</style></head><body><h1>STAGE ' + filterTitle + 'Projects Report</h1><p class="subtitle">Generated: ' + dateStr + ' | ' + dataToExport.length + ' Projects</p><table><thead><tr><th>#</th><th>Project Name</th><th>Creator</th><th>Culture</th><th>Format</th><th>POC</th><th>Shoot Start</th><th>Status</th><th style="text-align:right">Budget</th></tr></thead><tbody>' + rowsHtml + '</tbody></table><div class="summary"><span class="summary-title">Total Budget: </span><span class="budget">' + formatBudget(totalBudgetValue) + '</span></div><script>window.onload=function(){window.print();}</script></body></html>';
+                const printWindow = window.open('', '_blank');
+                if (printWindow) {
+                  printWindow.document.write(html);
+                  printWindow.document.close();
+                }
+              }
+            };
+
+            const totalBudget = filteredProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0);
+
             return (
-            <div className="space-y-4">
-              {/* Compact Header */}
-              <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900 rounded-xl p-4 border border-slate-700">
-                <div className="flex items-center gap-4">
-                  <h1 className="text-xl font-bold text-white">Projects</h1>
-                  <span className="text-slate-400 text-sm">{filteredProjects.length} projects</span>
-                  <span className="text-emerald-400 font-semibold text-sm">{formatBudgetDetailed(filteredProjects.reduce((sum, p) => sum + getTotalBudgetWithExtras(p), 0))}</span>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowAddPOCModal(true)}
-                    className="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium text-white transition-all"
-                  >
-                    + Add POC
-                  </button>
-                  <button
-                    onClick={() => {
-                      const XLSX = require('xlsx');
-                      const exportData = filteredProjects.map(s => ({
-                        'Project': s.projectName || '-',
-                        'Creator': s.creatorName || '-',
-                        'Culture': s.culture || '-',
-                        'Format': s.format || '-',
-                        'POC': s.productionPOC || '-',
-                        'Shoot Start': s.shootStartDate || '-',
-                        'Shoot End': s.shootEndDate || '-',
-                        'Status': statusOptions.find(o => o.value === s.status)?.label || s.status || '-',
-                        'Budget (L)': s.totalBudget ? (parseFloat(s.totalBudget) / 100000).toFixed(2) : '-',
-                      }));
-                      const ws = XLSX.utils.json_to_sheet(exportData);
-                      const wb = XLSX.utils.book_new();
-                      XLSX.utils.book_append_sheet(wb, ws, 'Projects');
-                      XLSX.writeFile(wb, `STAGE_Projects.xlsx`);
-                    }}
-                    className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-sm font-medium text-white transition-all"
-                  >
-                    Export Excel
-                  </button>
+            <div className="min-h-screen bg-gray-50 -m-6 p-6">
+              {/* Header */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-800">Projects Tracker</h1>
+                    <p className="text-gray-500 text-sm">{filteredProjects.length} projects • Total: <span className="text-green-600 font-semibold">{formatBudget(totalBudget)}</span></p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button onClick={() => setShowAddPOCModal(true)} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700">+ Add POC</button>
+                    <button onClick={() => exportData('excel')} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">📥 Excel</button>
+                    <button onClick={() => exportData('pdf')} className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium">📄 PDF</button>
+
+                    {/* Export Dropdown */}
+                    <div className="relative group">
+                      <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium">📊 Export Filter ▼</button>
+                      <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-200 py-2 w-64 hidden group-hover:block z-50 max-h-96 overflow-y-auto">
+                        <p className="px-4 py-1 text-xs text-gray-400 uppercase font-semibold">By Culture</p>
+                        {cultureOptions.map(c => (
+                          <div key={c} className="flex">
+                            <button onClick={() => exportData('excel', 'culture', c)} className="flex-1 px-4 py-2 text-left text-sm hover:bg-green-50 text-gray-700">📥 {c}</button>
+                            <button onClick={() => exportData('pdf', 'culture', c)} className="px-3 py-2 text-sm hover:bg-red-50 text-red-600">PDF</button>
+                          </div>
+                        ))}
+                        <hr className="my-2" />
+                        <p className="px-4 py-1 text-xs text-gray-400 uppercase font-semibold">By Format</p>
+                        {formatOptions.map(f => (
+                          <div key={f} className="flex">
+                            <button onClick={() => exportData('excel', 'format', f)} className="flex-1 px-4 py-2 text-left text-sm hover:bg-green-50 text-gray-700">📥 {f}</button>
+                            <button onClick={() => exportData('pdf', 'format', f)} className="px-3 py-2 text-sm hover:bg-red-50 text-red-600">PDF</button>
+                          </div>
+                        ))}
+                        <hr className="my-2" />
+                        <p className="px-4 py-1 text-xs text-gray-400 uppercase font-semibold">By POC</p>
+                        {allPOCs.map(p => (
+                          <div key={p} className="flex">
+                            <button onClick={() => exportData('excel', 'productionPOC', p)} className="flex-1 px-4 py-2 text-left text-sm hover:bg-green-50 text-gray-700">📥 {p}</button>
+                            <button onClick={() => exportData('pdf', 'productionPOC', p)} className="px-3 py-2 text-sm hover:bg-red-50 text-red-600">PDF</button>
+                          </div>
+                        ))}
+                        <hr className="my-2" />
+                        <p className="px-4 py-1 text-xs text-gray-400 uppercase font-semibold">By Status</p>
+                        {statusOptions.slice(0, 6).map(s => (
+                          <div key={s.value} className="flex">
+                            <button onClick={() => exportData('excel', 'status', s.value)} className="flex-1 px-4 py-2 text-left text-sm hover:bg-green-50 text-gray-700">📥 {s.label}</button>
+                            <button onClick={() => exportData('pdf', 'status', s.value)} className="px-3 py-2 text-sm hover:bg-red-50 text-red-600">PDF</button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Culture Filter */}
-              <div className="flex flex-wrap gap-1">
+              {/* Culture Filter Pills */}
+              <div className="flex flex-wrap gap-2 mb-4">
                 <button
                   onClick={() => setProjectsCultureFilter('all')}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    projectsCultureFilter === 'all'
-                      ? 'bg-white text-slate-900'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    projectsCultureFilter === 'all' ? 'bg-gray-800 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
                   }`}
-                >
-                  All ({submissions.length})
-                </button>
+                >All ({submissions.length})</button>
                 {cultureOptions.map(culture => {
                   const count = submissions.filter(s => s.culture === culture).length;
-                  const colors: Record<string, string> = {
-                    'Haryanvi': projectsCultureFilter === culture ? 'bg-amber-500 text-white' : 'bg-slate-800 text-amber-400 hover:bg-slate-700',
-                    'Rajasthani': projectsCultureFilter === culture ? 'bg-orange-500 text-white' : 'bg-slate-800 text-orange-400 hover:bg-slate-700',
-                    'Bhojpuri': projectsCultureFilter === culture ? 'bg-rose-500 text-white' : 'bg-slate-800 text-rose-400 hover:bg-slate-700',
-                    'Gujarati': projectsCultureFilter === culture ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-emerald-400 hover:bg-slate-700',
-                  };
                   return (
                     <button
                       key={culture}
                       onClick={() => setProjectsCultureFilter(culture)}
-                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${colors[culture]}`}
-                    >
-                      {culture} ({count})
-                    </button>
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        projectsCultureFilter === culture
+                          ? cultureColors[culture]?.replace('100', '500').replace('800', 'white') + ' text-white'
+                          : `${cultureColors[culture]} border border-gray-200 hover:shadow-sm`
+                      }`}
+                    >{culture} ({count})</button>
                   );
                 })}
               </div>
 
-              {/* Compact Full Width Table */}
-              <div className="bg-slate-900 rounded-xl border border-slate-700 shadow-xl overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-slate-800 border-b border-slate-600">
-                        <th className="px-2 py-3 text-center text-slate-400 text-[11px] font-semibold uppercase w-10">⋮</th>
-                        <th className="px-2 py-3 text-center text-slate-400 text-[11px] font-semibold uppercase w-10">#</th>
-                        <th className="px-3 py-3 text-left text-slate-400 text-[11px] font-semibold uppercase">Project</th>
-                        <th className="px-3 py-3 text-left text-slate-400 text-[11px] font-semibold uppercase">Creator</th>
-                        <th className="px-3 py-3 text-left text-slate-400 text-[11px] font-semibold uppercase">Culture</th>
-                        <th className="px-3 py-3 text-left text-slate-400 text-[11px] font-semibold uppercase">Format</th>
-                        <th className="px-3 py-3 text-left text-slate-400 text-[11px] font-semibold uppercase">POC</th>
-                        <th className="px-3 py-3 text-left text-slate-400 text-[11px] font-semibold uppercase">Shoot Dates</th>
-                        <th className="px-3 py-3 text-left text-slate-400 text-[11px] font-semibold uppercase">Status</th>
-                        <th className="px-3 py-3 text-right text-slate-400 text-[11px] font-semibold uppercase">Budget</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800">
+              {/* Table */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-200">
+                      <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase w-12">#</th>
+                      <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[180px]">Project</th>
+                      <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[140px]">Creator</th>
+                      <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[100px]">Culture</th>
+                      <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[120px]">Format</th>
+                      <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[120px]">POC</th>
+                      <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[130px]">Shoot Start</th>
+                      <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[160px]">Status</th>
+                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[100px]">Budget</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
                       {filteredProjects.map((project, index) => (
-                        <tr
-                          key={project.id}
-                          draggable
-                          onDragStart={(e) => {
-                            setDraggedRowId(project.id);
-                            e.dataTransfer.effectAllowed = 'move';
-                          }}
-                          onDragOver={(e) => {
-                            e.preventDefault();
-                            e.dataTransfer.dropEffect = 'move';
-                          }}
-                          onDrop={(e) => {
-                            e.preventDefault();
-                            if (draggedRowId && draggedRowId !== project.id) {
-                              const draggedIndex = submissions.findIndex(s => s.id === draggedRowId);
-                              const dropIndex = submissions.findIndex(s => s.id === project.id);
-                              const newSubmissions = [...submissions];
-                              const [removed] = newSubmissions.splice(draggedIndex, 1);
-                              newSubmissions.splice(dropIndex, 0, removed);
-                              setSubmissions(newSubmissions);
-                              localStorage.setItem('stage_submissions', JSON.stringify(newSubmissions));
-                            }
-                            setDraggedRowId(null);
-                          }}
-                          onDragEnd={() => setDraggedRowId(null)}
-                          className={`group hover:bg-slate-800/50 ${draggedRowId === project.id ? 'opacity-50 bg-blue-900/30' : ''}`}
-                        >
-                          {/* Drag */}
-                          <td className="px-1 py-2 text-center cursor-grab">
-                            <span className="text-slate-600">⋮</span>
-                          </td>
-
+                        <tr key={project.id} className="hover:bg-blue-50/50 transition-colors">
                           {/* # */}
-                          <td className="px-2 py-2 text-slate-500 text-sm text-center">{index + 1}</td>
+                          <td className="px-3 py-3 text-gray-500 text-sm font-medium">{index + 1}</td>
 
                           {/* Project */}
-                          <td className="px-2 py-2">
+                          <td className="px-3 py-2">
                             <input
                               type="text"
                               value={project.projectName || ''}
                               onChange={(e) => updateProject(project.id, 'projectName', e.target.value)}
-                              className="w-full px-2 py-1.5 text-sm font-medium bg-slate-800/50 hover:bg-slate-800 focus:bg-slate-800 border border-slate-700 rounded text-white focus:outline-none focus:border-blue-500"
-                              placeholder="Project..."
+                              className="w-full px-2 py-1.5 text-sm font-semibold bg-white border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
+                              placeholder="Project name..."
                             />
                           </td>
 
                           {/* Creator */}
-                          <td className="px-2 py-2">
+                          <td className="px-3 py-2">
                             <input
                               type="text"
                               value={project.creatorName || project.creator || ''}
                               onChange={(e) => updateProject(project.id, 'creatorName', e.target.value)}
-                              className="w-full px-2 py-1.5 text-sm bg-slate-800/50 hover:bg-slate-800 focus:bg-slate-800 border border-slate-700 rounded text-slate-200 focus:outline-none focus:border-blue-500"
+                              className="w-full px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400"
                               placeholder="Creator..."
                             />
                           </td>
 
-                          {/* Culture */}
-                          <td className="px-2 py-2">
+                          {/* Culture - Colored Badge */}
+                          <td className="px-3 py-2">
                             <select
                               value={project.culture || ''}
                               onChange={(e) => updateProject(project.id, 'culture', e.target.value)}
-                              className="w-full px-2 py-1.5 text-sm bg-slate-800/50 hover:bg-slate-800 border border-slate-700 rounded text-slate-200 cursor-pointer focus:outline-none focus:border-blue-500"
+                              className={`w-full px-2 py-1.5 text-xs font-semibold rounded-full cursor-pointer focus:outline-none ${cultureColors[project.culture] || 'bg-gray-100 text-gray-600'}`}
                             >
-                              <option value="" className="bg-slate-900">-</option>
-                              {cultureOptions.map(opt => <option key={opt} value={opt} className="bg-slate-900">{opt}</option>)}
+                              <option value="">Select</option>
+                              {cultureOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                             </select>
                           </td>
 
-                          {/* Format */}
-                          <td className="px-2 py-2">
+                          {/* Format - Colored Badge */}
+                          <td className="px-3 py-2">
                             <select
                               value={project.format || ''}
                               onChange={(e) => updateProject(project.id, 'format', e.target.value)}
-                              className="w-full px-2 py-1.5 text-sm bg-slate-800/50 hover:bg-slate-800 border border-slate-700 rounded text-slate-200 cursor-pointer focus:outline-none focus:border-blue-500"
+                              className={`w-full px-2 py-1.5 text-xs font-semibold rounded-full cursor-pointer focus:outline-none ${formatColors[project.format] || 'bg-gray-100 text-gray-600'}`}
                             >
-                              <option value="" className="bg-slate-900">-</option>
-                              {formatOptions.map(opt => <option key={opt} value={opt} className="bg-slate-900">{opt}</option>)}
+                              <option value="">Select</option>
+                              {formatOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                             </select>
                           </td>
 
                           {/* POC */}
-                          <td className="px-2 py-2">
+                          <td className="px-3 py-2">
                             <select
-                              value={allPOCs.includes(project.productionPOC) ? project.productionPOC : ''}
+                              value={project.productionPOC || ''}
                               onChange={(e) => updateProject(project.id, 'productionPOC', e.target.value)}
-                              className="w-full px-2 py-1.5 text-sm bg-slate-800/50 hover:bg-slate-800 border border-slate-700 rounded text-slate-200 cursor-pointer focus:outline-none focus:border-blue-500"
+                              className="w-full px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-lg text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-200"
                             >
-                              <option value="" className="bg-slate-900">-</option>
-                              {allPOCs.map(opt => <option key={opt} value={opt} className="bg-slate-900">{opt}</option>)}
+                              <option value="">Assign</option>
+                              {allPOCs.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                             </select>
                           </td>
 
-                          {/* Shoot Dates */}
-                          <td className="px-2 py-2">
-                            <div className="flex gap-1 items-center">
-                              <input
-                                type="date"
-                                value={project.shootStartDate || ''}
-                                onChange={(e) => updateProject(project.id, 'shootStartDate', e.target.value)}
-                                className="w-[100px] px-1 py-1 text-xs bg-slate-800/50 border border-slate-700 rounded text-slate-300 focus:outline-none"
-                              />
-                              <span className="text-slate-500 text-xs">to</span>
-                              <input
-                                type="date"
-                                value={project.shootEndDate || ''}
-                                onChange={(e) => updateProject(project.id, 'shootEndDate', e.target.value)}
-                                className="w-[100px] px-1 py-1 text-xs bg-slate-800/50 border border-slate-700 rounded text-slate-300 focus:outline-none"
-                              />
-                            </div>
+                          {/* Shoot Start Date Only */}
+                          <td className="px-3 py-2">
+                            <input
+                              type="date"
+                              value={project.shootStartDate || ''}
+                              onChange={(e) => updateProject(project.id, 'shootStartDate', e.target.value)}
+                              className="w-full px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                            />
                           </td>
 
-                          {/* Status */}
-                          <td className="px-2 py-2">
-                            <select
-                              value={project.status || ''}
-                              onChange={(e) => updateProject(project.id, 'status', e.target.value)}
-                              className={`w-full px-2 py-1.5 text-xs font-semibold rounded cursor-pointer focus:outline-none ${statusColors[project.status] || 'bg-slate-700 text-slate-300'}`}
-                            >
-                              <option value="" className="bg-slate-900 text-white">Select...</option>
-                              {statusOptions.map(opt => <option key={opt.value} value={opt.value} className="bg-slate-900 text-white">{opt.label}</option>)}
-                            </select>
+                          {/* Status with Custom Option */}
+                          <td className="px-3 py-2">
+                            {project.status === 'custom' ? (
+                              <input
+                                type="text"
+                                value={project.customStatus || ''}
+                                onChange={(e) => updateProject(project.id, 'customStatus', e.target.value)}
+                                placeholder="Enter status..."
+                                className="w-full px-2 py-1.5 text-xs font-semibold bg-violet-100 text-violet-800 rounded-full focus:outline-none"
+                              />
+                            ) : (
+                              <select
+                                value={project.status || ''}
+                                onChange={(e) => updateProject(project.id, 'status', e.target.value)}
+                                className={`w-full px-2 py-1.5 text-xs font-semibold rounded-full cursor-pointer focus:outline-none ${statusColors[project.status] || 'bg-gray-100 text-gray-600'}`}
+                              >
+                                <option value="">Select</option>
+                                {statusOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                <option value="custom">+ Custom Status</option>
+                              </select>
+                            )}
                           </td>
 
-                          {/* Budget - Editable in Lakhs */}
-                          <td className="px-2 py-2">
+                          {/* Budget */}
+                          <td className="px-3 py-2">
                             <div className="flex items-center justify-end gap-1">
-                              <span className="text-slate-400 text-xs">₹</span>
+                              <span className="text-gray-400 text-sm">₹</span>
                               <input
                                 type="number"
-                                value={project.totalBudget ? (parseFloat(project.totalBudget) / 100000).toFixed(0) : ''}
+                                value={project.totalBudget ? Math.round(parseFloat(project.totalBudget) / 100000) : ''}
                                 onChange={(e) => {
                                   const lakhs = parseFloat(e.target.value) || 0;
                                   updateProject(project.id, 'totalBudget', String(lakhs * 100000));
                                 }}
-                                className="w-16 px-2 py-1.5 text-sm font-bold text-right bg-slate-800/50 border border-slate-700 rounded text-emerald-400 focus:outline-none focus:border-emerald-500"
+                                className="w-20 px-2 py-1.5 text-sm font-bold text-right bg-green-50 border border-green-200 rounded-lg text-green-700 focus:outline-none focus:ring-2 focus:ring-green-200"
                                 placeholder="0"
                               />
-                              <span className="text-slate-400 text-xs">L</span>
+                              <span className="text-gray-500 text-xs font-medium">L</span>
                             </div>
                           </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                  {/* Footer */}
+                  <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 flex items-center justify-between">
+                    <span className="text-gray-500 text-sm">{filteredProjects.length} projects • Click to edit</span>
+                    <span className="text-green-600 font-bold text-lg">Total: {formatBudget(totalBudget)}</span>
+                  </div>
                 </div>
 
-                {/* Footer */}
-                <div className="bg-slate-800 px-4 py-3 border-t border-slate-700 flex items-center justify-between">
-                  <span className="text-slate-400 text-sm">{filteredProjects.length} projects • Editable</span>
-                  <span className="text-emerald-400 font-bold">Total: {formatBudgetDetailed(filteredProjects.reduce((sum, p) => sum + getTotalBudgetWithExtras(p), 0))}</span>
-                </div>
-              </div>
-
-              {/* POC Tracker - Clean Design with Culture + Format Breakdown */}
-              <div className="bg-slate-900/50 rounded-2xl border border-slate-700/50 p-6">
+              {/* POC Tracker - Light Theme */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-4">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-white">Team Overview</h2>
-                    <p className="text-sm text-slate-400">Production POC assignments with culture & format breakdown</p>
+                    <h2 className="text-xl font-bold text-gray-800">Team Overview</h2>
+                    <p className="text-sm text-gray-500">POC assignments with culture & format breakdown</p>
                   </div>
                   <button
                     onClick={() => setShowAddPOCModal(true)}
-                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm font-medium text-white transition-all flex items-center gap-2"
+                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-sm font-medium text-white transition-all"
                   >
-                    <span>+</span> Add Team Member
+                    + Add POC
                   </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {allPOCs.map((poc, pocIndex) => {
                     const pocProjects = submissions.filter(s => s.productionPOC === poc);
-                    const defaultColors = ['from-blue-600/80 to-indigo-600/80', 'from-purple-600/80 to-pink-600/80', 'from-teal-600/80 to-cyan-600/80', 'from-amber-600/80 to-orange-600/80', 'from-rose-600/80 to-red-600/80'];
-                    const gradient = defaultColors[pocIndex % defaultColors.length];
-                    const totalBudget = pocProjects.reduce((sum, p) => sum + getTotalBudgetWithExtras(p), 0);
+                    const bgColors = ['bg-blue-50 border-blue-200', 'bg-purple-50 border-purple-200', 'bg-teal-50 border-teal-200', 'bg-amber-50 border-amber-200', 'bg-rose-50 border-rose-200'];
+                    const textColors = ['text-blue-700', 'text-purple-700', 'text-teal-700', 'text-amber-700', 'text-rose-700'];
+                    const bgColor = bgColors[pocIndex % bgColors.length];
+                    const textColor = textColors[pocIndex % textColors.length];
+                    const pocBudget = pocProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0);
 
                     return (
                       <div
                         key={poc}
                         onClick={() => setSelectedPOC(selectedPOC === poc ? null : poc)}
-                        className={`bg-gradient-to-br ${gradient} rounded-2xl p-5 text-white cursor-pointer hover:scale-[1.02] transition-all ${selectedPOC === poc ? 'ring-2 ring-white/50 scale-[1.02]' : ''}`}
+                        className={`${bgColor} border rounded-xl p-4 cursor-pointer hover:shadow-md transition-all ${selectedPOC === poc ? 'ring-2 ring-blue-400' : ''}`}
                       >
-                        {/* Header with Delete Button */}
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-xl font-bold backdrop-blur-sm">
-                            {poc.charAt(0)}
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-lg font-bold">{poc}</h3>
-                            <p className="text-xs opacity-70">Production POC</p>
-                          </div>
-                          <div className="text-right flex items-start gap-2">
-                            <div>
-                              <div className="text-3xl font-bold">{pocProjects.length}</div>
-                              <div className="text-xs opacity-70">projects</div>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-full ${textColor} bg-white flex items-center justify-center text-lg font-bold shadow-sm`}>
+                              {poc.charAt(0)}
                             </div>
-                            {/* Delete POC Button - Works for all POCs */}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (confirm(`Remove ${poc} from team? Their ${pocProjects.length} projects will be unassigned.`)) {
-                                  deletePOC(poc);
-                                }
-                              }}
-                              className="w-7 h-7 bg-red-500/20 hover:bg-red-500 rounded-lg flex items-center justify-center text-red-300 hover:text-white transition-all text-lg"
-                              title="Remove POC"
-                            >
-                              ×
-                            </button>
+                            <div>
+                              <h3 className={`font-bold ${textColor}`}>{poc}</h3>
+                              <p className="text-xs text-gray-500">Production POC</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (confirm(`Remove ${poc}? ${pocProjects.length} projects will be unassigned.`)) {
+                                deletePOC(poc);
+                              }
+                            }}
+                            className="w-6 h-6 bg-red-100 hover:bg-red-500 rounded flex items-center justify-center text-red-500 hover:text-white transition-all text-sm"
+                          >×</button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div className="bg-white rounded-lg p-2 text-center">
+                            <div className={`text-2xl font-bold ${textColor}`}>{pocProjects.length}</div>
+                            <div className="text-xs text-gray-500">Projects</div>
+                          </div>
+                          <div className="bg-white rounded-lg p-2 text-center">
+                            <div className="text-lg font-bold text-green-600">{formatBudget(pocBudget)}</div>
+                            <div className="text-xs text-gray-500">Budget</div>
                           </div>
                         </div>
 
-                        {/* Budget */}
-                        <div className="bg-white/10 rounded-xl p-3 mb-4 backdrop-blur-sm">
-                          <div className="text-xs opacity-70 mb-1">Total Budget</div>
-                          <div className="text-lg font-bold">{formatBudgetDetailed(totalBudget)}</div>
-                        </div>
-
-                        {/* Culture Breakdown */}
-                        <div className="mb-4">
-                          <div className="text-xs opacity-70 mb-2">By Culture</div>
-                          <div className="grid grid-cols-2 gap-2">
-                            {cultureOptions.map(culture => {
-                              const count = pocProjects.filter(p => p.culture === culture).length;
-                              return (
-                                <div key={culture} className="bg-white/10 rounded-lg px-3 py-2 flex justify-between items-center backdrop-blur-sm">
-                                  <span className="text-xs">{culture}</span>
-                                  <span className="font-bold">{count}</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        {/* Format Breakdown */}
-                        <div>
-                          <div className="text-xs opacity-70 mb-2">By Format</div>
-                          <div className="space-y-1">
-                            {formatOptions.map(format => {
-                              const count = pocProjects.filter(p => p.format === format).length;
-                              if (count === 0) return null;
-                              return (
-                                <div key={format} className="flex justify-between items-center text-sm">
-                                  <span className="opacity-80">{format}</span>
-                                  <span className="bg-white/20 px-2 py-0.5 rounded-full text-xs font-bold">{count}</span>
-                                </div>
-                              );
-                            })}
-                            {pocProjects.length === 0 && <div className="text-xs opacity-50 text-center py-2">No projects assigned</div>}
-                          </div>
-                        </div>
-
-                        <div className="mt-4 pt-3 border-t border-white/20 text-center text-xs opacity-70">
-                          {selectedPOC === poc ? 'Click to collapse ▲' : 'Click for details ▼'}
+                        <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-2 gap-1 text-xs">
+                          {cultureOptions.map(c => (
+                            <div key={c} className="flex justify-between px-2 py-1 bg-white rounded">
+                              <span className="text-gray-600">{c}</span>
+                              <span className="font-semibold">{pocProjects.filter(p => p.culture === c).length}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     );
@@ -5540,111 +5515,86 @@ END:VCARD`;
                 </div>
               </div>
 
-              {/* POC Detail Panel */}
+              {/* POC Detail Panel - Light */}
               {selectedPOC && (() => {
                 const pocProjects = submissions.filter(s => s.productionPOC === selectedPOC);
+                const pocBudget = pocProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0);
                 return (
-                  <div className="bg-slate-900/50 rounded-2xl border border-slate-700/50 p-6">
-                    <div className="flex items-center justify-between mb-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-4">
+                    <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h3 className="text-xl font-bold text-white">{selectedPOC}'s Projects</h3>
-                        <p className="text-sm text-slate-400">{pocProjects.length} projects • {formatBudgetDetailed(pocProjects.reduce((sum, p) => sum + getTotalBudgetWithExtras(p), 0))} total budget</p>
+                        <h3 className="text-xl font-bold text-gray-800">{selectedPOC}'s Projects</h3>
+                        <p className="text-sm text-gray-500">{pocProjects.length} projects • {formatBudget(pocBudget)} total</p>
                       </div>
-                      <button onClick={() => setSelectedPOC(null)} className="text-slate-400 hover:text-white text-2xl transition-colors">×</button>
+                      <button onClick={() => setSelectedPOC(null)} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
                     </div>
 
-                    {/* Culture + Format Matrix */}
-                    <div className="overflow-x-auto mb-6">
+                    {/* Matrix */}
+                    <div className="overflow-x-auto mb-4 bg-gray-50 rounded-lg p-4">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-slate-700">
-                            <th className="text-left py-3 px-4 text-slate-400 font-medium">Culture / Format</th>
-                            {formatOptions.map(format => (
-                              <th key={format} className="text-center py-3 px-3 text-slate-400 font-medium text-xs">{format}</th>
-                            ))}
-                            <th className="text-right py-3 px-4 text-slate-400 font-medium">Total</th>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-2 px-3 text-gray-600 font-medium">Culture</th>
+                            {formatOptions.map(f => <th key={f} className="text-center py-2 px-2 text-gray-600 font-medium text-xs">{f}</th>)}
+                            <th className="text-right py-2 px-3 text-gray-600 font-medium">Total</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {cultureOptions.map(culture => (
-                            <tr key={culture} className="border-b border-slate-800">
-                              <td className="py-3 px-4 text-white font-medium">{culture}</td>
-                              {formatOptions.map(format => {
-                                const count = pocProjects.filter(p => p.culture === culture && p.format === format).length;
-                                return (
-                                  <td key={format} className="text-center py-3 px-3">
-                                    {count > 0 ? (
-                                      <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-sm font-medium">{count}</span>
-                                    ) : (
-                                      <span className="text-slate-600">—</span>
-                                    )}
-                                  </td>
-                                );
+                          {cultureOptions.map(c => (
+                            <tr key={c} className="border-b border-gray-100">
+                              <td className={`py-2 px-3 font-medium ${cultureColors[c]?.split(' ')[1] || 'text-gray-700'}`}>{c}</td>
+                              {formatOptions.map(f => {
+                                const cnt = pocProjects.filter(p => p.culture === c && p.format === f).length;
+                                return <td key={f} className="text-center py-2 px-2">{cnt > 0 ? <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-semibold">{cnt}</span> : <span className="text-gray-300">—</span>}</td>;
                               })}
-                              <td className="text-right py-3 px-4 text-white font-bold">
-                                {pocProjects.filter(p => p.culture === culture).length}
-                              </td>
+                              <td className="text-right py-2 px-3 font-bold text-gray-700">{pocProjects.filter(p => p.culture === c).length}</td>
                             </tr>
                           ))}
-                          <tr className="bg-slate-800/30">
-                            <td className="py-3 px-4 text-white font-bold">Total</td>
-                            {formatOptions.map(format => (
-                              <td key={format} className="text-center py-3 px-3 text-white font-bold">
-                                {pocProjects.filter(p => p.format === format).length}
-                              </td>
-                            ))}
-                            <td className="text-right py-3 px-4 text-emerald-400 font-bold text-lg">
-                              {pocProjects.length}
-                            </td>
-                          </tr>
                         </tbody>
                       </table>
                     </div>
 
-                    {/* Project List */}
-                    <div className="space-y-2 max-h-80 overflow-y-auto">
-                      {pocProjects.map((project, idx) => (
-                        <div key={project.id} className="bg-slate-800/30 rounded-xl p-4 flex items-center justify-between hover:bg-slate-800/50 transition-colors">
-                          <div className="flex items-center gap-4">
-                            <span className="text-slate-500 font-medium w-6">{idx + 1}.</span>
+                    {/* List */}
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {pocProjects.map((p, i) => (
+                        <div key={p.id} className="bg-gray-50 rounded-lg p-3 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="text-gray-400 font-medium">{i + 1}.</span>
                             <div>
-                              <div className="text-white font-semibold">{project.projectName || 'Untitled'}</div>
-                              <div className="text-xs text-slate-400">{project.culture} • {project.format} {project.shootStartDate && `• Shoot: ${project.shootStartDate}`}</div>
+                              <div className="font-semibold text-gray-800">{p.projectName || 'Untitled'}</div>
+                              <div className="text-xs text-gray-500">{p.culture} • {p.format}</div>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-emerald-400 font-semibold">{formatBudgetDetailed(getTotalBudgetWithExtras(project))}</div>
-                            <div className={`text-xs px-2 py-1 rounded-full inline-block mt-1 ${statusColors[project.status] || 'bg-slate-700 text-slate-300'}`}>
-                              {statusOptions.find(o => o.value === project.status)?.label || project.status || 'No Status'}
-                            </div>
+                            <div className="text-green-600 font-semibold">{formatBudget(parseFloat(p.totalBudget) || 0)}</div>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[p.status] || 'bg-gray-100 text-gray-600'}`}>
+                              {statusOptions.find(o => o.value === p.status)?.label || p.status || 'N/A'}
+                            </span>
                           </div>
                         </div>
                       ))}
-                      {pocProjects.length === 0 && (
-                        <div className="text-center py-8 text-slate-500">No projects assigned to {selectedPOC}</div>
-                      )}
                     </div>
                   </div>
                 );
               })()}
 
-              {/* Add POC Modal */}
+              {/* Add POC Modal - Light */}
               {showAddPOCModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddPOCModal(false)}>
-                  <div className="bg-slate-900 rounded-2xl border border-slate-700 p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
-                    <h3 className="text-xl font-bold text-white mb-4">Add Team Member</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={() => setShowAddPOCModal(false)}>
+                  <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+                    <h3 className="text-xl font-bold text-gray-800 mb-4">Add Team Member</h3>
                     <input
                       type="text"
                       value={newPOCName}
                       onChange={(e) => setNewPOCName(e.target.value)}
                       placeholder="Enter name..."
-                      className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 mb-4"
+                      className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 mb-4"
                       autoFocus
                     />
                     <div className="flex gap-3">
                       <button
                         onClick={() => setShowAddPOCModal(false)}
-                        className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition-colors"
+                        className="flex-1 px-4 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-colors"
                       >Cancel</button>
                       <button
                         onClick={() => {
@@ -5654,58 +5604,13 @@ END:VCARD`;
                             setShowAddPOCModal(false);
                           }
                         }}
-                        className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
+                        className="flex-1 px-4 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-medium transition-colors"
                       >Add POC</button>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Culture Summary - Clean Cards */}
-              <div className="bg-slate-900/50 rounded-2xl border border-slate-700/50 p-6">
-                <h2 className="text-xl font-bold text-white mb-6">Culture Overview</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {cultureOptions.map(culture => {
-                    const cultureProjects = submissions.filter(s => s.culture === culture);
-                    const totalBudget = cultureProjects.reduce((sum, p) => sum + getTotalBudgetWithExtras(p), 0);
-                    const bgColors: Record<string, string> = {
-                      'Haryanvi': 'bg-amber-500/10 border-amber-500/30',
-                      'Rajasthani': 'bg-orange-500/10 border-orange-500/30',
-                      'Bhojpuri': 'bg-rose-500/10 border-rose-500/30',
-                      'Gujarati': 'bg-emerald-500/10 border-emerald-500/30',
-                    };
-                    const textColors: Record<string, string> = {
-                      'Haryanvi': 'text-amber-400',
-                      'Rajasthani': 'text-orange-400',
-                      'Bhojpuri': 'text-rose-400',
-                      'Gujarati': 'text-emerald-400',
-                    };
-                    return (
-                      <div key={culture} className={`rounded-xl p-5 border ${bgColors[culture]}`}>
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className={`text-lg font-bold ${textColors[culture]}`}>{culture}</h3>
-                          <span className="text-3xl font-bold text-white">{cultureProjects.length}</span>
-                        </div>
-                        <div className="text-sm text-slate-400 mb-4">
-                          Budget: <span className="text-white font-medium">{formatBudgetDetailed(totalBudget)}</span>
-                        </div>
-                        <div className="space-y-2 text-sm">
-                          {formatOptions.map(format => {
-                            const count = cultureProjects.filter(p => p.format === format).length;
-                            if (count === 0) return null;
-                            return (
-                              <div key={format} className="flex justify-between text-slate-300">
-                                <span>{format}</span>
-                                <span className="font-medium">{count}</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
             );
           })()}
