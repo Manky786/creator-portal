@@ -830,6 +830,9 @@ export default function AdminDashboard() {
   const [denyReason, setDenyReason] = useState('');
   const [activityNote, setActivityNote] = useState('');
   const [projectsCultureFilter, setProjectsCultureFilter] = useState<string>('all');
+  const [selectedPOC, setSelectedPOC] = useState<string | null>(null);
+  const [draggedRowId, setDraggedRowId] = useState<string | null>(null);
+  const [projectsOrder, setProjectsOrder] = useState<string[]>([]);
   const [activityNoteType, setActivityNoteType] = useState('note');
 
   // Status change with comment modal states
@@ -5202,24 +5205,53 @@ END:VCARD`;
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-gray-800 text-gray-200">
+                        <th className="px-2 py-3 text-center font-black text-xs uppercase tracking-wider border-r border-gray-700 w-8">⋮⋮</th>
                         <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 w-10">#</th>
                         <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[180px]">Project Name ✏️</th>
-                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[130px]">Creator</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[130px]">Creator ✏️</th>
                         <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[120px]">Culture ✏️</th>
                         <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[130px]">Format ✏️</th>
                         <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[140px]">Production POC ✏️</th>
                         <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[140px]">Content POC ✏️</th>
                         <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[150px]">Shoot Dates ✏️</th>
                         <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider border-r border-gray-700 min-w-[180px]">Status ✏️</th>
-                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider min-w-[120px]">Budget (₹)</th>
+                        <th className="px-3 py-3 text-left font-black text-xs uppercase tracking-wider min-w-[120px]">Budget (₹) ✏️</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredProjects.map((project, index) => (
                         <tr
                           key={project.id}
-                          className={`border-b border-gray-700 hover:bg-gray-800/50 transition-colors ${index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-850'}`}
+                          draggable
+                          onDragStart={(e) => {
+                            setDraggedRowId(project.id);
+                            e.dataTransfer.effectAllowed = 'move';
+                          }}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = 'move';
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            if (draggedRowId && draggedRowId !== project.id) {
+                              const draggedIndex = submissions.findIndex(s => s.id === draggedRowId);
+                              const dropIndex = submissions.findIndex(s => s.id === project.id);
+                              const newSubmissions = [...submissions];
+                              const [removed] = newSubmissions.splice(draggedIndex, 1);
+                              newSubmissions.splice(dropIndex, 0, removed);
+                              setSubmissions(newSubmissions);
+                              localStorage.setItem('stage_submissions', JSON.stringify(newSubmissions));
+                            }
+                            setDraggedRowId(null);
+                          }}
+                          onDragEnd={() => setDraggedRowId(null)}
+                          className={`border-b border-gray-700 hover:bg-gray-800/50 transition-colors cursor-move ${
+                            index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-850'
+                          } ${draggedRowId === project.id ? 'opacity-50 bg-blue-900/30' : ''}`}
                         >
+                          <td className="px-2 py-2 border-r border-gray-700 text-center cursor-grab active:cursor-grabbing">
+                            <span className="text-gray-500 text-lg">⋮⋮</span>
+                          </td>
                           <td className="px-3 py-2 font-bold text-gray-500 border-r border-gray-700 text-center">{index + 1}</td>
 
                           {/* Project Name - Editable */}
@@ -5233,9 +5265,15 @@ END:VCARD`;
                             />
                           </td>
 
-                          {/* Creator */}
-                          <td className="px-3 py-2 border-r border-gray-700">
-                            <div className="font-semibold text-white text-sm">{project.creatorName || '-'}</div>
+                          {/* Creator - Editable */}
+                          <td className="px-2 py-2 border-r border-gray-700">
+                            <input
+                              type="text"
+                              value={project.creatorName || ''}
+                              onChange={(e) => updateProject(project.id, 'creatorName', e.target.value)}
+                              className="w-full px-2 py-1.5 text-sm font-semibold rounded-lg bg-gray-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Creator name..."
+                            />
                           </td>
 
                           {/* Culture - Dropdown */}
@@ -5341,16 +5379,21 @@ END:VCARD`;
                             )}
                           </td>
 
-                          {/* Budget in Lakhs */}
-                          <td className="px-3 py-2">
-                            <div className="font-black text-emerald-400 text-sm">
-                              {project.totalBudget ? `₹${(project.totalBudget / 100000).toLocaleString('en-IN')} L` : '-'}
+                          {/* Budget in Lakhs - Editable */}
+                          <td className="px-2 py-2">
+                            <input
+                              type="number"
+                              value={project.totalBudget ? Math.round(project.totalBudget / 100000) : ''}
+                              onChange={(e) => {
+                                const lakhs = parseFloat(e.target.value) || 0;
+                                updateProject(project.id, 'totalBudget', String(lakhs * 100000));
+                              }}
+                              className="w-full px-2 py-1.5 text-sm font-bold rounded-lg bg-gray-800 border border-gray-600 text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-right"
+                              placeholder="Lakhs"
+                            />
+                            <div className="text-xs text-gray-500 text-right mt-1">
+                              {project.totalBudget ? `₹${(project.totalBudget / 100000).toLocaleString('en-IN')} L` : ''}
                             </div>
-                            {project.totalBudget && (
-                              <div className="text-xs text-gray-500">
-                                ({(project.totalBudget / 10000000).toFixed(2)} Cr)
-                              </div>
-                            )}
                           </td>
                         </tr>
                       ))}
@@ -5358,10 +5401,17 @@ END:VCARD`;
                   </table>
                 </div>
 
-                {/* Footer */}
+                {/* Footer with Total Budget */}
                 <div className="bg-gray-800 px-4 py-3 border-t border-gray-700">
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-300">
+                  <div className="flex flex-wrap gap-4 text-sm text-gray-300 items-center">
                     <span className="font-bold text-white">Total: {filteredProjects.length} Projects</span>
+                    <span className="text-gray-500">|</span>
+                    <span className="font-black text-emerald-400 text-lg">
+                      Total Budget: ₹{(filteredProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0) / 100000).toLocaleString('en-IN')} Lakhs
+                    </span>
+                    <span className="text-gray-500">
+                      ({(filteredProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0) / 10000000).toFixed(2)} Cr)
+                    </span>
                     <span className="text-gray-500">|</span>
                     <span>✏️ = Editable</span>
                     <span className="text-gray-500">|</span>
@@ -5370,7 +5420,7 @@ END:VCARD`;
                 </div>
               </div>
 
-              {/* Production POC Tracking Cards */}
+              {/* Production POC Tracking Cards - Clickable */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {pocOptions.map(poc => {
                   const pocProjects = submissions.filter(s => s.productionPOC === poc);
@@ -5379,8 +5429,13 @@ END:VCARD`;
                     'Haidar': 'from-purple-600 to-pink-700',
                     'Sumit': 'from-teal-600 to-cyan-700',
                   };
+                  const totalBudget = pocProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0);
                   return (
-                    <div key={poc} className={`bg-gradient-to-br ${colors[poc]} rounded-xl p-5 text-white shadow-xl`}>
+                    <div
+                      key={poc}
+                      onClick={() => setSelectedPOC(selectedPOC === poc ? null : poc)}
+                      className={`bg-gradient-to-br ${colors[poc]} rounded-xl p-5 text-white shadow-xl cursor-pointer hover:scale-105 transition-transform ${selectedPOC === poc ? 'ring-4 ring-white/50' : ''}`}
+                    >
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl font-black">
                           {poc.charAt(0)}
@@ -5390,9 +5445,10 @@ END:VCARD`;
                           <p className="text-sm opacity-80">Production POC</p>
                         </div>
                       </div>
-                      <div className="text-4xl font-black mb-2">{pocProjects.length}</div>
-                      <p className="text-sm opacity-80 mb-3">Projects Assigned</p>
-                      <div className="border-t border-white/20 pt-3 space-y-1 text-xs">
+                      <div className="text-4xl font-black mb-1">{pocProjects.length}</div>
+                      <p className="text-sm opacity-80 mb-1">Projects Assigned</p>
+                      <p className="text-xs font-bold text-white/90">Budget: ₹{(totalBudget / 100000).toLocaleString('en-IN')} L</p>
+                      <div className="border-t border-white/20 pt-3 mt-3 space-y-1 text-xs">
                         {['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'].map(culture => (
                           <div key={culture} className="flex justify-between">
                             <span>{culture}:</span>
@@ -5400,10 +5456,68 @@ END:VCARD`;
                           </div>
                         ))}
                       </div>
+                      <div className="mt-3 text-center text-xs font-bold opacity-70">
+                        {selectedPOC === poc ? '▲ Click to collapse' : '▼ Click for details'}
+                      </div>
                     </div>
                   );
                 })}
               </div>
+
+              {/* POC Detail Panel */}
+              {selectedPOC && (() => {
+                const pocProjects = submissions.filter(s => s.productionPOC === selectedPOC);
+                return (
+                  <div className="bg-gray-900 rounded-xl border border-gray-700 p-5">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-xl font-black text-white">📋 {selectedPOC}'s Projects ({pocProjects.length})</h3>
+                      <button onClick={() => setSelectedPOC(null)} className="text-gray-400 hover:text-white text-2xl">×</button>
+                    </div>
+
+                    {/* Format Breakdown */}
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                      {formatOptions.map(format => {
+                        const count = pocProjects.filter(p => p.format === format).length;
+                        return (
+                          <div key={format} className="bg-gray-800 rounded-lg p-3 text-center">
+                            <div className="text-2xl font-black text-white">{count}</div>
+                            <div className="text-xs text-gray-400">{format}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Project List */}
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {pocProjects.map((project, idx) => (
+                        <div key={project.id} className="bg-gray-800 rounded-lg p-3 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="text-gray-500 font-bold">{idx + 1}.</span>
+                            <div>
+                              <div className="text-white font-bold">{project.projectName || 'Untitled'}</div>
+                              <div className="text-xs text-gray-400">{project.culture} • {project.format}</div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-emerald-400 font-bold">₹{project.totalBudget ? (project.totalBudget / 100000).toLocaleString('en-IN') + ' L' : '-'}</div>
+                            <div className={`text-xs px-2 py-0.5 rounded ${statusColors[project.status] || 'bg-gray-600'}`}>
+                              {statusOptions.find(o => o.value === project.status)?.label || project.status || 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Total */}
+                    <div className="mt-4 pt-4 border-t border-gray-700 flex justify-between items-center">
+                      <span className="text-gray-400 font-bold">Total Budget:</span>
+                      <span className="text-2xl font-black text-emerald-400">
+                        ₹{(pocProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0) / 100000).toLocaleString('en-IN')} Lakhs
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Culture-wise Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
