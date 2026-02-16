@@ -829,6 +829,7 @@ export default function AdminDashboard() {
   const [showNotificationsPanel, setShowNotificationsPanel] = useState(false);
   const [denyReason, setDenyReason] = useState('');
   const [activityNote, setActivityNote] = useState('');
+  const [projectsCultureFilter, setProjectsCultureFilter] = useState<string>('all');
   const [activityNoteType, setActivityNoteType] = useState('note');
 
   // Status change with comment modal states
@@ -5071,9 +5072,6 @@ END:VCARD`;
 
           {/* PROJECTS TAB - Dark Theme Editable Spreadsheet */}
           {activeTab === 'projects' && (() => {
-            const [projectsCultureFilter, setProjectsCultureFilter] = React.useState<string>('all');
-            const [customStatusInput, setCustomStatusInput] = React.useState<Record<string, string>>({});
-
             const filteredProjects = projectsCultureFilter === 'all'
               ? submissions
               : submissions.filter(s => s.culture === projectsCultureFilter);
