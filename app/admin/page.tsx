@@ -5439,16 +5439,16 @@ END:VCARD`;
                   </div>
                 </div>
 
-              {/* POC Tracker - Light Theme */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-4">
+              {/* POC Tracker - Dark Theme */}
+              <div className="bg-slate-900 rounded-2xl border border-slate-700 p-6 mt-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-800">Team Overview</h2>
-                    <p className="text-sm text-gray-500">POC assignments with culture & format breakdown</p>
+                    <h2 className="text-xl font-bold text-white">Team Overview</h2>
+                    <p className="text-sm text-slate-400">POC assignments with culture & format breakdown</p>
                   </div>
                   <button
                     onClick={() => setShowAddPOCModal(true)}
-                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-sm font-medium text-white transition-all"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-bold text-white transition-all"
                   >
                     + Add POC
                   </button>
@@ -5457,8 +5457,8 @@ END:VCARD`;
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {allPOCs.map((poc, pocIndex) => {
                     const pocProjects = submissions.filter(s => s.productionPOC === poc);
-                    const bgColors = ['bg-blue-50 border-blue-200', 'bg-purple-50 border-purple-200', 'bg-teal-50 border-teal-200', 'bg-amber-50 border-amber-200', 'bg-rose-50 border-rose-200'];
-                    const textColors = ['text-blue-700', 'text-purple-700', 'text-teal-700', 'text-amber-700', 'text-rose-700'];
+                    const bgColors = ['bg-blue-500/20 border-blue-500/40', 'bg-purple-500/20 border-purple-500/40', 'bg-teal-500/20 border-teal-500/40', 'bg-amber-500/20 border-amber-500/40', 'bg-rose-500/20 border-rose-500/40'];
+                    const textColors = ['text-blue-400', 'text-purple-400', 'text-teal-400', 'text-amber-400', 'text-rose-400'];
                     const bgColor = bgColors[pocIndex % bgColors.length];
                     const textColor = textColors[pocIndex % textColors.length];
                     const pocBudget = pocProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0);
@@ -5467,16 +5467,16 @@ END:VCARD`;
                       <div
                         key={poc}
                         onClick={() => setSelectedPOC(selectedPOC === poc ? null : poc)}
-                        className={`${bgColor} border rounded-xl p-4 cursor-pointer hover:shadow-md transition-all ${selectedPOC === poc ? 'ring-2 ring-blue-400' : ''}`}
+                        className={`${bgColor} border rounded-xl p-4 cursor-pointer hover:shadow-lg transition-all ${selectedPOC === poc ? 'ring-2 ring-blue-400' : ''}`}
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full ${textColor} bg-white flex items-center justify-center text-lg font-bold shadow-sm`}>
+                            <div className={`w-10 h-10 rounded-full ${textColor} bg-slate-800 flex items-center justify-center text-lg font-bold`}>
                               {poc.charAt(0)}
                             </div>
                             <div>
                               <h3 className={`font-bold ${textColor}`}>{poc}</h3>
-                              <p className="text-xs text-gray-500">Production POC</p>
+                              <p className="text-xs text-slate-500">Production POC</p>
                             </div>
                           </div>
                           <button
@@ -5486,26 +5486,26 @@ END:VCARD`;
                                 deletePOC(poc);
                               }
                             }}
-                            className="w-6 h-6 bg-red-100 hover:bg-red-500 rounded flex items-center justify-center text-red-500 hover:text-white transition-all text-sm"
+                            className="w-6 h-6 bg-red-500/20 hover:bg-red-500 rounded flex items-center justify-center text-red-400 hover:text-white transition-all text-sm"
                           >×</button>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="bg-white rounded-lg p-2 text-center">
+                          <div className="bg-slate-800/50 rounded-lg p-2 text-center">
                             <div className={`text-2xl font-bold ${textColor}`}>{pocProjects.length}</div>
-                            <div className="text-xs text-gray-500">Projects</div>
+                            <div className="text-xs text-slate-500">Projects</div>
                           </div>
-                          <div className="bg-white rounded-lg p-2 text-center">
-                            <div className="text-lg font-bold text-green-600">{formatBudget(pocBudget)}</div>
-                            <div className="text-xs text-gray-500">Budget</div>
+                          <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                            <div className="text-lg font-bold text-emerald-400">{formatBudget(pocBudget)}</div>
+                            <div className="text-xs text-slate-500">Budget</div>
                           </div>
                         </div>
 
-                        <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-2 gap-1 text-xs">
+                        <div className="mt-3 pt-3 border-t border-slate-700 grid grid-cols-2 gap-1 text-xs">
                           {cultureOptions.map(c => (
-                            <div key={c} className="flex justify-between px-2 py-1 bg-white rounded">
-                              <span className="text-gray-600">{c}</span>
-                              <span className="font-semibold">{pocProjects.filter(p => p.culture === c).length}</span>
+                            <div key={c} className="flex justify-between px-2 py-1 bg-slate-800/50 rounded">
+                              <span className="text-slate-400">{c}</span>
+                              <span className="font-semibold text-white">{pocProjects.filter(p => p.culture === c).length}</span>
                             </div>
                           ))}
                         </div>
@@ -5515,39 +5515,39 @@ END:VCARD`;
                 </div>
               </div>
 
-              {/* POC Detail Panel - Light */}
+              {/* POC Detail Panel - Dark */}
               {selectedPOC && (() => {
                 const pocProjects = submissions.filter(s => s.productionPOC === selectedPOC);
                 const pocBudget = pocProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0);
                 return (
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-4">
+                  <div className="bg-slate-900 rounded-2xl border border-slate-700 p-6 mt-4">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h3 className="text-xl font-bold text-gray-800">{selectedPOC}'s Projects</h3>
-                        <p className="text-sm text-gray-500">{pocProjects.length} projects • {formatBudget(pocBudget)} total</p>
+                        <h3 className="text-xl font-bold text-white">{selectedPOC}'s Projects</h3>
+                        <p className="text-sm text-slate-400">{pocProjects.length} projects • {formatBudget(pocBudget)} total</p>
                       </div>
-                      <button onClick={() => setSelectedPOC(null)} className="text-gray-400 hover:text-gray-600 text-2xl">×</button>
+                      <button onClick={() => setSelectedPOC(null)} className="text-slate-500 hover:text-white text-2xl">×</button>
                     </div>
 
                     {/* Matrix */}
-                    <div className="overflow-x-auto mb-4 bg-gray-50 rounded-lg p-4">
+                    <div className="overflow-x-auto mb-4 bg-slate-800/50 rounded-xl p-4">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-gray-200">
-                            <th className="text-left py-2 px-3 text-gray-600 font-medium">Culture</th>
-                            {formatOptions.map(f => <th key={f} className="text-center py-2 px-2 text-gray-600 font-medium text-xs">{f}</th>)}
-                            <th className="text-right py-2 px-3 text-gray-600 font-medium">Total</th>
+                          <tr className="border-b border-slate-700">
+                            <th className="text-left py-2 px-3 text-slate-400 font-medium">Culture</th>
+                            {formatOptions.map(f => <th key={f} className="text-center py-2 px-2 text-slate-400 font-medium text-xs">{f}</th>)}
+                            <th className="text-right py-2 px-3 text-slate-400 font-medium">Total</th>
                           </tr>
                         </thead>
                         <tbody>
                           {cultureOptions.map(c => (
-                            <tr key={c} className="border-b border-gray-100">
-                              <td className={`py-2 px-3 font-medium ${cultureColors[c]?.split(' ')[1] || 'text-gray-700'}`}>{c}</td>
+                            <tr key={c} className="border-b border-slate-800">
+                              <td className="py-2 px-3 font-medium text-white">{c}</td>
                               {formatOptions.map(f => {
                                 const cnt = pocProjects.filter(p => p.culture === c && p.format === f).length;
-                                return <td key={f} className="text-center py-2 px-2">{cnt > 0 ? <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs font-semibold">{cnt}</span> : <span className="text-gray-300">—</span>}</td>;
+                                return <td key={f} className="text-center py-2 px-2">{cnt > 0 ? <span className="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full text-xs font-semibold">{cnt}</span> : <span className="text-slate-600">—</span>}</td>;
                               })}
-                              <td className="text-right py-2 px-3 font-bold text-gray-700">{pocProjects.filter(p => p.culture === c).length}</td>
+                              <td className="text-right py-2 px-3 font-bold text-white">{pocProjects.filter(p => p.culture === c).length}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -5557,17 +5557,17 @@ END:VCARD`;
                     {/* List */}
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {pocProjects.map((p, i) => (
-                        <div key={p.id} className="bg-gray-50 rounded-lg p-3 flex items-center justify-between">
+                        <div key={p.id} className="bg-slate-800/50 rounded-lg p-3 flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <span className="text-gray-400 font-medium">{i + 1}.</span>
+                            <span className="text-slate-500 font-medium">{i + 1}.</span>
                             <div>
-                              <div className="font-semibold text-gray-800">{p.projectName || 'Untitled'}</div>
-                              <div className="text-xs text-gray-500">{p.culture} • {p.format}</div>
+                              <div className="font-semibold text-white">{p.projectName || 'Untitled'}</div>
+                              <div className="text-xs text-slate-400">{p.culture} • {p.format}</div>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-green-600 font-semibold">{formatBudget(parseFloat(p.totalBudget) || 0)}</div>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[p.status] || 'bg-gray-100 text-gray-600'}`}>
+                            <div className="text-emerald-400 font-semibold">{formatBudget(parseFloat(p.totalBudget) || 0)}</div>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[p.status] || 'bg-slate-700 text-slate-300'}`}>
                               {statusOptions.find(o => o.value === p.status)?.label || p.status || 'N/A'}
                             </span>
                           </div>
@@ -5578,23 +5578,23 @@ END:VCARD`;
                 );
               })()}
 
-              {/* Add POC Modal - Light */}
+              {/* Add POC Modal - Dark */}
               {showAddPOCModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={() => setShowAddPOCModal(false)}>
-                  <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
-                    <h3 className="text-xl font-bold text-gray-800 mb-4">Add Team Member</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setShowAddPOCModal(false)}>
+                  <div className="bg-slate-900 rounded-2xl shadow-xl border border-slate-700 p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+                    <h3 className="text-xl font-bold text-white mb-4">Add Team Member</h3>
                     <input
                       type="text"
                       value={newPOCName}
                       onChange={(e) => setNewPOCName(e.target.value)}
                       placeholder="Enter name..."
-                      className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-400 mb-4"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4"
                       autoFocus
                     />
                     <div className="flex gap-3">
                       <button
                         onClick={() => setShowAddPOCModal(false)}
-                        className="flex-1 px-4 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-colors"
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition-colors"
                       >Cancel</button>
                       <button
                         onClick={() => {
@@ -5604,7 +5604,7 @@ END:VCARD`;
                             setShowAddPOCModal(false);
                           }
                         }}
-                        className="flex-1 px-4 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-medium transition-colors"
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
                       >Add POC</button>
                     </div>
                   </div>
