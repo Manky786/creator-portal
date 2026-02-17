@@ -6637,51 +6637,184 @@ END:VCARD`;
                                           printWindow.print();
                                         }
                                       }}
-                                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold flex items-center gap-2"
+                                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-bold flex items-center gap-2"
                                     >
-                                      📥 Download Sample Invoice
+                                      🖨️ Print PDF
                                     </button>
+                                  </div>
+                                </div>
+
+                                {/* Download Options - Editable Formats */}
+                                <div className="bg-white border-2 border-blue-300 rounded-xl p-5 mb-4">
+                                  <h4 className="font-bold text-blue-800 mb-4 flex items-center gap-2 text-lg">
+                                    📥 Download Editable Invoice Template
+                                  </h4>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {/* Google Sheets Option */}
                                     <button
                                       onClick={() => {
-                                        const text = `TAX INVOICE FORMAT FOR STAGE PRODUCTIONS
+                                        // Create Google Sheets with pre-filled template
+                                        const sheetsUrl = 'https://docs.google.com/spreadsheets/create';
+                                        window.open(sheetsUrl, '_blank');
+                                        // Also copy the data to clipboard for easy pasting
+                                        const csvData = `TAX INVOICE - STAGE PRODUCTION
 
-FROM:
-[YOUR PRODUCTION COMPANY NAME]
-[Your Complete Address]
-GSTIN: [Your GSTIN]
+SELLER DETAILS,,,INVOICE DETAILS
+Company Name:,[YOUR PRODUCTION COMPANY],,Invoice No.:,GST-__/25-26
+Address:,[YOUR COMPLETE ADDRESS],,Invoice Date:,
+City/State:,[CITY STATE PINCODE],,Due Date:,
+GSTIN:,[YOUR GSTIN],,Place of Supply:,Delhi
 
 BILL TO:
 STAGE Technologies Private Limited
-2nd Floor, 2-A/3 S/F, Front SIDE, Kundan Mansion,
+"2nd Floor, 2-A/3 S/F, Front SIDE, Kundan Mansion"
+"Asaf Ali Road, New Delhi - 110002"
+GSTIN: 07AAICC1279L1ZC
+
+#,Item Description,HSN/SAC,Qty,Rate,IGST,Cess,Amount
+1,"[Regional] Film ""[PROJECT NAME]"" - 1st Tranch (25% upon signing of agreement)",,1,,,0,
+
+,,,,,SUB TOTAL,,
+,,,,,IGST (18%),,
+,,,,,TOTAL,,
+
+BANK DETAILS
+Account Name:,[YOUR COMPANY NAME]
+Account No:,[ACCOUNT NUMBER]
+IFSC Code:,[IFSC CODE]
+Branch:,[BRANCH NAME]
+Bank:,[BANK NAME]
+PAN No:,[PAN NUMBER]
+Aadhar No:,[AADHAR NUMBER]
+
+Authorized Signatory: ____________________`;
+                                        navigator.clipboard.writeText(csvData);
+                                        alert('Google Sheets opened! Invoice data copied - paste it in the new sheet (Ctrl+V)');
+                                      }}
+                                      className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-400 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
+                                    >
+                                      <div className="w-14 h-14 bg-green-500 rounded-xl flex items-center justify-center">
+                                        <span className="text-3xl">📊</span>
+                                      </div>
+                                      <div className="text-center">
+                                        <p className="font-bold text-green-800">Google Sheets</p>
+                                        <p className="text-xs text-green-600">Open & Edit Online</p>
+                                      </div>
+                                    </button>
+
+                                    {/* Excel Download Option */}
+                                    <button
+                                      onClick={() => {
+                                        // Generate Excel-compatible CSV
+                                        const csvContent = `"TAX INVOICE"
+
+"SELLER DETAILS",,,"INVOICE DETAILS"
+"Company Name:","[YOUR PRODUCTION COMPANY]",,"Invoice No.:","GST-__/25-26"
+"Address:","[YOUR COMPLETE ADDRESS]",,"Invoice Date:","__/__/2026"
+"City/State:","[CITY STATE PINCODE]",,"Due Date:","__/__/2026"
+"GSTIN:","[YOUR GSTIN]",,"Place of Supply:","Delhi"
+
+"BILL TO:"
+"STAGE Technologies Private Limited"
+"2nd Floor, 2-A/3 S/F, Front SIDE, Kundan Mansion"
+"Asaf Ali Road, New Delhi - 110002"
+"GSTIN: 07AAICC1279L1ZC"
+
+"#","Item Description","HSN/SAC","Qty","Rate","IGST","Cess","Amount"
+"1","[Regional] Film [PROJECT NAME] - 1st Tranch (25% upon signing of agreement)","","1","₹ 0.00","","0","₹ 0.00"
+"","","","","","","",""
+"","","","","","SUB TOTAL","","₹ 0.00"
+"","","","","","IGST (18%)","","₹ 0.00"
+"","","","","","TOTAL","","₹ 0.00"
+
+"BANK DETAILS"
+"Account Name:","[YOUR COMPANY NAME]"
+"Account No:","[ACCOUNT NUMBER]"
+"IFSC Code:","[IFSC CODE]"
+"Branch:","[BRANCH NAME]"
+"Bank:","[BANK NAME]"
+"PAN No:","[PAN NUMBER]"
+"Aadhar No:","[AADHAR NUMBER]"
+
+"","Authorized Signatory"`;
+
+                                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                                        const url = URL.createObjectURL(blob);
+                                        const link = document.createElement('a');
+                                        link.href = url;
+                                        link.download = 'STAGE_Invoice_Template.csv';
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                        URL.revokeObjectURL(url);
+                                        alert('Excel file downloaded! Open in MS Excel or Google Sheets to edit.');
+                                      }}
+                                      className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 border-2 border-emerald-400 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
+                                    >
+                                      <div className="w-14 h-14 bg-emerald-600 rounded-xl flex items-center justify-center">
+                                        <span className="text-3xl">📗</span>
+                                      </div>
+                                      <div className="text-center">
+                                        <p className="font-bold text-emerald-800">Download Excel</p>
+                                        <p className="text-xs text-emerald-600">Edit in MS Excel</p>
+                                      </div>
+                                    </button>
+
+                                    {/* WhatsApp Share Option */}
+                                    <button
+                                      onClick={() => {
+                                        const message = `*TAX INVOICE FORMAT - STAGE PRODUCTION*
+
+*SELLER DETAILS:*
+Company: [YOUR PRODUCTION COMPANY]
+Address: [YOUR COMPLETE ADDRESS]
+GSTIN: [YOUR GSTIN]
+
+*BILL TO:*
+STAGE Technologies Private Limited
+2nd Floor, 2-A/3 S/F, Kundan Mansion
 Asaf Ali Road, New Delhi - 110002
 GSTIN: 07AAICC1279L1ZC
 
-Invoice No.: GST-__/____
-Invoice Date: ___/___/____
+*INVOICE DETAILS:*
+Invoice No.: GST-__/25-26
+Date: __/__/2026
 Place of Supply: Delhi
 
-ITEM DESCRIPTION:
+*ITEM:*
 [Regional] Film "[PROJECT NAME]"
-[1st/2nd/3rd/4th] Tranch - [25%] upon [milestone]
+1st Tranch - 25% upon signing
 
-Amount: ₹ __,__,___.00
-IGST (18%): ₹ __,___.00
-TOTAL: ₹ __,__,___.00
+Rate: ₹ __,__,___
+IGST (18%): ₹ __,___
+*TOTAL: ₹ __,__,___*
 
-BANK DETAILS:
-Account Name: [Your Company]
-Account No: [Account Number]
-IFSC: [IFSC Code]
-Bank: [Bank Name]
-PAN: [PAN Number]`;
-                                        navigator.clipboard.writeText(text);
-                                        alert('Invoice format copied to clipboard!');
+*BANK DETAILS:*
+A/C Name: [YOUR COMPANY]
+A/C No: [ACCOUNT NUMBER]
+IFSC: [IFSC CODE]
+Bank: [BANK NAME]
+PAN: [PAN NUMBER]
+
+_Please fill your details and send back._`;
+                                        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                                        window.open(whatsappUrl, '_blank');
                                       }}
-                                      className="px-4 py-2 bg-white border-2 border-green-500 text-green-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-green-50"
+                                      className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-500 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
                                     >
-                                      📤 Share Format
+                                      <div className="w-14 h-14 bg-green-600 rounded-xl flex items-center justify-center">
+                                        <span className="text-3xl">💬</span>
+                                      </div>
+                                      <div className="text-center">
+                                        <p className="font-bold text-green-800">WhatsApp</p>
+                                        <p className="text-xs text-green-600">Share via WhatsApp</p>
+                                      </div>
                                     </button>
                                   </div>
+
+                                  <p className="text-xs text-gray-500 mt-4 text-center">
+                                    💡 Creator ko Excel/Google Sheets bhejo - wo edit karke wapas bhej sakte hain
+                                  </p>
                                 </div>
 
                                 {/* Invoice Preview Card */}
