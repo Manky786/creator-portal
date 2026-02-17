@@ -5876,16 +5876,98 @@ END:VCARD`;
                 })}
               </div>
 
+              {/* STAGE Production SOPs & Specifications */}
+              <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 mb-6 text-white">
+                <h2 className="text-xl font-bold mb-2">📋 STAGE Production Specifications</h2>
+                <p className="text-blue-100 text-sm mb-4">Standard specifications for all STAGE productions</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    {
+                      title: 'Video Specifications',
+                      items: [
+                        'Resolution: 4K (3840x2160) preferred, 1080p minimum',
+                        'Frame Rate: 24fps for cinematic, 30fps for web',
+                        'Codec: H.264/H.265, ProRes for masters',
+                        'Aspect Ratio: 16:9 (Landscape), 9:16 (Shorts)',
+                        'Bitrate: Min 25 Mbps for 4K',
+                      ]
+                    },
+                    {
+                      title: 'Audio Specifications',
+                      items: [
+                        'Sample Rate: 48kHz',
+                        'Bit Depth: 24-bit',
+                        'Format: WAV/AIFF for masters',
+                        'Dialogue: -12dB to -6dB',
+                        'Music: -18dB to -12dB',
+                      ]
+                    },
+                    {
+                      title: 'Delivery Requirements',
+                      items: [
+                        'Master File: ProRes 422 HQ or DNxHR',
+                        'Web Version: H.264 MP4',
+                        'Thumbnail: 1920x1080 JPG',
+                        'Subtitles: SRT format (Hindi + English)',
+                        'Poster: 2000x3000 px minimum',
+                      ]
+                    },
+                    {
+                      title: 'Content Guidelines',
+                      items: [
+                        'Regional language with Hindi subtitles',
+                        'No explicit content without approval',
+                        'Brand guidelines compliance',
+                        'Copyright clearance for music',
+                        'Talent releases required',
+                      ]
+                    },
+                    {
+                      title: 'Budget Categories',
+                      items: [
+                        'Pre-Production: 10-15%',
+                        'Production: 50-60%',
+                        'Post-Production: 20-25%',
+                        'Marketing: 5-10%',
+                        'Contingency: 5-10%',
+                      ]
+                    },
+                    {
+                      title: 'Timeline Standards',
+                      items: [
+                        'Mini Film: 4-6 weeks total',
+                        'Feature Film: 12-16 weeks total',
+                        'Series (per episode): 2-3 weeks',
+                        'Post-Production: 30% of total time',
+                        'Final delivery: 1 week before launch',
+                      ]
+                    },
+                  ].map((spec, idx) => (
+                    <div key={idx} className="bg-white/10 backdrop-blur rounded-lg p-4">
+                      <h3 className="font-bold text-white mb-2">{spec.title}</h3>
+                      <ul className="space-y-1">
+                        {spec.items.map((item, i) => (
+                          <li key={i} className="text-blue-100 text-xs flex items-start gap-2">
+                            <span className="text-blue-300">•</span>
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* All Documents List */}
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                 <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                  <h2 className="font-bold text-gray-700">All Documents ({productionDocs.length})</h2>
+                  <h2 className="font-bold text-gray-700">Uploaded Documents ({productionDocs.length})</h2>
                 </div>
                 {productionDocs.length === 0 ? (
                   <div className="p-8 text-center text-gray-400">
                     <div className="text-4xl mb-2">📁</div>
                     <p>No documents uploaded yet</p>
-                    <p className="text-sm">Click on any category above to upload</p>
+                    <p className="text-sm">Click on any category above to upload your files</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-100">
