@@ -814,6 +814,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library' | 'projects' | 'documents'>('overview');
   const [productionDocs, setProductionDocs] = useState<{id: string, name: string, category: string, url: string, uploadedAt: string}[]>([]);
   const [selectedDocCategory, setSelectedDocCategory] = useState<string | null>(null);
+  const [expandedSopSections, setExpandedSopSections] = useState<{[key: string]: boolean}>({});
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterFormat, setFilterFormat] = useState<string>('all');
   const [filterCulture, setFilterCulture] = useState<string>('all');
@@ -5822,12 +5823,423 @@ END:VCARD`;
 
               {/* Document Categories */}
               {(() => {
+                // Full SOP sections from Creator Page
+                const sopSections = [
+                  {
+                    id: 'pre-production',
+                    title: 'PRE-PRODUCTION Guidelines',
+                    emoji: '📋',
+                    gradient: 'from-orange-50 via-amber-50 to-orange-100 border-orange-400',
+                    items: [
+                      'Creator MUST give a brief outline of the project in the format of the pitch deck requirement provided by STAGE',
+                      'Creator MUST list down shot division and production requirements of every film or show before going into the process of production',
+                      'Creators MUST conduct workshops with the crew members and the cast before the shoot so everyone is aware of their roles on set'
+                    ]
+                  },
+                  {
+                    id: 'pre-production-instructions',
+                    title: 'Pre-Production Instructions (Mandatory)',
+                    emoji: '📝',
+                    gradient: 'from-yellow-50 via-amber-50 to-yellow-100 border-yellow-400',
+                    items: [
+                      'Location Permits: Secure shooting permissions or NOC for all locations and submit them to STAGE Content/Legal Team TWO WEEKS in advance',
+                      'Artist Agreements and NDAs: Sign agreements with all artists and HODs and submit them to STAGE',
+                      'Pre-Production Meeting: Attend a meeting with all HODs and STAGE officials ONE WEEK before shoot date. Director must present finalized cast details, look references, and location deck with all interior/exterior locations and permission letters',
+                      'Shooting Schedule: Provide shooting schedule in advance and share daily shoot reports with STAGE Team',
+                      'Hiring Guidelines: Hire experienced personnel for all HOD positions. Interns are NOT allowed to handle HOD roles',
+                      'Clapboard and Log Sheet: Assign a skilled assistant director to manage the clapboard and log sheet'
+                    ]
+                  },
+                  {
+                    id: 'budget-breakdown',
+                    title: 'Budget Breakdown Requirements',
+                    emoji: '💰',
+                    gradient: 'from-green-50 via-emerald-50 to-green-100 border-green-400',
+                    items: [
+                      'Creator MUST provide a detailed budget sheet that discloses and lists down exactly how and where the budget will be used',
+                      'The budget will be allocated only after discussion with and approval by the STAGE team'
+                    ]
+                  },
+                  {
+                    id: 'technical-equipment',
+                    title: 'Technical Equipment Requirements',
+                    emoji: '🎥',
+                    gradient: 'from-blue-50 via-cyan-50 to-blue-100 border-blue-400',
+                    items: [
+                      'CAMERA - Creator must list down the camera model and lenses being used for the production',
+                      'SOUND EQUIPMENT - Creator must list down the sound equipment to be used in the production',
+                      'LIGHT EQUIPMENT - Creator must list down the light equipment to be used in the production'
+                    ]
+                  },
+                  {
+                    id: 'look-references',
+                    title: 'Look References Requirements',
+                    emoji: '🎨',
+                    gradient: 'from-purple-50 via-pink-50 to-purple-100 border-purple-400',
+                    items: [
+                      'ART DIRECTION - Creator must share reference images of other films/shows that have similar art direction to their production ideas',
+                      'MAKE-UP & COSTUME - Creator must share reference images of other films/shows that have similar make-up & costume to their production ideas'
+                    ]
+                  },
+                  {
+                    id: 'work-links',
+                    title: 'Work Links for Technical Onboarding',
+                    emoji: '🔗',
+                    gradient: 'from-indigo-50 via-violet-50 to-indigo-100 border-indigo-400',
+                    items: [
+                      'Director - Work links required (minimum 4 links)',
+                      'Director of Photography - Work links required (minimum 4 links)',
+                      'Editor - Work links required (minimum 4 links)',
+                      'Sound Designer - Work links required (minimum 4 links)',
+                      'BGM Artist - Work links required (minimum 4 links)',
+                      'Colorist - Work links required (minimum 4 links)',
+                      'Art Director/Production Designer - Work links required (minimum 4 links)',
+                      'Make-Up and Costume - Work links required (minimum 4 links)',
+                      'VFX Artist (If any) - Work links required (minimum 4 links)',
+                      'NOTE: Only work links are acceptable, do not share IMDB pages or written profiles'
+                    ]
+                  },
+                  {
+                    id: 'cinematography-equipment',
+                    title: 'CINEMATOGRAPHY - Equipment & Settings',
+                    emoji: '📷',
+                    gradient: 'from-red-50 via-orange-50 to-red-100 border-red-400',
+                    items: [
+                      'All footage MUST be shot in landscape, i.e., 16:9, 2:1 aspect ratios',
+                      'All footage MUST be shot at 25 fps frame rate',
+                      'Use only full frame cameras that can shoot 4K footage at least',
+                      'Use the same company and model of cameras in multi cam shoots',
+                      'Acceptable cameras include SONY FX6, FX9, SONY VENICE, ARRI ALEXA MINI',
+                      'All footage must be shot in RAW and Log mode as is required for Digital Intermediate (DI) and Color Grading',
+                      'Prime Cine lenses and a standard kit must be used. If lenses vary according to requirements, it must be discussed with and approved by STAGE',
+                      'Use stabilizers like Tripod, Gimbal and Trolley wherever required'
+                    ]
+                  },
+                  {
+                    id: 'shot-division',
+                    title: 'Shot Division and Shoot Guidelines',
+                    emoji: '🎬',
+                    gradient: 'from-rose-50 via-pink-50 to-rose-100 border-rose-400',
+                    items: [
+                      'Enough footage must be filmed to make the post production process hassle free',
+                      'Filler shots MUST be taken for every scene, specially for shows and series as they are necessary for the trailer',
+                      'Make sure that all shots are well lit and lighting is done according to location and mood',
+                      'Sync all camera settings with each other throughout a scene, specially during multi cam shoots',
+                      'Use appropriate lenses for different kinds of shots and make sure they are well composed and shot with stable focus and no movement jerks',
+                      'Shoot Behind the Scene videos for every scene if it is stated that they are required by the STAGE team',
+                      'A Log Sheet MUST be maintained throughout the shoot',
+                      'Creator MUST share some footage and sounds every day of production for quality assurance'
+                    ]
+                  },
+                  {
+                    id: 'sound-recording',
+                    title: 'SOUND RECORDING Guidelines',
+                    emoji: '🎙️',
+                    gradient: 'from-violet-50 via-purple-50 to-violet-100 border-violet-400',
+                    items: [
+                      'Use good quality mics, stands and recording devices. Acceptable: Sound Device 888, 664, MixPre 10; Mics: Sennheiser 8060, MKH60, MKH50, MKH416; Wireless: Sennheiser G4 500/100 series with Sanken COS11D or Sennheiser ME',
+                      'Make sure all devices are working properly and all sounds are clean before each shot',
+                      'In case of sync sound, make sure there is no echo or muffle in the audio',
+                      'Make sure that dialogues are recorded without disturbance',
+                      'Make sure to record ambience and foley sounds in each scene',
+                      'Make sure to use appropriate settings according to the location and distance of actors',
+                      'Make sure to check the audio recording after every shot and re-record it if it does not match guidelines',
+                      'Do not forget to back up the audio while recording sound during shoot',
+                      'It must be discussed before the shoot if the sound recording would be sync sound or dubbing',
+                      'NOTE: The audio quality will be checked by STAGE team and if the project requires full dubbing or any changes, it will be done by the creator\'s team without any extra budget'
+                    ]
+                  },
+                  {
+                    id: 'art-direction',
+                    title: 'Art Direction Guidelines',
+                    emoji: '🎭',
+                    gradient: 'from-fuchsia-50 via-pink-50 to-fuchsia-100 border-fuchsia-400',
+                    items: [
+                      'Artist costumes MUST be chosen according to their place of belonging and mood of the story. All elements of the costume must be true to the fictional identity of the character',
+                      'The set must be designed according to the story with research on real life references',
+                      'The actors must be sharp in their senses, relaxed and well rested before the shoot for their best performance',
+                      'DO NOT show any brands/brand symbols in costumes, set design or props. Brands can appear ONLY IF there is planned brand integration'
+                    ]
+                  },
+                  {
+                    id: 'filming-guidelines-mandatory',
+                    title: 'Filming Guidelines (Mandatory)',
+                    emoji: '🎯',
+                    gradient: 'from-red-50 via-rose-50 to-red-100 border-red-400',
+                    items: [
+                      'Use only STAGE-approved clapboards and log sheets',
+                      'Film the ENTIRE approved shoot script as per agreed production values. Any omitted scene must either be filmed later or will attract a PENALTY',
+                      'Animal Welfare: Ensure no harm to animals during filming. If animals are involved, a veterinarian must be present with fitness certificates',
+                      'Share daily shoot schedule and shooting reports with the STAGE team',
+                      'Do NOT change primary artists without immediate notification to the content team',
+                      'Only approved dialects can be used. For any deviations, prior permission from STAGE Content team is required',
+                      'Avoid on-set script improvisation unless necessary for comedic effect',
+                      'Creator is fully responsible for managing the shoot location, including any cost overruns',
+                      'Confidentiality: NO sharing or posting of plot-revealing images or clips from the set. Plot discussions during media engagements are NOT allowed',
+                      'Scene Leak Prevention: Script bundles from each day\'s shoot should be destroyed to avoid scene leakage',
+                      'Set Security: Provide ID cards to all team members to prevent outsider intrusion',
+                      'Safety & Security: Creator must ensure safety of cast/crew. No visual/audio presence of brands & institutions without approval',
+                      'Language: Avoid using foul language in scripts without prior WRITTEN consent from Content Team',
+                      'On-Set Conduct: Smoking, drinking alcohol, or using prohibited substances on set is STRICTLY PROHIBITED',
+                      'Transportation: Ensure all drivers are licensed. Extra precautions for post-night shots, exterior shoots, or uncontrollable environments',
+                      'Meals: Provide timely and healthy meals for cast & crew. ONLY VEGETARIAN food is allowed on set',
+                      'Character Promos and Poster Photoshoot: Conducting on-set character promo shoots and poster photoshoots is MANDATORY',
+                      'Mobile Experience: Avoid excessive use of extreme wide shots and aerial shots. Prioritize close-up shots and master shots for mobile viewing'
+                    ]
+                  },
+                  {
+                    id: 'promotional-content',
+                    title: 'Promotional Content Guidelines',
+                    emoji: '📢',
+                    gradient: 'from-cyan-50 via-teal-50 to-cyan-100 border-cyan-400',
+                    items: [
+                      'Photos of all important characters MUST be clicked during shoot for cover posters and thumbnails with concept photoshoots for official poster designs',
+                      'CHARACTER VIDEOS: Videos of all characters appealing for downloading STAGE app must be shot in landscape and portrait. Script will be provided by STAGE team',
+                      'ACTOR VIDEOS: Film/web series/show announcement videos MUST be shot of every actor in landscape and portrait. Script will be provided by STAGE team',
+                      'These marketing assets must be treated as an integral part of the shoot schedule and included in the sanctioned budget'
+                    ]
+                  },
+                  {
+                    id: 'format-technicalities',
+                    title: 'POST-PRODUCTION - Format Technicalities',
+                    emoji: '📐',
+                    gradient: 'from-blue-50 via-sky-50 to-blue-100 border-blue-400',
+                    items: [
+                      'Frame ratio MUST be 16:9 (3840x2160 / 1920x1080)',
+                      'Frame rate MUST be 25 fps',
+                      'Pixel aspect ratio must be Square pixel',
+                      'Display format must be Progressive Scan'
+                    ]
+                  },
+                  {
+                    id: 'video-guidelines',
+                    title: 'Post-Production Video Guidelines',
+                    emoji: '🎞️',
+                    gradient: 'from-red-50 via-orange-50 to-red-100 border-red-400',
+                    items: [
+                      'Each and every video MUST have STAGE intro and outro which will be provided by the STAGE team. These will be added ONLY after final approval',
+                      'There can be NO logo on any video that is released on STAGE',
+                      'The end credits must be in a certain format provided by STAGE team',
+                      'Credits for the STAGE team must be added in end credits',
+                      'In any credit/mention of STAGE, it must be typed out in all capital letters only',
+                      'Make sure that all audio video cuts are smooth and there are no abrupt frames or jerks'
+                    ]
+                  },
+                  {
+                    id: 'sound-mixing',
+                    title: 'Sound Mixing and Mastering',
+                    emoji: '🔊',
+                    gradient: 'from-purple-50 via-violet-50 to-purple-100 border-purple-400',
+                    items: [
+                      'Make sure every dialogue is lip synced',
+                      'Use foley and ambience according to the scene',
+                      'Make sure there are no gaps, sharp cuts or jerks in audio',
+                      'All audio levels MUST be between -12db to -6db',
+                      'Make sure that audios are clean and do not have any noise or noise inconsistencies'
+                    ]
+                  },
+                  {
+                    id: 'bgm-design',
+                    title: 'Background Music Design',
+                    emoji: '🎵',
+                    gradient: 'from-indigo-50 via-blue-50 to-indigo-100 border-indigo-400',
+                    items: [
+                      'All music that is used MUST be created originally. Do not copy music that is not original',
+                      'Sync BGM according to the requirement of the content',
+                      'Make sure that BGM does not overpower dialogues and they are clearly audible',
+                      'All music that is used must be recorded in a music cue sheet (template will be provided by STAGE)'
+                    ]
+                  },
+                  {
+                    id: 'epidemic-music',
+                    title: 'Epidemic Music Bank Guidelines',
+                    emoji: '🎧',
+                    gradient: 'from-teal-50 via-emerald-50 to-teal-100 border-teal-400',
+                    items: [
+                      'STAGE team has licensed the Epidemic Music Bank - a large collection of music tracks apt for almost all genres and scenes',
+                      'Epidemic Music Bank can be used only in STAGE projects and shall be provided where deemed necessary',
+                      'Project should still use 80% of original music',
+                      'Creators would have to provide a cue sheet of each and every music piece utilized in the project. Access will be provided along with confidentiality notice'
+                    ]
+                  },
+                  {
+                    id: 'color-guidelines',
+                    title: 'Color Grading Guidelines',
+                    emoji: '🌈',
+                    gradient: 'from-rose-50 via-pink-50 to-rose-100 border-rose-400',
+                    items: [
+                      'The color grading of a project must be done according to the genre, feel and theme of the project',
+                      'Make sure the color is consistent throughout the scene',
+                      'Make sure the color does not mismatch in any shot, especially in multi-cam footages',
+                      'CC and DI must be done in dedicated softwares like DaVinci Resolve, do not use Adobe Premiere Pro or any other editing software',
+                      'The look and feel should match what was promised by the creator during pitching and pre production discussions'
+                    ]
+                  },
+                  {
+                    id: 'branding-packaging',
+                    title: 'STAGE Branding and Packaging',
+                    emoji: '✨',
+                    gradient: 'from-fuchsia-50 via-purple-50 to-fuchsia-100 border-fuchsia-400',
+                    items: [
+                      'The film/episode should begin with STAGE Intro and disclaimer that will be provided by us',
+                      'After Intro and Disclaimer, there will be no other credit plate. Film/Episode will begin directly after STAGE Intro',
+                      'There must be a cold open before any Intro graphics in the web series',
+                      'Web Series Intro Graphics must be under 40 seconds',
+                      'Statutory Warning overlay must be used at bottom right whenever smoking/drinking is on screen (overlay will be provided by STAGE)'
+                    ]
+                  },
+                  {
+                    id: 'final-delivery-video',
+                    title: 'FINAL DELIVERY - Video Requirements',
+                    emoji: '📦',
+                    gradient: 'from-lime-50 via-green-50 to-lime-100 border-lime-400',
+                    items: [
+                      '4K DPX 12 Bit (Clean)',
+                      '422/HQ (.Mov)',
+                      '4K MP4 (H.264)',
+                      'DI Project File',
+                      'EDIT Project File'
+                    ]
+                  },
+                  {
+                    id: 'final-delivery-audio',
+                    title: 'Final Delivery - Audio Requirements',
+                    emoji: '🔉',
+                    gradient: 'from-sky-50 via-blue-50 to-sky-100 border-sky-400',
+                    items: [
+                      'Final-Mix: Stereo and 5.1 Mix',
+                      'Un-Mix: Stereo Dialogue',
+                      'Un-Mix: Stereo Music',
+                      'Un-Mix: Stereo Foley',
+                      'Un-Mix: Stereo SFX',
+                      'Un-Mix: 5.1 Music and Effects',
+                      'Foley must be recorded separately',
+                      'Final project must be delivered in LTO tape'
+                    ]
+                  },
+                  {
+                    id: 'qc-overview',
+                    title: 'QUALITY CONTROL Overview',
+                    emoji: '✅',
+                    gradient: 'from-emerald-50 via-green-50 to-emerald-100 border-emerald-400',
+                    items: [
+                      'Quality Control ensures a smooth and enriching viewer experience from scripting, shooting, post production to final delivery',
+                      'QC is performed primarily on frame.io software where feedback is delivered with time stamps',
+                      'STAGE will share frame.io links with delivered content and feedback where creators can read and reply to discuss'
+                    ]
+                  },
+                  {
+                    id: 'qc-round1',
+                    title: 'QC Round 1: Content QC',
+                    emoji: '1️⃣',
+                    gradient: 'from-blue-50 via-indigo-50 to-blue-100 border-blue-400',
+                    items: [
+                      'Creators are required to share a line up to the content team for review',
+                      'Content team will check and finalize structure, dialect, episodic or dramatic flow to ensure shoot went according to script',
+                      'After feedback, creator will share an offline edit with reference BGM',
+                      'After content team approval, finalized content cut will be transferred for technical editing quality check before sound and DI'
+                    ]
+                  },
+                  {
+                    id: 'qc-round2',
+                    title: 'QC Round 2: Offline Edit QC',
+                    emoji: '2️⃣',
+                    gradient: 'from-violet-50 via-purple-50 to-violet-100 border-violet-400',
+                    items: [
+                      'Technical QC team will check the edit and give feedback within 7-10 business days',
+                      'Creator is required to make necessary changes in edit and share final edit with STAGE team',
+                      'After STAGE approval, the final edit can go for Sound and DI'
+                    ]
+                  },
+                  {
+                    id: 'qc-round3',
+                    title: 'QC Round 3: Sound and BGM QC',
+                    emoji: '3️⃣',
+                    gradient: 'from-amber-50 via-yellow-50 to-amber-100 border-amber-400',
+                    items: [
+                      'After edit approval, creator shares content with sound mixing mastering (dialogue, dubbing sync, foley) and BGM',
+                      'STAGE team will check the BGM and sound design and share feedback',
+                      'Creator is required to make changes and share with team within 4-5 business days',
+                      'After approval for sound and BGM, move on to color'
+                    ]
+                  },
+                  {
+                    id: 'qc-round4',
+                    title: 'QC Round 4: Color QC',
+                    emoji: '4️⃣',
+                    gradient: 'from-rose-50 via-red-50 to-rose-100 border-rose-400',
+                    items: [
+                      'After sound approval, creator shares film/show with DI and color',
+                      'STAGE team will review DI and color grading and provide feedback',
+                      'Creator will share final corrected content',
+                      'After final approval from STAGE team, STAGE intro-outro would be added to the content'
+                    ]
+                  },
+                  {
+                    id: 'qc-notes',
+                    title: 'Important QC Notes',
+                    emoji: '⚠️',
+                    gradient: 'from-orange-50 via-amber-50 to-orange-100 border-orange-400',
+                    items: [
+                      'ALL FILES SHARED FOR QC MUST HAVE A "FOR STAGE PREVIEW" WATERMARK in bottom right corner. Only final delivery would be watermark free',
+                      'STAGE Intro, Outro and post credits to be added after final approval of film/show',
+                      'After every QC round, a deadline will be defined for delivery of next cut. This deadline must be strictly followed',
+                      'If deadlines need to be revised, it can be done ONLY after discussion with STAGE team'
+                    ]
+                  },
+                  {
+                    id: 'data-storage',
+                    title: 'DATA STORAGE - Required Folders',
+                    emoji: '💾',
+                    gradient: 'from-slate-50 via-gray-50 to-slate-100 border-slate-400',
+                    items: [
+                      'Raw footage/clips - All raw data in day-wise folders or easily understandable format',
+                      'Project files - All project files (episode prproj, Teaser/Trailer prproj, After Effects, PSD files, sound files, DaVinci DI project files)',
+                      'XML files - XML files of all project files and versions',
+                      'Graphics/VFX data - Any VFX or animation used along with editable files',
+                      'Proxy - Proxy files of all versions pertaining to the project',
+                      'Songs - All songs used in the project',
+                      'IT Tracks - All BGM files (scoring, mixing, foley) with mixed and open IT tracks, 16 Track of Songs',
+                      'Sync Audio - All recorded voices/sounds of camera and sound recorders with project files',
+                      'BGM - All BGM tracks used in the project',
+                      'Final Export - All final exports (4K/H.264, Clean mov, HD, ProRes.mov Apple ProRes 422 HQ) with dialogue track and BGM IT tracks',
+                      'Unmixed Tracks Stereo - Unmix tracks (Dialogue, Music, Foley+SFX layers) for Film/Show, Trailer and Teaser',
+                      'Unmix Tracks 5.1 - Unmix M&E and Separate channels unmix',
+                      'Teaser and trailer final exports - Final exports with raw data, VFX data, Music data and editable files',
+                      'Character Promos and photoshoots - All data, project files and exports'
+                    ]
+                  },
+                  {
+                    id: 'data-documents',
+                    title: 'Documents Folder Requirements',
+                    emoji: '📄',
+                    gradient: 'from-zinc-50 via-stone-50 to-zinc-100 border-zinc-400',
+                    items: [
+                      'Documents folder should contain: Script, Screenplay, and all Contracts signed by artists for the movie or web-series'
+                    ]
+                  },
+                  {
+                    id: 'data-delivery-notes',
+                    title: 'Data Delivery Instructions',
+                    emoji: '📬',
+                    gradient: 'from-cyan-50 via-sky-50 to-cyan-100 border-cyan-400',
+                    items: [
+                      'All project files should work in Hard Disk by locating the media files in respective data folders',
+                      'Once all data is uploaded in harddisks, arrange a video call with STAGE authority to check and confirm the data',
+                      'After confirmation, courier the harddisks to: Tower A, 7th Floor, Club 125, Sector 125, Noida, U.P. Pin. 201301',
+                      'Contact: Anushka - 9425360822'
+                    ]
+                  }
+                ];
+
                 const docCategories = [
                   {
                     name: 'SOP',
                     icon: '📋',
                     color: 'bg-blue-500',
                     desc: 'Standard Operating Procedures',
+                    isSopFull: true,
+                    sopSections: sopSections,
                     content: {
                       title: 'STAGE Production SOP',
                       sections: [
@@ -5983,22 +6395,30 @@ END:VCARD`;
                           <div className="flex gap-2">
                             <button
                               onClick={() => {
-                                const content = selectedCat.content.sections.map(s =>
-                                  `${s.heading}:\n${s.items.map(i => `  • ${i}`).join('\n')}`
-                                ).join('\n\n');
+                                const content = (selectedCat as any).isSopFull && (selectedCat as any).sopSections
+                                  ? (selectedCat as any).sopSections.map((s: any) =>
+                                      `${s.title}:\n${s.items.map((i: string) => `  • ${i}`).join('\n')}`
+                                    ).join('\n\n')
+                                  : selectedCat.content.sections.map(s =>
+                                      `${s.heading}:\n${s.items.map(i => `  • ${i}`).join('\n')}`
+                                    ).join('\n\n');
                                 navigator.clipboard.writeText(`${selectedCat.content.title}\n\n${content}`);
                                 alert('Content copied! Share with your team.');
                               }}
                               className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm font-medium"
                             >
-                              📤 Share
+                              📤 Share All
                             </button>
                             <button
                               onClick={() => {
-                                const content = selectedCat.content.sections.map(s =>
-                                  `<h3>${s.heading}</h3><ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>`
-                                ).join('');
-                                const html = `<!DOCTYPE html><html><head><title>${selectedCat.content.title}</title><style>body{font-family:Arial;padding:40px;max-width:800px;margin:0 auto}h1{color:#1e40af;border-bottom:2px solid #1e40af;padding-bottom:10px}h3{color:#374151;margin-top:20px}ul{color:#4b5563}li{margin:5px 0}@media print{body{padding:20px}}</style></head><body><h1>${selectedCat.content.title}</h1>${content}<p style="margin-top:40px;color:#9ca3af;font-size:12px">Generated by STAGE Production Portal</p></body></html>`;
+                                const content = (selectedCat as any).isSopFull && (selectedCat as any).sopSections
+                                  ? (selectedCat as any).sopSections.map((s: any) =>
+                                      `<div style="margin-bottom:20px;padding:15px;background:#f9fafb;border-radius:8px;border-left:4px solid #3b82f6"><h3 style="margin:0 0 10px 0;color:#1f2937">${s.emoji} ${s.title}</h3><ul style="margin:0;padding-left:20px">${s.items.map((i: string) => `<li style="margin:5px 0;color:#4b5563">${i}</li>`).join('')}</ul></div>`
+                                    ).join('')
+                                  : selectedCat.content.sections.map(s =>
+                                      `<h3>${s.heading}</h3><ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>`
+                                    ).join('');
+                                const html = `<!DOCTYPE html><html><head><title>${selectedCat.content.title}</title><style>body{font-family:Arial;padding:40px;max-width:900px;margin:0 auto}h1{color:#1e40af;border-bottom:2px solid #1e40af;padding-bottom:10px}h3{color:#374151;margin-top:20px}ul{color:#4b5563}li{margin:5px 0}@media print{body{padding:20px}}</style></head><body><h1>${selectedCat.content.title}</h1>${content}<p style="margin-top:40px;color:#9ca3af;font-size:12px">Generated by STAGE Production Portal</p></body></html>`;
                                 const printWindow = window.open('', '_blank');
                                 if (printWindow) {
                                   printWindow.document.write(html);
@@ -6039,21 +6459,104 @@ END:VCARD`;
                           </div>
                         </div>
                         <div className="p-6">
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {selectedCat.content.sections.map((section, idx) => (
-                              <div key={idx} className="bg-gray-50 rounded-lg p-4">
-                                <h3 className="font-bold text-gray-800 mb-3 pb-2 border-b border-gray-200">{section.heading}</h3>
-                                <ul className="space-y-2">
-                                  {section.items.map((item, i) => (
-                                    <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
-                                      <span className="text-blue-500 mt-1">•</span>
-                                      {item}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            ))}
-                          </div>
+                          {/* SOP Full Sections View - Clickable Cards */}
+                          {(selectedCat as any).isSopFull && (selectedCat as any).sopSections ? (
+                            <div className="space-y-3">
+                              {(selectedCat as any).sopSections.map((section: any) => (
+                                <div
+                                  key={section.id}
+                                  className={`bg-gradient-to-br ${section.gradient} rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 border-2`}
+                                >
+                                  {/* Section Header - Clickable */}
+                                  <div
+                                    onClick={() => setExpandedSopSections(prev => ({ ...prev, [section.id]: !prev[section.id] }))}
+                                    className="px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-white/30 transition-all"
+                                  >
+                                    <div className="flex items-center gap-4">
+                                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                                        <span className="text-2xl">{section.emoji}</span>
+                                      </div>
+                                      <div>
+                                        <h3 className="text-lg font-bold text-gray-900">{section.title}</h3>
+                                        <p className="text-sm text-gray-600">{section.items.length} items</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      {/* Share & Download for individual section */}
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const content = `${section.title}\n\n${section.items.map((i: string) => `• ${i}`).join('\n')}`;
+                                          navigator.clipboard.writeText(content);
+                                          alert('Section copied!');
+                                        }}
+                                        className="p-2 bg-white/50 hover:bg-white/70 rounded-lg text-gray-700 text-sm"
+                                        title="Share this section"
+                                      >
+                                        📤
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const html = `<!DOCTYPE html><html><head><title>${section.title}</title><style>body{font-family:Arial;padding:40px;max-width:800px;margin:0 auto}h1{color:#1e40af;border-bottom:2px solid #1e40af;padding-bottom:10px}ul{color:#4b5563;line-height:1.8}li{margin:10px 0}@media print{body{padding:20px}}</style></head><body><h1>${section.emoji} ${section.title}</h1><ul>${section.items.map((i: string) => `<li>${i}</li>`).join('')}</ul><p style="margin-top:40px;color:#9ca3af;font-size:12px">STAGE Production Portal</p></body></html>`;
+                                          const printWindow = window.open('', '_blank');
+                                          if (printWindow) {
+                                            printWindow.document.write(html);
+                                            printWindow.document.close();
+                                            printWindow.print();
+                                          }
+                                        }}
+                                        className="p-2 bg-white/50 hover:bg-white/70 rounded-lg text-gray-700 text-sm"
+                                        title="Download PDF"
+                                      >
+                                        📥
+                                      </button>
+                                      <svg
+                                        className={`w-6 h-6 text-gray-700 transition-transform duration-300 ${expandedSopSections[section.id] ? 'rotate-90' : ''}`}
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        strokeWidth={2}
+                                      >
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                                      </svg>
+                                    </div>
+                                  </div>
+
+                                  {/* Section Content - Expandable */}
+                                  {expandedSopSections[section.id] && (
+                                    <div className="px-5 py-4 bg-white/50 backdrop-blur-sm border-t-2 border-gray-200">
+                                      <ul className="space-y-3">
+                                        {section.items.map((item: string, index: number) => (
+                                          <li key={index} className="flex items-start gap-3">
+                                            <span className="text-purple-600 font-bold text-lg mt-0.5 flex-shrink-0">•</span>
+                                            <span className="text-gray-800 font-medium text-sm leading-relaxed">{item}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            /* Regular category view */
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                              {selectedCat.content.sections.map((section, idx) => (
+                                <div key={idx} className="bg-gray-50 rounded-lg p-4">
+                                  <h3 className="font-bold text-gray-800 mb-3 pb-2 border-b border-gray-200">{section.heading}</h3>
+                                  <ul className="space-y-2">
+                                    {section.items.map((item, i) => (
+                                      <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
+                                        <span className="text-blue-500 mt-1">•</span>
+                                        {item}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              ))}
+                            </div>
+                          )}
 
                           {/* Uploaded files for this category */}
                           {productionDocs.filter(d => d.category === selectedCat.name).length > 0 && (
