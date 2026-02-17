@@ -6685,102 +6685,102 @@ PAN: [PAN Number]`;
                                 </div>
 
                                 {/* Invoice Preview Card */}
-                                <div className="bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden">
+                                <div className="bg-white border-2 border-gray-400 rounded-lg shadow-xl overflow-hidden">
                                   {/* Invoice Header */}
-                                  <div className="p-6 border-b">
+                                  <div className="p-6 border-b-2 border-gray-300 bg-gray-50">
                                     <div className="flex justify-between items-start">
                                       <div>
-                                        <h4 className="text-xl font-bold text-red-600">[YOUR PRODUCTION COMPANY]</h4>
-                                        <p className="text-xs text-gray-500 italic mt-1">[Your Full Address]<br/>[City, State - Pincode]</p>
-                                        <p className="text-xs font-bold mt-2">GSTIN -: [YOUR GSTIN]</p>
+                                        <h4 className="text-2xl font-black text-red-600">[YOUR PRODUCTION COMPANY]</h4>
+                                        <p className="text-sm text-gray-700 italic mt-1">[Your Full Address]<br/>[City, State - Pincode]</p>
+                                        <p className="text-sm font-bold mt-2 text-gray-900">GSTIN -: [YOUR GSTIN]</p>
                                       </div>
                                       <div className="text-right">
-                                        <h3 className="text-2xl font-bold">TAX INVOICE</h3>
+                                        <h3 className="text-3xl font-black text-gray-900">TAX INVOICE</h3>
                                       </div>
                                     </div>
                                   </div>
 
                                   {/* Bill To Section */}
-                                  <div className="p-6 bg-gray-50 flex justify-between">
+                                  <div className="p-6 bg-amber-50 border-b-2 border-gray-300 flex justify-between">
                                     <div>
-                                      <p className="font-bold italic text-sm mb-2">Bill To:</p>
-                                      <p className="font-bold">STAGE Technologies Private Limited</p>
-                                      <p className="text-xs text-gray-600 mt-1">2nd Floor, 2-A/3 S/F, Front SIDE, Kundan Mansion,<br/>Asaf Ali Road, New Delhi - 110002</p>
-                                      <p className="text-xs font-bold mt-2">GSTIN -: 07AAICC1279L1ZC</p>
+                                      <p className="font-bold italic text-base mb-2 text-gray-800">Bill To:</p>
+                                      <p className="font-bold text-lg text-gray-900">STAGE Technologies Private Limited</p>
+                                      <p className="text-sm text-gray-700 mt-1">2nd Floor, 2-A/3 S/F, Front SIDE, Kundan Mansion,<br/>Asaf Ali Road, New Delhi - 110002</p>
+                                      <p className="text-sm font-bold mt-2 text-gray-900">GSTIN -: 07AAICC1279L1ZC</p>
                                     </div>
-                                    <div className="text-right text-sm">
-                                      <p><span className="font-medium">Invoice No.:</span> GST-__/25-26</p>
-                                      <p><span className="font-medium">Invoice Date:</span> __/__/2026</p>
-                                      <p><span className="font-medium">Due Date:</span> __/__/2026</p>
+                                    <div className="text-right text-sm bg-white p-3 rounded-lg border border-gray-300">
+                                      <p className="mb-1"><span className="font-bold text-gray-700">Invoice No.:</span> <span className="text-gray-900">GST-__/25-26</span></p>
+                                      <p className="mb-1"><span className="font-bold text-gray-700">Invoice Date:</span> <span className="text-gray-900">__/__/2026</span></p>
+                                      <p><span className="font-bold text-gray-700">Due Date:</span> <span className="text-gray-900">__/__/2026</span></p>
                                     </div>
                                   </div>
 
                                   {/* Items Table */}
                                   <div className="p-4">
-                                    <table className="w-full text-sm">
+                                    <table className="w-full text-sm border-2 border-gray-400">
                                       <thead>
                                         <tr className="bg-red-600 text-white">
-                                          <th className="p-2 text-left w-8">#</th>
-                                          <th className="p-2 text-left">Item Description</th>
-                                          <th className="p-2 text-center w-16">HSN/SAC</th>
-                                          <th className="p-2 text-center w-10">Qty</th>
-                                          <th className="p-2 text-right w-24">Rate</th>
-                                          <th className="p-2 text-center w-12">IGST</th>
-                                          <th className="p-2 text-center w-10">Cess</th>
-                                          <th className="p-2 text-right w-24">Amount</th>
+                                          <th className="p-3 text-left w-8 font-bold border-r border-red-500">#</th>
+                                          <th className="p-3 text-left font-bold border-r border-red-500">Item Description</th>
+                                          <th className="p-3 text-center w-20 font-bold border-r border-red-500">HSN/SAC</th>
+                                          <th className="p-3 text-center w-12 font-bold border-r border-red-500">Qty</th>
+                                          <th className="p-3 text-right w-28 font-bold border-r border-red-500">Rate</th>
+                                          <th className="p-3 text-center w-16 font-bold border-r border-red-500">IGST</th>
+                                          <th className="p-3 text-center w-12 font-bold border-r border-red-500">Cess</th>
+                                          <th className="p-3 text-right w-28 font-bold">Amount</th>
                                         </tr>
                                       </thead>
-                                      <tbody>
-                                        <tr className="border-b">
-                                          <td className="p-3">1</td>
-                                          <td className="p-3">
-                                            <span className="font-medium">[Regional] Film "[PROJECT NAME]"</span><br/>
-                                            <span className="text-xs text-gray-500">1st Tranch<br/>25% upon signing of the agreement<br/>(of the total budget)</span>
+                                      <tbody className="bg-white">
+                                        <tr className="border-b-2 border-gray-300">
+                                          <td className="p-3 text-gray-900 font-medium border-r border-gray-300">1</td>
+                                          <td className="p-3 border-r border-gray-300">
+                                            <span className="font-bold text-gray-900">[Regional] Film "[PROJECT NAME]"</span><br/>
+                                            <span className="text-sm text-gray-700">1st Tranch<br/>25% upon signing of the agreement<br/>(of the total budget)</span>
                                           </td>
-                                          <td className="p-3 text-center">-</td>
-                                          <td className="p-3 text-center">1</td>
-                                          <td className="p-3 text-right">₹ 10,94,417.00</td>
-                                          <td className="p-3 text-center">-</td>
-                                          <td className="p-3 text-center">0</td>
-                                          <td className="p-3 text-right font-medium">₹ 10,94,417.00</td>
+                                          <td className="p-3 text-center text-gray-700 border-r border-gray-300">-</td>
+                                          <td className="p-3 text-center text-gray-900 font-medium border-r border-gray-300">1</td>
+                                          <td className="p-3 text-right text-gray-900 font-medium border-r border-gray-300">₹ 10,94,417.00</td>
+                                          <td className="p-3 text-center text-gray-700 border-r border-gray-300">-</td>
+                                          <td className="p-3 text-center text-gray-900 border-r border-gray-300">0</td>
+                                          <td className="p-3 text-right font-bold text-gray-900">₹ 10,94,417.00</td>
                                         </tr>
                                       </tbody>
                                     </table>
 
                                     {/* Totals */}
                                     <div className="flex justify-end mt-4">
-                                      <div className="w-64">
-                                        <div className="flex justify-between py-2 border-b">
-                                          <span className="font-medium">SUB TOTAL</span>
-                                          <span>₹ 10,94,417.00</span>
+                                      <div className="w-72 border-2 border-gray-400 rounded-lg overflow-hidden">
+                                        <div className="flex justify-between py-3 px-4 border-b border-gray-300 bg-gray-50">
+                                          <span className="font-bold text-gray-800">SUB TOTAL</span>
+                                          <span className="font-bold text-gray-900">₹ 10,94,417.00</span>
                                         </div>
-                                        <div className="flex justify-between py-2 border-b">
-                                          <span className="font-medium">IGST (18%)</span>
-                                          <span>₹ 1,96,996.00</span>
+                                        <div className="flex justify-between py-3 px-4 border-b border-gray-300 bg-gray-50">
+                                          <span className="font-bold text-gray-800">IGST (18%)</span>
+                                          <span className="font-bold text-gray-900">₹ 1,96,996.00</span>
                                         </div>
-                                        <div className="flex justify-between py-2 bg-gray-100 px-2 font-bold">
-                                          <span>TOTAL</span>
-                                          <span>₹ 12,91,413.00</span>
+                                        <div className="flex justify-between py-3 px-4 bg-green-600 text-white">
+                                          <span className="font-black text-lg">TOTAL</span>
+                                          <span className="font-black text-lg">₹ 12,91,413.00</span>
                                         </div>
                                       </div>
                                     </div>
                                   </div>
 
                                   {/* Bank Details */}
-                                  <div className="p-6 border-t flex justify-between items-end">
-                                    <div className="text-xs">
-                                      <p className="font-bold mb-2">BANK DETAILS</p>
-                                      <p>[YOUR COMPANY NAME]</p>
-                                      <p>AC.NO: [ACCOUNT NUMBER]</p>
-                                      <p>IFSC CODE: [IFSC CODE]</p>
+                                  <div className="p-6 border-t-2 border-gray-300 bg-gray-50 flex justify-between items-end">
+                                    <div className="text-sm text-gray-800">
+                                      <p className="font-black text-base mb-2 text-gray-900">BANK DETAILS</p>
+                                      <p className="font-bold">[YOUR COMPANY NAME]</p>
+                                      <p>AC.NO: <span className="font-medium">[ACCOUNT NUMBER]</span></p>
+                                      <p>IFSC CODE: <span className="font-medium">[IFSC CODE]</span></p>
                                       <p>[BRANCH NAME]</p>
                                       <p>[BANK NAME]</p>
-                                      <p>PAN No -: [PAN NUMBER]</p>
-                                      <p>Aadhar No - : [AADHAR NUMBER]</p>
+                                      <p>PAN No -: <span className="font-medium">[PAN NUMBER]</span></p>
+                                      <p>Aadhar No -: <span className="font-medium">[AADHAR NUMBER]</span></p>
                                     </div>
                                     <div className="text-center">
-                                      <div className="border-b border-gray-400 w-32 mb-1"></div>
-                                      <p className="text-xs font-bold">FOR [YOUR COMPANY]</p>
+                                      <div className="border-b-2 border-gray-600 w-40 mb-2"></div>
+                                      <p className="text-sm font-black text-gray-900">FOR [YOUR COMPANY]</p>
                                     </div>
                                   </div>
                                 </div>
