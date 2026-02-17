@@ -5102,6 +5102,38 @@ END:VCARD`;
               localStorage.setItem('stage_submissions', JSON.stringify(updatedSubmissions));
             };
 
+            // Drag and Drop handlers
+            const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+            const handleDragStart = (e: React.DragEvent, index: number) => {
+              setDraggedIndex(index);
+              e.dataTransfer.effectAllowed = 'move';
+              e.dataTransfer.setData('text/html', '');
+            };
+
+            const handleDragOver = (e: React.DragEvent, index: number) => {
+              e.preventDefault();
+              if (draggedIndex === null || draggedIndex === index) return;
+
+              // Reorder the filtered projects
+              const draggedProject = filteredProjects[draggedIndex];
+              const newFilteredProjects = [...filteredProjects];
+              newFilteredProjects.splice(draggedIndex, 1);
+              newFilteredProjects.splice(index, 0, draggedProject);
+
+              // Update the full submissions array maintaining the new order
+              const otherProjects = submissions.filter(s => !filteredProjects.some(fp => fp.id === s.id));
+              const reorderedSubmissions = [...newFilteredProjects, ...otherProjects];
+
+              setSubmissions(reorderedSubmissions);
+              localStorage.setItem('stage_submissions', JSON.stringify(reorderedSubmissions));
+              setDraggedIndex(index);
+            };
+
+            const handleDragEnd = () => {
+              setDraggedIndex(null);
+            };
+
             const statusOptions = [
               { value: 'loi_sent', label: 'LOI Sent' },
               { value: 'onboarding_form_sent', label: 'Onboarding Form Sent' },
@@ -5327,9 +5359,21 @@ END:VCARD`;
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                       {filteredProjects.map((project, index) => (
-                        <tr key={project.id} className="hover:bg-blue-50/50 transition-colors">
-                          {/* # */}
-                          <td className="px-3 py-3 text-gray-500 text-sm font-medium">{index + 1}</td>
+                        <tr
+                          key={project.id}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, index)}
+                          onDragOver={(e) => handleDragOver(e, index)}
+                          onDragEnd={handleDragEnd}
+                          className={`hover:bg-blue-50/50 transition-colors cursor-move ${draggedIndex === index ? 'opacity-50 bg-blue-100' : ''}`}
+                        >
+                          {/* Drag Handle + # */}
+                          <td className="px-3 py-3 text-gray-500 text-sm font-medium">
+                            <div className="flex items-center gap-2">
+                              <span className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500">⋮⋮</span>
+                              <span>{index + 1}</span>
+                            </div>
+                          </td>
 
                           {/* Project */}
                           <td className="px-3 py-2">
