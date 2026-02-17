@@ -5103,23 +5103,23 @@ END:VCARD`;
             };
 
             // Drag and Drop handlers
-            const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-
-            const handleDragStart = (e: React.DragEvent, index: number) => {
-              setDraggedIndex(index);
+            const handleDragStart = (e: React.DragEvent, projectId: string | number) => {
+              setDraggedRowId(String(projectId));
               e.dataTransfer.effectAllowed = 'move';
-              e.dataTransfer.setData('text/html', '');
+              e.dataTransfer.setData('text/plain', String(projectId));
             };
 
-            const handleDragOver = (e: React.DragEvent, index: number) => {
+            const handleDragOver = (e: React.DragEvent, targetIndex: number) => {
               e.preventDefault();
-              if (draggedIndex === null || draggedIndex === index) return;
+              if (!draggedRowId) return;
+
+              const draggedIndex = filteredProjects.findIndex(p => String(p.id) === draggedRowId);
+              if (draggedIndex === -1 || draggedIndex === targetIndex) return;
 
               // Reorder the filtered projects
-              const draggedProject = filteredProjects[draggedIndex];
               const newFilteredProjects = [...filteredProjects];
-              newFilteredProjects.splice(draggedIndex, 1);
-              newFilteredProjects.splice(index, 0, draggedProject);
+              const [draggedProject] = newFilteredProjects.splice(draggedIndex, 1);
+              newFilteredProjects.splice(targetIndex, 0, draggedProject);
 
               // Update the full submissions array maintaining the new order
               const otherProjects = submissions.filter(s => !filteredProjects.some(fp => fp.id === s.id));
@@ -5127,11 +5127,10 @@ END:VCARD`;
 
               setSubmissions(reorderedSubmissions);
               localStorage.setItem('stage_submissions', JSON.stringify(reorderedSubmissions));
-              setDraggedIndex(index);
             };
 
             const handleDragEnd = () => {
-              setDraggedIndex(null);
+              setDraggedRowId(null);
             };
 
             const statusOptions = [
@@ -5362,10 +5361,10 @@ END:VCARD`;
                         <tr
                           key={project.id}
                           draggable
-                          onDragStart={(e) => handleDragStart(e, index)}
+                          onDragStart={(e) => handleDragStart(e, project.id)}
                           onDragOver={(e) => handleDragOver(e, index)}
                           onDragEnd={handleDragEnd}
-                          className={`hover:bg-blue-50/50 transition-colors cursor-move ${draggedIndex === index ? 'opacity-50 bg-blue-100' : ''}`}
+                          className={`hover:bg-blue-50/50 transition-colors cursor-move ${draggedRowId === String(project.id) ? 'opacity-50 bg-blue-100' : ''}`}
                         >
                           {/* Drag Handle + # */}
                           <td className="px-3 py-3 text-gray-500 text-sm font-medium">
