@@ -6254,12 +6254,32 @@ END:VCARD`;
                     icon: '🧾',
                     color: 'bg-green-500',
                     desc: 'Invoice Templates',
+                    hasInvoiceTemplate: true,
+                    invoiceTemplate: {
+                      companyName: '[YOUR PRODUCTION COMPANY NAME]',
+                      companyAddress: '[Your Full Address]',
+                      companyGstin: '[Your GSTIN]',
+                      billTo: {
+                        name: 'STAGE Technologies Private Limited',
+                        address: '2nd Floor, 2-A/3 S/F, Front SIDE, Kundan Mansion, Asaf Ali Road, New Delhi - 110002',
+                        gstin: '07AAICC1279L1ZC'
+                      },
+                      placeOfSupply: 'Delhi',
+                      tranchOptions: [
+                        { label: '1st Tranch (25% - Upon Agreement Signing)', percentage: 25 },
+                        { label: '2nd Tranch (25% - Pre-Production Complete)', percentage: 25 },
+                        { label: '3rd Tranch (25% - Shoot Complete)', percentage: 25 },
+                        { label: '4th Tranch (25% - Final Delivery)', percentage: 25 },
+                      ],
+                      gstRate: 18,
+                    },
                     content: {
                       title: 'Invoice Format Guidelines',
                       sections: [
-                        { heading: 'Required Fields', items: ['Invoice Number (STAGE-INV-XXXX)', 'Date of Issue', 'Vendor/Creator Details with PAN/GST', 'Project Name & Code', 'Itemized breakdown', 'Total with GST calculation'] },
-                        { heading: 'Payment Terms', items: ['30% advance on agreement', '40% on shoot completion', '30% on final delivery', 'Net 15 days payment cycle', 'TDS deduction as applicable'] },
-                        { heading: 'Submission Process', items: ['Email to accounts@stage.in', 'CC production POC', 'Attach supporting documents', 'Bank details on letterhead'] },
+                        { heading: 'Required Fields', items: ['Invoice Number (GST-XX/YY-ZZ format)', 'Invoice Date & Due Date', 'Vendor/Creator Details with GSTIN', 'Bill To: STAGE Technologies Pvt Ltd', 'HSN/SAC Code', 'Itemized breakdown with Rate, Qty, IGST, Amount'] },
+                        { heading: 'Payment Tranches', items: ['1st Tranch: 25% upon signing of agreement', '2nd Tranch: 25% on pre-production completion', '3rd Tranch: 25% on shoot completion', '4th Tranch: 25% on final delivery & QC approval'] },
+                        { heading: 'Bank Details Required', items: ['Account Holder Name', 'Account Number', 'IFSC Code', 'Branch Name', 'Bank Name', 'PAN Number', 'Aadhar Number (optional)'] },
+                        { heading: 'Submission Process', items: ['Email to accounts@stageasai.com', 'CC your production POC', 'Attach signed copy as PDF', 'Include project agreement reference'] },
                       ]
                     }
                   },
@@ -6459,6 +6479,345 @@ END:VCARD`;
                           </div>
                         </div>
                         <div className="p-6">
+                          {/* Invoice Template Generator */}
+                          {(selectedCat as any).hasInvoiceTemplate && (
+                            <div className="mb-8">
+                              {/* Sample Invoice Preview */}
+                              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 mb-6">
+                                <div className="flex items-center justify-between mb-4">
+                                  <h3 className="text-xl font-bold text-green-800 flex items-center gap-2">
+                                    📄 Sample Tax Invoice Format
+                                  </h3>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => {
+                                        const invoiceHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tax Invoice - STAGE Production</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; background: white; }
+    .header { display: flex; justify-content: space-between; margin-bottom: 30px; }
+    .company-info { max-width: 50%; }
+    .company-name { font-size: 24px; font-weight: bold; color: #dc2626; margin-bottom: 5px; }
+    .company-address { font-size: 11px; color: #666; font-style: italic; line-height: 1.4; }
+    .gstin { font-size: 12px; font-weight: bold; margin-top: 8px; }
+    .invoice-title { text-align: right; }
+    .invoice-title h1 { font-size: 28px; font-weight: bold; }
+    .bill-section { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f9fafb; border-radius: 8px; }
+    .bill-to { max-width: 55%; }
+    .bill-to-label { font-weight: bold; font-style: italic; margin-bottom: 8px; }
+    .invoice-details { text-align: right; }
+    .invoice-details p { margin: 5px 0; font-size: 13px; }
+    .place-supply { font-size: 12px; margin: 10px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th { background: #dc2626; color: white; padding: 12px 8px; text-align: left; font-size: 12px; }
+    td { padding: 12px 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; }
+    .amount-col { text-align: right; }
+    .totals { margin-left: auto; width: 250px; }
+    .totals tr td { padding: 8px; }
+    .totals .label { text-align: right; font-weight: 500; }
+    .totals .total-row { font-weight: bold; font-size: 14px; background: #f3f4f6; }
+    .bank-section { margin-top: 30px; display: flex; justify-content: space-between; }
+    .bank-details { font-size: 11px; line-height: 1.6; }
+    .bank-details strong { display: block; margin-bottom: 8px; font-size: 12px; }
+    .signature { text-align: right; }
+    .signature-line { margin-top: 50px; font-size: 12px; font-weight: bold; }
+    @media print { body { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="company-info">
+      <div class="company-name">[YOUR PRODUCTION COMPANY NAME]</div>
+      <div class="company-address">
+        [YOUR COMPLETE ADDRESS]<br>
+        [CITY, STATE - PINCODE]
+      </div>
+      <div class="gstin">GSTIN -: [YOUR GSTIN NUMBER]</div>
+    </div>
+    <div class="invoice-title">
+      <h1>TAX INVOICE</h1>
+    </div>
+  </div>
+
+  <div class="bill-section">
+    <div class="bill-to">
+      <div class="bill-to-label">Bill To:</div>
+      <div><strong>STAGE Technologies Private Limited</strong></div>
+      <div style="font-size:11px;color:#666;margin-top:5px;">
+        2nd Floor, 2-A/3 S/F, Front SIDE, Kundan Mansion,<br>
+        Asaf Ali Road, New Delhi - 110002<br>
+        India
+      </div>
+      <div class="gstin" style="margin-top:10px;">GSTIN -: 07AAICC1279L1ZC</div>
+    </div>
+    <div class="invoice-details">
+      <p><strong>Invoice No.:</strong> GST-__/____</p>
+      <p><strong>Invoice Date:</strong> ___/___/____</p>
+      <p><strong>Due Date:</strong> ___/___/____</p>
+    </div>
+  </div>
+
+  <div class="place-supply"><strong>Place of Supply:</strong> Delhi</div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:30px">#</th>
+        <th>Item Description</th>
+        <th style="width:70px">HSN/SAC</th>
+        <th style="width:40px">Qty</th>
+        <th style="width:100px">Rate</th>
+        <th style="width:50px">IGST</th>
+        <th style="width:40px">Cess</th>
+        <th style="width:100px" class="amount-col">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>
+          <strong>[Regional] Film "[PROJECT NAME]"</strong><br>
+          <span style="color:#666;font-size:11px;">
+            [1st/2nd/3rd/4th] Tranch<br>
+            [25%] upon [signing of the agreement]<br>
+            (of the total budget)
+          </span>
+        </td>
+        <td></td>
+        <td>1</td>
+        <td>₹ __,__,___.00</td>
+        <td></td>
+        <td>0</td>
+        <td class="amount-col">₹ __,__,___.00</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="totals">
+    <tr>
+      <td class="label">SUB TOTAL</td>
+      <td class="amount-col">₹ __,__,___.00</td>
+    </tr>
+    <tr>
+      <td class="label">IGST (18%)</td>
+      <td class="amount-col">₹ __,___.00</td>
+    </tr>
+    <tr class="total-row">
+      <td class="label">TOTAL</td>
+      <td class="amount-col">₹ __,__,___.00</td>
+    </tr>
+  </table>
+
+  <div class="bank-section">
+    <div class="bank-details">
+      <strong>BANK DETAILS</strong>
+      [YOUR COMPANY NAME]<br>
+      AC.NO: [ACCOUNT NUMBER]<br>
+      IFSC CODE: [IFSC CODE]<br>
+      [BRANCH NAME]<br>
+      [BANK NAME]<br>
+      PAN No -: [PAN NUMBER]<br>
+      Aadhar No - : [AADHAR NUMBER]
+    </div>
+    <div class="signature">
+      <div style="margin-top:30px;border-bottom:1px solid #000;width:150px;"></div>
+      <div class="signature-line">FOR [YOUR COMPANY NAME]</div>
+    </div>
+  </div>
+</body>
+</html>`;
+                                        const printWindow = window.open('', '_blank');
+                                        if (printWindow) {
+                                          printWindow.document.write(invoiceHtml);
+                                          printWindow.document.close();
+                                          printWindow.print();
+                                        }
+                                      }}
+                                      className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-bold flex items-center gap-2"
+                                    >
+                                      📥 Download Sample Invoice
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        const text = `TAX INVOICE FORMAT FOR STAGE PRODUCTIONS
+
+FROM:
+[YOUR PRODUCTION COMPANY NAME]
+[Your Complete Address]
+GSTIN: [Your GSTIN]
+
+BILL TO:
+STAGE Technologies Private Limited
+2nd Floor, 2-A/3 S/F, Front SIDE, Kundan Mansion,
+Asaf Ali Road, New Delhi - 110002
+GSTIN: 07AAICC1279L1ZC
+
+Invoice No.: GST-__/____
+Invoice Date: ___/___/____
+Place of Supply: Delhi
+
+ITEM DESCRIPTION:
+[Regional] Film "[PROJECT NAME]"
+[1st/2nd/3rd/4th] Tranch - [25%] upon [milestone]
+
+Amount: ₹ __,__,___.00
+IGST (18%): ₹ __,___.00
+TOTAL: ₹ __,__,___.00
+
+BANK DETAILS:
+Account Name: [Your Company]
+Account No: [Account Number]
+IFSC: [IFSC Code]
+Bank: [Bank Name]
+PAN: [PAN Number]`;
+                                        navigator.clipboard.writeText(text);
+                                        alert('Invoice format copied to clipboard!');
+                                      }}
+                                      className="px-4 py-2 bg-white border-2 border-green-500 text-green-700 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-green-50"
+                                    >
+                                      📤 Share Format
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Invoice Preview Card */}
+                                <div className="bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden">
+                                  {/* Invoice Header */}
+                                  <div className="p-6 border-b">
+                                    <div className="flex justify-between items-start">
+                                      <div>
+                                        <h4 className="text-xl font-bold text-red-600">[YOUR PRODUCTION COMPANY]</h4>
+                                        <p className="text-xs text-gray-500 italic mt-1">[Your Full Address]<br/>[City, State - Pincode]</p>
+                                        <p className="text-xs font-bold mt-2">GSTIN -: [YOUR GSTIN]</p>
+                                      </div>
+                                      <div className="text-right">
+                                        <h3 className="text-2xl font-bold">TAX INVOICE</h3>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Bill To Section */}
+                                  <div className="p-6 bg-gray-50 flex justify-between">
+                                    <div>
+                                      <p className="font-bold italic text-sm mb-2">Bill To:</p>
+                                      <p className="font-bold">STAGE Technologies Private Limited</p>
+                                      <p className="text-xs text-gray-600 mt-1">2nd Floor, 2-A/3 S/F, Front SIDE, Kundan Mansion,<br/>Asaf Ali Road, New Delhi - 110002</p>
+                                      <p className="text-xs font-bold mt-2">GSTIN -: 07AAICC1279L1ZC</p>
+                                    </div>
+                                    <div className="text-right text-sm">
+                                      <p><span className="font-medium">Invoice No.:</span> GST-__/25-26</p>
+                                      <p><span className="font-medium">Invoice Date:</span> __/__/2026</p>
+                                      <p><span className="font-medium">Due Date:</span> __/__/2026</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Items Table */}
+                                  <div className="p-4">
+                                    <table className="w-full text-sm">
+                                      <thead>
+                                        <tr className="bg-red-600 text-white">
+                                          <th className="p-2 text-left w-8">#</th>
+                                          <th className="p-2 text-left">Item Description</th>
+                                          <th className="p-2 text-center w-16">HSN/SAC</th>
+                                          <th className="p-2 text-center w-10">Qty</th>
+                                          <th className="p-2 text-right w-24">Rate</th>
+                                          <th className="p-2 text-center w-12">IGST</th>
+                                          <th className="p-2 text-center w-10">Cess</th>
+                                          <th className="p-2 text-right w-24">Amount</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr className="border-b">
+                                          <td className="p-3">1</td>
+                                          <td className="p-3">
+                                            <span className="font-medium">[Regional] Film "[PROJECT NAME]"</span><br/>
+                                            <span className="text-xs text-gray-500">1st Tranch<br/>25% upon signing of the agreement<br/>(of the total budget)</span>
+                                          </td>
+                                          <td className="p-3 text-center">-</td>
+                                          <td className="p-3 text-center">1</td>
+                                          <td className="p-3 text-right">₹ 10,94,417.00</td>
+                                          <td className="p-3 text-center">-</td>
+                                          <td className="p-3 text-center">0</td>
+                                          <td className="p-3 text-right font-medium">₹ 10,94,417.00</td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
+
+                                    {/* Totals */}
+                                    <div className="flex justify-end mt-4">
+                                      <div className="w-64">
+                                        <div className="flex justify-between py-2 border-b">
+                                          <span className="font-medium">SUB TOTAL</span>
+                                          <span>₹ 10,94,417.00</span>
+                                        </div>
+                                        <div className="flex justify-between py-2 border-b">
+                                          <span className="font-medium">IGST (18%)</span>
+                                          <span>₹ 1,96,996.00</span>
+                                        </div>
+                                        <div className="flex justify-between py-2 bg-gray-100 px-2 font-bold">
+                                          <span>TOTAL</span>
+                                          <span>₹ 12,91,413.00</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Bank Details */}
+                                  <div className="p-6 border-t flex justify-between items-end">
+                                    <div className="text-xs">
+                                      <p className="font-bold mb-2">BANK DETAILS</p>
+                                      <p>[YOUR COMPANY NAME]</p>
+                                      <p>AC.NO: [ACCOUNT NUMBER]</p>
+                                      <p>IFSC CODE: [IFSC CODE]</p>
+                                      <p>[BRANCH NAME]</p>
+                                      <p>[BANK NAME]</p>
+                                      <p>PAN No -: [PAN NUMBER]</p>
+                                      <p>Aadhar No - : [AADHAR NUMBER]</p>
+                                    </div>
+                                    <div className="text-center">
+                                      <div className="border-b border-gray-400 w-32 mb-1"></div>
+                                      <p className="text-xs font-bold">FOR [YOUR COMPANY]</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Payment Tranch Info */}
+                              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                                <h4 className="font-bold text-blue-800 mb-3 flex items-center gap-2">💰 Payment Tranch Schedule</h4>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                  <div className="bg-white rounded-lg p-3 border border-blue-200">
+                                    <div className="text-2xl font-bold text-blue-600">25%</div>
+                                    <div className="text-xs text-gray-600">1st Tranch</div>
+                                    <div className="text-xs text-blue-700 font-medium mt-1">Upon Agreement Signing</div>
+                                  </div>
+                                  <div className="bg-white rounded-lg p-3 border border-blue-200">
+                                    <div className="text-2xl font-bold text-blue-600">25%</div>
+                                    <div className="text-xs text-gray-600">2nd Tranch</div>
+                                    <div className="text-xs text-blue-700 font-medium mt-1">Pre-Production Complete</div>
+                                  </div>
+                                  <div className="bg-white rounded-lg p-3 border border-blue-200">
+                                    <div className="text-2xl font-bold text-blue-600">25%</div>
+                                    <div className="text-xs text-gray-600">3rd Tranch</div>
+                                    <div className="text-xs text-blue-700 font-medium mt-1">Shoot Complete</div>
+                                  </div>
+                                  <div className="bg-white rounded-lg p-3 border border-blue-200">
+                                    <div className="text-2xl font-bold text-blue-600">25%</div>
+                                    <div className="text-xs text-gray-600">4th Tranch</div>
+                                    <div className="text-xs text-blue-700 font-medium mt-1">Final Delivery & QC</div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Guidelines Section */}
+                              <h4 className="font-bold text-gray-800 mb-4">Invoice Guidelines</h4>
+                            </div>
+                          )}
+
                           {/* SOP Full Sections View - Clickable Cards */}
                           {(selectedCat as any).isSopFull && (selectedCat as any).sopSections ? (
                             <div className="space-y-3">
