@@ -5179,17 +5179,28 @@ END:VCARD`;
                 dataToExport = dataToExport.filter(s => s[filterType] === filterValue);
               }
 
-              const exportRows = dataToExport.map((s, idx) => ({
-                'S.No': idx + 1,
-                'Project Name': s.projectName || '-',
-                'Creator': s.creatorName || s.creator || '-',
-                'Culture': s.culture || '-',
-                'Format': s.format || '-',
-                'Production POC': s.productionPOC || '-',
-                'Shoot Start Date': s.shootStartDate || '-',
-                'Status': statusOptions.find(o => o.value === s.status)?.label || s.customStatus || s.status || '-',
-                'Budget (Lakhs)': s.totalBudget ? (parseFloat(s.totalBudget) / 100000).toFixed(2) : '0',
-              }));
+              const exportRows = dataToExport.map((s, idx) => {
+                const budget = parseFloat(s.totalBudget) || 0;
+                const overcost = parseFloat(s.overcost) || 0;
+                const insurance = parseFloat(s.insurance) || 0;
+                const custom = parseFloat(s.customBudget) || 0;
+                const total = budget + overcost + insurance + custom;
+                return {
+                  'S.No': idx + 1,
+                  'Project Name': s.projectName || '-',
+                  'Creator': s.creatorName || s.creator || '-',
+                  'Culture': s.culture || '-',
+                  'Format': s.format || '-',
+                  'Production POC': s.productionPOC || '-',
+                  'Shoot Start Date': s.shootStartDate || '-',
+                  'Status': statusOptions.find(o => o.value === s.status)?.label || s.customStatus || s.status || '-',
+                  'Budget (L)': (budget / 100000).toFixed(2),
+                  'Overcost (L)': (overcost / 100000).toFixed(2),
+                  'Insurance (L)': (insurance / 100000).toFixed(2),
+                  'Custom (L)': (custom / 100000).toFixed(2),
+                  'Total (L)': (total / 100000).toFixed(2),
+                };
+              });
 
               if (format === 'excel') {
                 const XLSX = require('xlsx');
@@ -5202,13 +5213,13 @@ END:VCARD`;
                 XLSX.writeFile(wb, fileName);
               } else if (format === 'pdf') {
                 // PDF Export - opens printable HTML in new window
-                const totalBudgetValue = dataToExport.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0);
+                const grandTotal = dataToExport.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0) + (parseFloat(p.overcost) || 0) + (parseFloat(p.insurance) || 0) + (parseFloat(p.customBudget) || 0), 0);
                 const filterTitle = filterType && filterValue ? filterValue + ' ' : 'All ';
                 const dateStr = new Date().toLocaleDateString('en-IN', { dateStyle: 'full' });
                 const rowsHtml = exportRows.map(r =>
-                  '<tr><td>' + r['S.No'] + '</td><td>' + r['Project Name'] + '</td><td>' + r['Creator'] + '</td><td>' + r['Culture'] + '</td><td>' + r['Format'] + '</td><td>' + r['Production POC'] + '</td><td>' + r['Shoot Start Date'] + '</td><td>' + r['Status'] + '</td><td class="budget">' + r['Budget (Lakhs)'] + ' L</td></tr>'
+                  '<tr><td>' + r['S.No'] + '</td><td>' + r['Project Name'] + '</td><td>' + r['Creator'] + '</td><td>' + r['Culture'] + '</td><td>' + r['Format'] + '</td><td>' + r['Production POC'] + '</td><td>' + r['Status'] + '</td><td class="budget">' + r['Budget (L)'] + '</td><td class="budget">' + r['Overcost (L)'] + '</td><td class="budget">' + r['Insurance (L)'] + '</td><td class="budget total">' + r['Total (L)'] + '</td></tr>'
                 ).join('');
-                const html = '<!DOCTYPE html><html><head><title>STAGE ' + filterTitle + 'Projects Report</title><style>body{font-family:Arial,sans-serif;padding:30px;color:#333}h1{color:#1e40af;margin-bottom:5px}.subtitle{color:#666;margin-bottom:20px;font-size:14px}table{width:100%;border-collapse:collapse;margin:20px 0;font-size:12px}th{background:#f1f5f9;padding:10px;text-align:left;border:1px solid #e2e8f0;font-weight:600}td{padding:8px 10px;border:1px solid #e2e8f0}tr:nth-child(even){background:#f8fafc}.summary{background:#f0fdf4;padding:15px;border-radius:8px;margin-top:20px}.summary-title{font-weight:bold;color:#166534}.budget{text-align:right;font-weight:600;color:#166534}@media print{body{padding:20px}}</style></head><body><h1>STAGE ' + filterTitle + 'Projects Report</h1><p class="subtitle">Generated: ' + dateStr + ' | ' + dataToExport.length + ' Projects</p><table><thead><tr><th>#</th><th>Project Name</th><th>Creator</th><th>Culture</th><th>Format</th><th>POC</th><th>Shoot Start</th><th>Status</th><th style="text-align:right">Budget</th></tr></thead><tbody>' + rowsHtml + '</tbody></table><div class="summary"><span class="summary-title">Total Budget: </span><span class="budget">' + formatBudget(totalBudgetValue) + '</span></div><script>window.onload=function(){window.print();}</script></body></html>';
+                const html = '<!DOCTYPE html><html><head><title>STAGE ' + filterTitle + 'Projects Report</title><style>body{font-family:Arial,sans-serif;padding:20px;color:#333}h1{color:#1e40af;margin-bottom:5px}.subtitle{color:#666;margin-bottom:20px;font-size:14px}table{width:100%;border-collapse:collapse;margin:20px 0;font-size:11px}th{background:#f1f5f9;padding:8px;text-align:left;border:1px solid #e2e8f0;font-weight:600}td{padding:6px 8px;border:1px solid #e2e8f0}tr:nth-child(even){background:#f8fafc}.summary{background:#f0fdf4;padding:15px;border-radius:8px;margin-top:20px}.summary-title{font-weight:bold;color:#166534}.budget{text-align:right;font-weight:500}.total{font-weight:700;color:#166534;background:#f0fdf4}@media print{body{padding:10px}}</style></head><body><h1>STAGE ' + filterTitle + 'Projects Report</h1><p class="subtitle">Generated: ' + dateStr + ' | ' + dataToExport.length + ' Projects</p><table><thead><tr><th>#</th><th>Project</th><th>Creator</th><th>Culture</th><th>Format</th><th>POC</th><th>Status</th><th style="text-align:right">Budget</th><th style="text-align:right">Overcost</th><th style="text-align:right">Insurance</th><th style="text-align:right;background:#f0fdf4">Total</th></tr></thead><tbody>' + rowsHtml + '</tbody></table><div class="summary"><span class="summary-title">Grand Total: </span><span class="budget total">' + formatBudget(grandTotal) + '</span></div><script>window.onload=function(){window.print();}</script></body></html>';
                 const printWindow = window.open('', '_blank');
                 if (printWindow) {
                   printWindow.document.write(html);
@@ -5299,7 +5310,7 @@ END:VCARD`;
               </div>
 
               {/* Table */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-200">
@@ -5311,7 +5322,11 @@ END:VCARD`;
                       <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[120px]">POC</th>
                       <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[130px]">Shoot Start</th>
                       <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[160px]">Status</th>
-                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[100px]">Budget</th>
+                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[90px]">Budget</th>
+                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[90px]">Overcost</th>
+                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[90px]">Insurance</th>
+                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[90px]">Custom</th>
+                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[100px] bg-green-50">Total</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -5414,7 +5429,6 @@ END:VCARD`;
                           {/* Budget */}
                           <td className="px-3 py-2">
                             <div className="flex items-center justify-end gap-1">
-                              <span className="text-gray-400 text-sm">₹</span>
                               <input
                                 type="number"
                                 value={project.totalBudget ? Math.round(parseFloat(project.totalBudget) / 100000) : ''}
@@ -5422,10 +5436,75 @@ END:VCARD`;
                                   const lakhs = parseFloat(e.target.value) || 0;
                                   updateProject(project.id, 'totalBudget', String(lakhs * 100000));
                                 }}
-                                className="w-20 px-2 py-1.5 text-sm font-bold text-right bg-green-50 border border-green-200 rounded-lg text-green-700 focus:outline-none focus:ring-2 focus:ring-green-200"
+                                className="w-16 px-2 py-1.5 text-sm font-semibold text-right bg-blue-50 border border-blue-200 rounded-lg text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
                                 placeholder="0"
                               />
-                              <span className="text-gray-500 text-xs font-medium">L</span>
+                              <span className="text-gray-400 text-xs">L</span>
+                            </div>
+                          </td>
+
+                          {/* Overcost */}
+                          <td className="px-3 py-2">
+                            <div className="flex items-center justify-end gap-1">
+                              <input
+                                type="number"
+                                value={project.overcost ? Math.round(parseFloat(project.overcost) / 100000) : ''}
+                                onChange={(e) => {
+                                  const lakhs = parseFloat(e.target.value) || 0;
+                                  updateProject(project.id, 'overcost', String(lakhs * 100000));
+                                }}
+                                className="w-16 px-2 py-1.5 text-sm font-semibold text-right bg-orange-50 border border-orange-200 rounded-lg text-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-200"
+                                placeholder="0"
+                              />
+                              <span className="text-gray-400 text-xs">L</span>
+                            </div>
+                          </td>
+
+                          {/* Insurance */}
+                          <td className="px-3 py-2">
+                            <div className="flex items-center justify-end gap-1">
+                              <input
+                                type="number"
+                                value={project.insurance ? Math.round(parseFloat(project.insurance) / 100000) : ''}
+                                onChange={(e) => {
+                                  const lakhs = parseFloat(e.target.value) || 0;
+                                  updateProject(project.id, 'insurance', String(lakhs * 100000));
+                                }}
+                                className="w-16 px-2 py-1.5 text-sm font-semibold text-right bg-purple-50 border border-purple-200 rounded-lg text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                                placeholder="0"
+                              />
+                              <span className="text-gray-400 text-xs">L</span>
+                            </div>
+                          </td>
+
+                          {/* Custom Budget */}
+                          <td className="px-3 py-2">
+                            <div className="flex items-center justify-end gap-1">
+                              <input
+                                type="number"
+                                value={project.customBudget ? Math.round(parseFloat(project.customBudget) / 100000) : ''}
+                                onChange={(e) => {
+                                  const lakhs = parseFloat(e.target.value) || 0;
+                                  updateProject(project.id, 'customBudget', String(lakhs * 100000));
+                                }}
+                                className="w-16 px-2 py-1.5 text-sm font-semibold text-right bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                                placeholder="0"
+                              />
+                              <span className="text-gray-400 text-xs">L</span>
+                            </div>
+                          </td>
+
+                          {/* Total Budget */}
+                          <td className="px-3 py-2 bg-green-50">
+                            <div className="text-right">
+                              <span className="text-lg font-bold text-green-700">
+                                {formatBudget(
+                                  (parseFloat(project.totalBudget) || 0) +
+                                  (parseFloat(project.overcost) || 0) +
+                                  (parseFloat(project.insurance) || 0) +
+                                  (parseFloat(project.customBudget) || 0)
+                                )}
+                              </span>
                             </div>
                           </td>
                         </tr>
@@ -5434,8 +5513,19 @@ END:VCARD`;
                   </table>
                   {/* Footer */}
                   <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-                    <span className="text-gray-500 text-sm">{filteredProjects.length} projects • Click to edit</span>
-                    <span className="text-green-600 font-bold text-lg">Total: {formatBudget(totalBudget)}</span>
+                    <span className="text-gray-500 text-sm">{filteredProjects.length} projects • Click to edit any field</span>
+                    <div className="flex items-center gap-4 text-sm">
+                      <span className="text-blue-600">Budget: {formatBudget(filteredProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0))}</span>
+                      <span className="text-orange-600">Overcost: {formatBudget(filteredProjects.reduce((sum, p) => sum + (parseFloat(p.overcost) || 0), 0))}</span>
+                      <span className="text-purple-600">Insurance: {formatBudget(filteredProjects.reduce((sum, p) => sum + (parseFloat(p.insurance) || 0), 0))}</span>
+                      <span className="text-green-700 font-bold text-lg">Grand Total: {formatBudget(
+                        filteredProjects.reduce((sum, p) => sum +
+                          (parseFloat(p.totalBudget) || 0) +
+                          (parseFloat(p.overcost) || 0) +
+                          (parseFloat(p.insurance) || 0) +
+                          (parseFloat(p.customBudget) || 0), 0)
+                      )}</span>
+                    </div>
                   </div>
                 </div>
 
