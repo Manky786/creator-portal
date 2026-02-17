@@ -5215,6 +5215,7 @@ END:VCARD`;
                 const overcost = parseFloat(s.overcost) || 0;
                 const insurance = parseFloat(s.insurance) || 0;
                 const custom = parseFloat(s.customBudget) || 0;
+                const customLabel = s.customBudgetLabel || 'Custom';
                 const total = budget + overcost + insurance + custom;
                 return {
                   'S.No': idx + 1,
@@ -5228,7 +5229,7 @@ END:VCARD`;
                   'Budget (L)': (budget / 100000).toFixed(2),
                   'Overcost (L)': (overcost / 100000).toFixed(2),
                   'Insurance (L)': (insurance / 100000).toFixed(2),
-                  'Custom (L)': (custom / 100000).toFixed(2),
+                  [customLabel + ' (L)']: (custom / 100000).toFixed(2),
                   'Total (L)': (total / 100000).toFixed(2),
                 };
               });
@@ -5532,9 +5533,18 @@ END:VCARD`;
                                           <span className="text-gray-400 text-[10px]">L</span>
                                         </div>
                                       </div>
-                                      <div className="flex items-center justify-between gap-2">
-                                        <span className="text-xs text-gray-600">Custom</span>
-                                        <div className="flex items-center gap-1">
+                                      {/* Custom Expense with Description */}
+                                      <div className="border-t border-gray-100 pt-2 mt-1">
+                                        <div className="text-xs font-semibold text-blue-600 mb-1">Custom Expense</div>
+                                        <input
+                                          type="text"
+                                          value={project.customBudgetLabel || ''}
+                                          onChange={(e) => updateProject(project.id, 'customBudgetLabel', e.target.value)}
+                                          className="w-full px-2 py-1 text-xs bg-blue-50 border border-blue-200 rounded text-blue-700 focus:outline-none mb-1"
+                                          placeholder="e.g. Celebrity Fee, Marketing..."
+                                        />
+                                        <div className="flex items-center justify-end gap-1">
+                                          <span className="text-gray-400 text-[10px]">₹</span>
                                           <input
                                             type="number"
                                             value={project.customBudget ? Math.round(parseFloat(project.customBudget) / 100000) : ''}
@@ -5548,7 +5558,7 @@ END:VCARD`;
                                           <span className="text-gray-400 text-[10px]">L</span>
                                         </div>
                                       </div>
-                                      <div className="pt-2 border-t border-gray-100 flex justify-between">
+                                      <div className="pt-2 border-t border-gray-100 flex justify-between mt-2">
                                         <span className="text-xs font-semibold text-green-700">Total</span>
                                         <span className="text-xs font-bold text-green-700">{formatBudget(totalWithExtras)}</span>
                                       </div>
