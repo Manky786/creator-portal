@@ -811,7 +811,8 @@ const sampleSubmissions = [
 ];
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library' | 'projects'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library' | 'projects' | 'documents'>('overview');
+  const [productionDocs, setProductionDocs] = useState<{id: string, name: string, category: string, url: string, uploadedAt: string}[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterFormat, setFilterFormat] = useState<string>('all');
   const [filterCulture, setFilterCulture] = useState<string>('all');
@@ -1013,6 +1014,10 @@ END:VCARD`;
       // Load talent library
       const savedTalents = JSON.parse(localStorage.getItem('stage_talent_library') || '[]');
       setTalentLibrary(savedTalents);
+
+      // Load production documents
+      const savedDocs = JSON.parse(localStorage.getItem('production_docs') || '[]');
+      setProductionDocs(savedDocs);
     }
   }, []);
 
@@ -3108,6 +3113,19 @@ END:VCARD`;
                   >
                     📊 Projects
                     {activeTab === 'projects' && (
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full"></div>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('documents')}
+                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
+                      activeTab === 'documents'
+                        ? 'text-white bg-red-600 shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    📁 Docs
+                    {activeTab === 'documents' && (
                       <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full"></div>
                     )}
                   </button>
@@ -5760,6 +5778,193 @@ END:VCARD`;
             </div>
             );
           })()}
+
+          {/* DOCUMENTS TAB - Production Templates & SOPs */}
+          {activeTab === 'documents' && (
+            <div className="min-h-screen bg-gray-50 -m-6 p-6">
+              {/* Header */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-800">Production Documents</h1>
+                    <p className="text-gray-500">SOPs, Formats, Templates - Share with your team</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.png';
+                      input.onchange = (e: any) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          // In production, upload to cloud storage
+                          const newDoc = {
+                            id: 'doc-' + Date.now(),
+                            name: file.name,
+                            category: 'Other',
+                            url: URL.createObjectURL(file),
+                            uploadedAt: new Date().toISOString(),
+                          };
+                          const updatedDocs = [...productionDocs, newDoc];
+                          setProductionDocs(updatedDocs);
+                          localStorage.setItem('production_docs', JSON.stringify(updatedDocs));
+                        }
+                      };
+                      input.click();
+                    }}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium flex items-center gap-2"
+                  >
+                    <span>📤</span> Upload Document
+                  </button>
+                </div>
+              </div>
+
+              {/* Document Categories */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+                {[
+                  { name: 'SOP', icon: '📋', color: 'bg-blue-500', desc: 'Standard Operating Procedures' },
+                  { name: 'Invoice', icon: '🧾', color: 'bg-green-500', desc: 'Invoice Templates' },
+                  { name: 'NOC', icon: '📄', color: 'bg-purple-500', desc: 'No Objection Certificates' },
+                  { name: 'Budget', icon: '💰', color: 'bg-yellow-500', desc: 'Budget Formats' },
+                  { name: 'Agreement', icon: '📝', color: 'bg-red-500', desc: 'Contract Templates' },
+                  { name: 'Call Sheet', icon: '📞', color: 'bg-teal-500', desc: 'Daily Call Sheets' },
+                  { name: 'Release Form', icon: '✍️', color: 'bg-pink-500', desc: 'Talent Release Forms' },
+                  { name: 'Other', icon: '📁', color: 'bg-gray-500', desc: 'Miscellaneous' },
+                ].map(cat => {
+                  const catDocs = productionDocs.filter(d => d.category === cat.name);
+                  return (
+                    <div
+                      key={cat.name}
+                      className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-lg transition-all cursor-pointer group"
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.png';
+                        input.onchange = (e: any) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const newDoc = {
+                              id: 'doc-' + Date.now(),
+                              name: file.name,
+                              category: cat.name,
+                              url: URL.createObjectURL(file),
+                              uploadedAt: new Date().toISOString(),
+                            };
+                            const updatedDocs = [...productionDocs, newDoc];
+                            setProductionDocs(updatedDocs);
+                            localStorage.setItem('production_docs', JSON.stringify(updatedDocs));
+                          }
+                        };
+                        input.click();
+                      }}
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`w-10 h-10 ${cat.color} rounded-lg flex items-center justify-center text-white text-xl`}>
+                          {cat.icon}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-gray-800">{cat.name}</h3>
+                          <p className="text-xs text-gray-500">{catDocs.length} files</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-400">{cat.desc}</p>
+                      <div className="mt-2 text-xs text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                        + Click to upload
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* All Documents List */}
+              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                  <h2 className="font-bold text-gray-700">All Documents ({productionDocs.length})</h2>
+                </div>
+                {productionDocs.length === 0 ? (
+                  <div className="p-8 text-center text-gray-400">
+                    <div className="text-4xl mb-2">📁</div>
+                    <p>No documents uploaded yet</p>
+                    <p className="text-sm">Click on any category above to upload</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-100">
+                    {productionDocs.map(doc => (
+                      <div key={doc.id} className="px-4 py-3 flex items-center justify-between hover:bg-gray-50">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-lg">
+                            {doc.name.endsWith('.pdf') ? '📕' : doc.name.endsWith('.xlsx') || doc.name.endsWith('.xls') ? '📗' : doc.name.endsWith('.docx') || doc.name.endsWith('.doc') ? '📘' : '📄'}
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-800">{doc.name}</h4>
+                            <p className="text-xs text-gray-400">{doc.category} • {new Date(doc.uploadedAt).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={doc.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100"
+                          >
+                            View
+                          </a>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(doc.url);
+                              alert('Link copied! Share with your team.');
+                            }}
+                            className="px-3 py-1.5 bg-green-50 text-green-600 rounded-lg text-sm font-medium hover:bg-green-100"
+                          >
+                            Share
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm('Delete this document?')) {
+                                const updatedDocs = productionDocs.filter(d => d.id !== doc.id);
+                                setProductionDocs(updatedDocs);
+                                localStorage.setItem('production_docs', JSON.stringify(updatedDocs));
+                              }
+                            }}
+                            className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Templates Section */}
+              <div className="mt-6 bg-slate-900 rounded-2xl border border-slate-700 p-6">
+                <h2 className="text-xl font-bold text-white mb-4">Quick Templates</h2>
+                <p className="text-slate-400 text-sm mb-4">Pre-made templates for common production needs</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { name: 'Shooting Schedule', icon: '📅' },
+                    { name: 'Equipment List', icon: '🎥' },
+                    { name: 'Location Permit', icon: '📍' },
+                    { name: 'Talent Agreement', icon: '🤝' },
+                    { name: 'Payment Voucher', icon: '💳' },
+                    { name: 'Production Report', icon: '📊' },
+                    { name: 'Insurance Form', icon: '🛡️' },
+                    { name: 'Wrap Report', icon: '✅' },
+                  ].map(template => (
+                    <button
+                      key={template.name}
+                      className="bg-slate-800 hover:bg-slate-700 rounded-xl p-4 text-left transition-all"
+                      onClick={() => alert('Template: ' + template.name + '\n\nThis would open/download the template in production.')}
+                    >
+                      <div className="text-2xl mb-2">{template.icon}</div>
+                      <div className="text-white text-sm font-medium">{template.name}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Add Talent Modal */}
