@@ -813,6 +813,7 @@ const sampleSubmissions = [
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library' | 'projects' | 'documents'>('overview');
   const [productionDocs, setProductionDocs] = useState<{id: string, name: string, category: string, url: string, uploadedAt: string}[]>([]);
+  const [selectedDocCategory, setSelectedDocCategory] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterFormat, setFilterFormat] = useState<string>('all');
   const [filterCulture, setFilterCulture] = useState<string>('all');
@@ -5820,61 +5821,270 @@ END:VCARD`;
               </div>
 
               {/* Document Categories */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
-                {[
-                  { name: 'SOP', icon: '📋', color: 'bg-blue-500', desc: 'Standard Operating Procedures' },
-                  { name: 'Invoice', icon: '🧾', color: 'bg-green-500', desc: 'Invoice Templates' },
-                  { name: 'NOC', icon: '📄', color: 'bg-purple-500', desc: 'No Objection Certificates' },
-                  { name: 'Budget', icon: '💰', color: 'bg-yellow-500', desc: 'Budget Formats' },
-                  { name: 'Agreement', icon: '📝', color: 'bg-red-500', desc: 'Contract Templates' },
-                  { name: 'Call Sheet', icon: '📞', color: 'bg-teal-500', desc: 'Daily Call Sheets' },
-                  { name: 'Release Form', icon: '✍️', color: 'bg-pink-500', desc: 'Talent Release Forms' },
-                  { name: 'Other', icon: '📁', color: 'bg-gray-500', desc: 'Miscellaneous' },
-                ].map(cat => {
-                  const catDocs = productionDocs.filter(d => d.category === cat.name);
-                  return (
-                    <div
-                      key={cat.name}
-                      className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-lg transition-all cursor-pointer group"
-                      onClick={() => {
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.png';
-                        input.onchange = (e: any) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            const newDoc = {
-                              id: 'doc-' + Date.now(),
-                              name: file.name,
-                              category: cat.name,
-                              url: URL.createObjectURL(file),
-                              uploadedAt: new Date().toISOString(),
-                            };
-                            const updatedDocs = [...productionDocs, newDoc];
-                            setProductionDocs(updatedDocs);
-                            localStorage.setItem('production_docs', JSON.stringify(updatedDocs));
-                          }
-                        };
-                        input.click();
-                      }}
-                    >
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className={`w-10 h-10 ${cat.color} rounded-lg flex items-center justify-center text-white text-xl`}>
-                          {cat.icon}
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-gray-800">{cat.name}</h3>
-                          <p className="text-xs text-gray-500">{catDocs.length} files</p>
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-400">{cat.desc}</p>
-                      <div className="mt-2 text-xs text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                        + Click to upload
-                      </div>
+              {(() => {
+                const docCategories = [
+                  {
+                    name: 'SOP',
+                    icon: '📋',
+                    color: 'bg-blue-500',
+                    desc: 'Standard Operating Procedures',
+                    content: {
+                      title: 'STAGE Production SOP',
+                      sections: [
+                        { heading: 'Pre-Production', items: ['Script approval from STAGE team', 'Budget approval & agreement signing', 'Casting finalization with photos', 'Location scouting & permits', 'Equipment booking', 'Insurance documentation'] },
+                        { heading: 'Production', items: ['Daily call sheets 24hrs before', 'Attendance & log sheets', 'Daily rushes backup (2 copies)', 'Daily production report', 'Petty cash management', 'Safety protocols compliance'] },
+                        { heading: 'Post-Production', items: ['Rough cut within 2 weeks of wrap', 'Music clearance documentation', 'Color grading approval', 'Sound mix approval', 'Final master delivery', 'All assets handover'] },
+                      ]
+                    }
+                  },
+                  {
+                    name: 'Invoice',
+                    icon: '🧾',
+                    color: 'bg-green-500',
+                    desc: 'Invoice Templates',
+                    content: {
+                      title: 'Invoice Format Guidelines',
+                      sections: [
+                        { heading: 'Required Fields', items: ['Invoice Number (STAGE-INV-XXXX)', 'Date of Issue', 'Vendor/Creator Details with PAN/GST', 'Project Name & Code', 'Itemized breakdown', 'Total with GST calculation'] },
+                        { heading: 'Payment Terms', items: ['30% advance on agreement', '40% on shoot completion', '30% on final delivery', 'Net 15 days payment cycle', 'TDS deduction as applicable'] },
+                        { heading: 'Submission Process', items: ['Email to accounts@stage.in', 'CC production POC', 'Attach supporting documents', 'Bank details on letterhead'] },
+                      ]
+                    }
+                  },
+                  {
+                    name: 'NOC',
+                    icon: '📄',
+                    color: 'bg-purple-500',
+                    desc: 'No Objection Certificates',
+                    content: {
+                      title: 'NOC Requirements',
+                      sections: [
+                        { heading: 'Location NOC', items: ['Property owner consent', 'Local authority permission', 'Police intimation (if required)', 'Residential area timing restrictions', 'Parking arrangements'] },
+                        { heading: 'Music NOC', items: ['Original composition certificate', 'Third-party music clearance', 'Sync license for existing tracks', 'Royalty-free music declaration'] },
+                        { heading: 'Talent NOC', items: ['Image usage rights', 'Social media usage consent', 'Behind-the-scenes footage rights', 'Promotional usage clearance'] },
+                      ]
+                    }
+                  },
+                  {
+                    name: 'Budget',
+                    icon: '💰',
+                    color: 'bg-yellow-500',
+                    desc: 'Budget Formats',
+                    content: {
+                      title: 'Budget Format & Guidelines',
+                      sections: [
+                        { heading: 'Above The Line (15-20%)', items: ['Story/Script Rights', 'Director Fee', 'Producer Fee', 'Lead Cast Fees', 'Music Director'] },
+                        { heading: 'Below The Line (50-60%)', items: ['Crew Salaries', 'Equipment Rental', 'Location Fees', 'Set Construction', 'Costumes & Props', 'Transportation & Catering'] },
+                        { heading: 'Post & Others (20-30%)', items: ['Editing Suite', 'VFX/Graphics', 'Sound Design & Mix', 'Color Grading', 'Music Recording', 'Insurance', 'Contingency 10%'] },
+                      ]
+                    }
+                  },
+                  {
+                    name: 'Agreement',
+                    icon: '📝',
+                    color: 'bg-red-500',
+                    desc: 'Contract Templates',
+                    content: {
+                      title: 'Agreement Guidelines',
+                      sections: [
+                        { heading: 'Creator Agreement', items: ['Project scope & deliverables', 'Timeline & milestones', 'Payment terms & schedule', 'IP rights transfer', 'Exclusivity clause', 'Termination conditions'] },
+                        { heading: 'Talent Agreement', items: ['Role description', 'Shoot dates commitment', 'Remuneration & perks', 'Promotional obligations', 'Image rights duration', 'Confidentiality clause'] },
+                        { heading: 'Vendor Agreement', items: ['Service description', 'Delivery schedule', 'Payment terms', 'Quality standards', 'Liability clause', 'Insurance requirements'] },
+                      ]
+                    }
+                  },
+                  {
+                    name: 'Call Sheet',
+                    icon: '📞',
+                    color: 'bg-teal-500',
+                    desc: 'Daily Call Sheets',
+                    content: {
+                      title: 'Call Sheet Format',
+                      sections: [
+                        { heading: 'Header Information', items: ['Production Title & Episode', 'Shoot Date & Day Count', 'Weather Forecast', 'Sunrise/Sunset Times', 'Emergency Contacts', 'Hospital/Police Station nearby'] },
+                        { heading: 'Schedule Details', items: ['Call times for each department', 'Scene numbers & descriptions', 'Cast required per scene', 'Location address with map', 'Parking instructions', 'Meal break timings'] },
+                        { heading: 'Requirements', items: ['Props list per scene', 'Costume requirements', 'Special equipment needed', 'Vehicles required', 'Extras count', 'Special notes/instructions'] },
+                      ]
+                    }
+                  },
+                  {
+                    name: 'Release Form',
+                    icon: '✍️',
+                    color: 'bg-pink-500',
+                    desc: 'Talent Release Forms',
+                    content: {
+                      title: 'Release Form Requirements',
+                      sections: [
+                        { heading: 'Talent Release', items: ['Full legal name & address', 'Role/Appearance description', 'Usage rights granted', 'Territory (Worldwide)', 'Duration (Perpetuity)', 'Platforms (All media)'] },
+                        { heading: 'Minor Release', items: ['Parent/Guardian consent', 'Minor\'s details', 'School permission if applicable', 'Working hours compliance', 'Chaperone requirements'] },
+                        { heading: 'Location Release', items: ['Property address', 'Owner details', 'Shoot dates & times', 'Areas permitted', 'Restrictions if any', 'Restoration requirements'] },
+                      ]
+                    }
+                  },
+                  {
+                    name: 'Other',
+                    icon: '📁',
+                    color: 'bg-gray-500',
+                    desc: 'Miscellaneous',
+                    content: {
+                      title: 'Other Documents',
+                      sections: [
+                        { heading: 'Production Report', items: ['Daily progress summary', 'Scenes completed', 'Footage shot', 'Issues faced', 'Next day plan'] },
+                        { heading: 'Wrap Report', items: ['Total shoot days', 'Budget vs actual', 'Pending deliverables', 'Equipment return status', 'Final crew list'] },
+                        { heading: 'Handover Checklist', items: ['All masters delivered', 'Project files backup', 'Music cue sheet', 'Credits list', 'BTS content', 'Social media assets'] },
+                      ]
+                    }
+                  },
+                ];
+
+                const selectedCat = docCategories.find(c => c.name === selectedDocCategory);
+
+                return (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+                      {docCategories.map(cat => {
+                        const catDocs = productionDocs.filter(d => d.category === cat.name);
+                        const isSelected = selectedDocCategory === cat.name;
+                        return (
+                          <div
+                            key={cat.name}
+                            onClick={() => setSelectedDocCategory(isSelected ? null : cat.name)}
+                            className={`bg-white rounded-xl border-2 p-4 hover:shadow-lg transition-all cursor-pointer ${isSelected ? 'border-blue-500 shadow-lg' : 'border-gray-200'}`}
+                          >
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className={`w-10 h-10 ${cat.color} rounded-lg flex items-center justify-center text-white text-xl`}>
+                                {cat.icon}
+                              </div>
+                              <div>
+                                <h3 className="font-bold text-gray-800">{cat.name}</h3>
+                                <p className="text-xs text-gray-500">{catDocs.length} files</p>
+                              </div>
+                            </div>
+                            <p className="text-xs text-gray-400">{cat.desc}</p>
+                            <div className="mt-2 text-xs text-blue-500">
+                              {isSelected ? '▼ Click to close' : '▶ Click to view'}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
+
+                    {/* Selected Category Detail View */}
+                    {selectedCat && (
+                      <div className="bg-white rounded-xl border border-gray-200 mb-6 overflow-hidden">
+                        <div className={`${selectedCat.color} p-4 flex items-center justify-between`}>
+                          <div className="flex items-center gap-3 text-white">
+                            <span className="text-3xl">{selectedCat.icon}</span>
+                            <div>
+                              <h2 className="text-xl font-bold">{selectedCat.content.title}</h2>
+                              <p className="text-sm opacity-80">{selectedCat.desc}</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                const content = selectedCat.content.sections.map(s =>
+                                  `${s.heading}:\n${s.items.map(i => `  • ${i}`).join('\n')}`
+                                ).join('\n\n');
+                                navigator.clipboard.writeText(`${selectedCat.content.title}\n\n${content}`);
+                                alert('Content copied! Share with your team.');
+                              }}
+                              className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white text-sm font-medium"
+                            >
+                              📤 Share
+                            </button>
+                            <button
+                              onClick={() => {
+                                const content = selectedCat.content.sections.map(s =>
+                                  `<h3>${s.heading}</h3><ul>${s.items.map(i => `<li>${i}</li>`).join('')}</ul>`
+                                ).join('');
+                                const html = `<!DOCTYPE html><html><head><title>${selectedCat.content.title}</title><style>body{font-family:Arial;padding:40px;max-width:800px;margin:0 auto}h1{color:#1e40af;border-bottom:2px solid #1e40af;padding-bottom:10px}h3{color:#374151;margin-top:20px}ul{color:#4b5563}li{margin:5px 0}@media print{body{padding:20px}}</style></head><body><h1>${selectedCat.content.title}</h1>${content}<p style="margin-top:40px;color:#9ca3af;font-size:12px">Generated by STAGE Production Portal</p></body></html>`;
+                                const printWindow = window.open('', '_blank');
+                                if (printWindow) {
+                                  printWindow.document.write(html);
+                                  printWindow.document.close();
+                                  printWindow.print();
+                                }
+                              }}
+                              className="px-4 py-2 bg-white hover:bg-gray-100 rounded-lg text-gray-800 text-sm font-medium"
+                            >
+                              📥 Download PDF
+                            </button>
+                            <button
+                              onClick={() => {
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.accept = '.pdf,.doc,.docx,.xls,.xlsx';
+                                input.onchange = (e: any) => {
+                                  const file = e.target.files[0];
+                                  if (file) {
+                                    const newDoc = {
+                                      id: 'doc-' + Date.now(),
+                                      name: file.name,
+                                      category: selectedCat.name,
+                                      url: URL.createObjectURL(file),
+                                      uploadedAt: new Date().toISOString(),
+                                    };
+                                    const updatedDocs = [...productionDocs, newDoc];
+                                    setProductionDocs(updatedDocs);
+                                    localStorage.setItem('production_docs', JSON.stringify(updatedDocs));
+                                  }
+                                };
+                                input.click();
+                              }}
+                              className="px-4 py-2 bg-white hover:bg-gray-100 rounded-lg text-gray-800 text-sm font-medium"
+                            >
+                              ➕ Upload File
+                            </button>
+                          </div>
+                        </div>
+                        <div className="p-6">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {selectedCat.content.sections.map((section, idx) => (
+                              <div key={idx} className="bg-gray-50 rounded-lg p-4">
+                                <h3 className="font-bold text-gray-800 mb-3 pb-2 border-b border-gray-200">{section.heading}</h3>
+                                <ul className="space-y-2">
+                                  {section.items.map((item, i) => (
+                                    <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
+                                      <span className="text-blue-500 mt-1">•</span>
+                                      {item}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Uploaded files for this category */}
+                          {productionDocs.filter(d => d.category === selectedCat.name).length > 0 && (
+                            <div className="mt-6 pt-6 border-t border-gray-200">
+                              <h3 className="font-bold text-gray-700 mb-3">Uploaded Files</h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {productionDocs.filter(d => d.category === selectedCat.name).map(doc => (
+                                  <div key={doc.id} className="bg-gray-50 rounded-lg p-3 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-lg">{doc.name.endsWith('.pdf') ? '📕' : '📄'}</span>
+                                      <span className="text-sm text-gray-700 truncate max-w-[150px]">{doc.name}</span>
+                                    </div>
+                                    <div className="flex gap-1">
+                                      <a href={doc.url} target="_blank" className="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs">View</a>
+                                      <button onClick={() => {
+                                        const updatedDocs = productionDocs.filter(d => d.id !== doc.id);
+                                        setProductionDocs(updatedDocs);
+                                        localStorage.setItem('production_docs', JSON.stringify(updatedDocs));
+                                      }} className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs">×</button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
 
               {/* STAGE Production SOPs & Specifications */}
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-6 mb-6 text-white">
