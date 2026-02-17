@@ -5322,11 +5322,7 @@ END:VCARD`;
                       <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[120px]">POC</th>
                       <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[130px]">Shoot Start</th>
                       <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[160px]">Status</th>
-                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[90px]">Budget</th>
-                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[90px]">Overcost</th>
-                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[90px]">Insurance</th>
-                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[90px]">Custom</th>
-                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[100px] bg-green-50">Total</th>
+                      <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[130px]">Budget</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -5426,86 +5422,98 @@ END:VCARD`;
                             )}
                           </td>
 
-                          {/* Budget */}
-                          <td className="px-3 py-2">
-                            <div className="flex items-center justify-end gap-1">
-                              <input
-                                type="number"
-                                value={project.totalBudget ? Math.round(parseFloat(project.totalBudget) / 100000) : ''}
-                                onChange={(e) => {
-                                  const lakhs = parseFloat(e.target.value) || 0;
-                                  updateProject(project.id, 'totalBudget', String(lakhs * 100000));
-                                }}
-                                className="w-16 px-2 py-1.5 text-sm font-semibold text-right bg-blue-50 border border-blue-200 rounded-lg text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                                placeholder="0"
-                              />
-                              <span className="text-gray-400 text-xs">L</span>
-                            </div>
-                          </td>
-
-                          {/* Overcost */}
-                          <td className="px-3 py-2">
-                            <div className="flex items-center justify-end gap-1">
-                              <input
-                                type="number"
-                                value={project.overcost ? Math.round(parseFloat(project.overcost) / 100000) : ''}
-                                onChange={(e) => {
-                                  const lakhs = parseFloat(e.target.value) || 0;
-                                  updateProject(project.id, 'overcost', String(lakhs * 100000));
-                                }}
-                                className="w-16 px-2 py-1.5 text-sm font-semibold text-right bg-orange-50 border border-orange-200 rounded-lg text-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-200"
-                                placeholder="0"
-                              />
-                              <span className="text-gray-400 text-xs">L</span>
-                            </div>
-                          </td>
-
-                          {/* Insurance */}
-                          <td className="px-3 py-2">
-                            <div className="flex items-center justify-end gap-1">
-                              <input
-                                type="number"
-                                value={project.insurance ? Math.round(parseFloat(project.insurance) / 100000) : ''}
-                                onChange={(e) => {
-                                  const lakhs = parseFloat(e.target.value) || 0;
-                                  updateProject(project.id, 'insurance', String(lakhs * 100000));
-                                }}
-                                className="w-16 px-2 py-1.5 text-sm font-semibold text-right bg-purple-50 border border-purple-200 rounded-lg text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-200"
-                                placeholder="0"
-                              />
-                              <span className="text-gray-400 text-xs">L</span>
-                            </div>
-                          </td>
-
-                          {/* Custom Budget */}
-                          <td className="px-3 py-2">
-                            <div className="flex items-center justify-end gap-1">
-                              <input
-                                type="number"
-                                value={project.customBudget ? Math.round(parseFloat(project.customBudget) / 100000) : ''}
-                                onChange={(e) => {
-                                  const lakhs = parseFloat(e.target.value) || 0;
-                                  updateProject(project.id, 'customBudget', String(lakhs * 100000));
-                                }}
-                                className="w-16 px-2 py-1.5 text-sm font-semibold text-right bg-gray-50 border border-gray-200 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-200"
-                                placeholder="0"
-                              />
-                              <span className="text-gray-400 text-xs">L</span>
-                            </div>
-                          </td>
-
-                          {/* Total Budget */}
-                          <td className="px-3 py-2 bg-green-50">
-                            <div className="text-right">
-                              <span className="text-lg font-bold text-green-700">
-                                {formatBudget(
-                                  (parseFloat(project.totalBudget) || 0) +
-                                  (parseFloat(project.overcost) || 0) +
-                                  (parseFloat(project.insurance) || 0) +
-                                  (parseFloat(project.customBudget) || 0)
-                                )}
-                              </span>
-                            </div>
+                          {/* Budget - Click to expand */}
+                          <td className="px-3 py-2 relative">
+                            {(() => {
+                              const totalWithExtras = (parseFloat(project.totalBudget) || 0) +
+                                (parseFloat(project.overcost) || 0) +
+                                (parseFloat(project.insurance) || 0) +
+                                (parseFloat(project.customBudget) || 0);
+                              const hasExtras = (parseFloat(project.overcost) || 0) > 0 ||
+                                (parseFloat(project.insurance) || 0) > 0 ||
+                                (parseFloat(project.customBudget) || 0) > 0;
+                              return (
+                                <div className="group relative">
+                                  <div className="flex items-center justify-end gap-1">
+                                    <input
+                                      type="number"
+                                      value={project.totalBudget ? Math.round(parseFloat(project.totalBudget) / 100000) : ''}
+                                      onChange={(e) => {
+                                        const lakhs = parseFloat(e.target.value) || 0;
+                                        updateProject(project.id, 'totalBudget', String(lakhs * 100000));
+                                      }}
+                                      className="w-16 px-2 py-1.5 text-sm font-bold text-right bg-green-50 border border-green-200 rounded-lg text-green-700 focus:outline-none focus:ring-2 focus:ring-green-200"
+                                      placeholder="0"
+                                    />
+                                    <span className="text-gray-400 text-xs">L</span>
+                                    <button className="ml-1 w-5 h-5 rounded bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 text-xs font-bold flex items-center justify-center">+</button>
+                                  </div>
+                                  {hasExtras && (
+                                    <div className="text-[10px] text-gray-400 text-right mt-0.5">
+                                      Total: {formatBudget(totalWithExtras)}
+                                    </div>
+                                  )}
+                                  {/* Hover Popup for extra costs */}
+                                  <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-200 p-3 w-48 hidden group-hover:block z-50">
+                                    <div className="text-xs font-semibold text-gray-500 mb-2">Extra Costs</div>
+                                    <div className="space-y-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="text-xs text-orange-600">Overcost</span>
+                                        <div className="flex items-center gap-1">
+                                          <input
+                                            type="number"
+                                            value={project.overcost ? Math.round(parseFloat(project.overcost) / 100000) : ''}
+                                            onChange={(e) => {
+                                              const lakhs = parseFloat(e.target.value) || 0;
+                                              updateProject(project.id, 'overcost', String(lakhs * 100000));
+                                            }}
+                                            className="w-14 px-2 py-1 text-xs text-right bg-orange-50 border border-orange-200 rounded text-orange-700 focus:outline-none"
+                                            placeholder="0"
+                                          />
+                                          <span className="text-gray-400 text-[10px]">L</span>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="text-xs text-purple-600">Insurance</span>
+                                        <div className="flex items-center gap-1">
+                                          <input
+                                            type="number"
+                                            value={project.insurance ? Math.round(parseFloat(project.insurance) / 100000) : ''}
+                                            onChange={(e) => {
+                                              const lakhs = parseFloat(e.target.value) || 0;
+                                              updateProject(project.id, 'insurance', String(lakhs * 100000));
+                                            }}
+                                            className="w-14 px-2 py-1 text-xs text-right bg-purple-50 border border-purple-200 rounded text-purple-700 focus:outline-none"
+                                            placeholder="0"
+                                          />
+                                          <span className="text-gray-400 text-[10px]">L</span>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="text-xs text-gray-600">Custom</span>
+                                        <div className="flex items-center gap-1">
+                                          <input
+                                            type="number"
+                                            value={project.customBudget ? Math.round(parseFloat(project.customBudget) / 100000) : ''}
+                                            onChange={(e) => {
+                                              const lakhs = parseFloat(e.target.value) || 0;
+                                              updateProject(project.id, 'customBudget', String(lakhs * 100000));
+                                            }}
+                                            className="w-14 px-2 py-1 text-xs text-right bg-gray-50 border border-gray-200 rounded text-gray-700 focus:outline-none"
+                                            placeholder="0"
+                                          />
+                                          <span className="text-gray-400 text-[10px]">L</span>
+                                        </div>
+                                      </div>
+                                      <div className="pt-2 border-t border-gray-100 flex justify-between">
+                                        <span className="text-xs font-semibold text-green-700">Total</span>
+                                        <span className="text-xs font-bold text-green-700">{formatBudget(totalWithExtras)}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </td>
                         </tr>
                       ))}
@@ -5513,19 +5521,14 @@ END:VCARD`;
                   </table>
                   {/* Footer */}
                   <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 flex items-center justify-between">
-                    <span className="text-gray-500 text-sm">{filteredProjects.length} projects • Click to edit any field</span>
-                    <div className="flex items-center gap-4 text-sm">
-                      <span className="text-blue-600">Budget: {formatBudget(filteredProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0))}</span>
-                      <span className="text-orange-600">Overcost: {formatBudget(filteredProjects.reduce((sum, p) => sum + (parseFloat(p.overcost) || 0), 0))}</span>
-                      <span className="text-purple-600">Insurance: {formatBudget(filteredProjects.reduce((sum, p) => sum + (parseFloat(p.insurance) || 0), 0))}</span>
-                      <span className="text-green-700 font-bold text-lg">Grand Total: {formatBudget(
-                        filteredProjects.reduce((sum, p) => sum +
-                          (parseFloat(p.totalBudget) || 0) +
-                          (parseFloat(p.overcost) || 0) +
-                          (parseFloat(p.insurance) || 0) +
-                          (parseFloat(p.customBudget) || 0), 0)
-                      )}</span>
-                    </div>
+                    <span className="text-gray-500 text-sm">{filteredProjects.length} projects • Hover on + for extras</span>
+                    <span className="text-green-700 font-bold text-lg">Total: {formatBudget(
+                      filteredProjects.reduce((sum, p) => sum +
+                        (parseFloat(p.totalBudget) || 0) +
+                        (parseFloat(p.overcost) || 0) +
+                        (parseFloat(p.insurance) || 0) +
+                        (parseFloat(p.customBudget) || 0), 0)
+                    )}</span>
                   </div>
                 </div>
 
