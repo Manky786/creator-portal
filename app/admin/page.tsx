@@ -6483,11 +6483,17 @@ END:VCARD`;
                           {(selectedCat as any).hasInvoiceTemplate && (
                             <div className="mb-8">
                               {/* Sample Invoice Preview */}
-                              <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6 mb-6">
-                                <div className="flex items-center justify-between mb-4">
-                                  <h3 className="text-xl font-bold text-green-800 flex items-center gap-2">
-                                    📄 Sample Tax Invoice Format
-                                  </h3>
+                              <div className="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 border-2 border-red-500/50 rounded-2xl p-6 mb-6 shadow-2xl">
+                                <div className="flex items-center justify-between mb-6">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-red-700 rounded-xl flex items-center justify-center shadow-lg">
+                                      <span className="text-3xl">🎬</span>
+                                    </div>
+                                    <div>
+                                      <h3 className="text-2xl font-black text-white">STAGE Tax Invoice</h3>
+                                      <p className="text-red-400 text-sm font-medium">OTT Production Standard Format</p>
+                                    </div>
+                                  </div>
                                   <div className="flex gap-2">
                                     <button
                                       onClick={() => {
@@ -6495,137 +6501,186 @@ END:VCARD`;
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tax Invoice - STAGE Production</title>
+  <title>Tax Invoice - STAGE OTT Production</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; background: white; }
-    .header { display: flex; justify-content: space-between; margin-bottom: 30px; }
-    .company-info { max-width: 50%; }
-    .company-name { font-size: 24px; font-weight: bold; color: #dc2626; margin-bottom: 5px; }
-    .company-address { font-size: 11px; color: #666; font-style: italic; line-height: 1.4; }
-    .gstin { font-size: 12px; font-weight: bold; margin-top: 8px; }
-    .invoice-title { text-align: right; }
-    .invoice-title h1 { font-size: 28px; font-weight: bold; }
-    .bill-section { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f9fafb; border-radius: 8px; }
-    .bill-to { max-width: 55%; }
-    .bill-to-label { font-weight: bold; font-style: italic; margin-bottom: 8px; }
-    .invoice-details { text-align: right; }
-    .invoice-details p { margin: 5px 0; font-size: 13px; }
-    .place-supply { font-size: 12px; margin: 10px 0; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th { background: #dc2626; color: white; padding: 12px 8px; text-align: left; font-size: 12px; }
-    td { padding: 12px 8px; border-bottom: 1px solid #e5e7eb; font-size: 12px; }
-    .amount-col { text-align: right; }
-    .totals { margin-left: auto; width: 250px; }
-    .totals tr td { padding: 8px; }
-    .totals .label { text-align: right; font-weight: 500; }
-    .totals .total-row { font-weight: bold; font-size: 14px; background: #f3f4f6; }
-    .bank-section { margin-top: 30px; display: flex; justify-content: space-between; }
-    .bank-details { font-size: 11px; line-height: 1.6; }
-    .bank-details strong { display: block; margin-bottom: 8px; font-size: 12px; }
-    .signature { text-align: right; }
-    .signature-line { margin-top: 50px; font-size: 12px; font-weight: bold; }
-    @media print { body { padding: 20px; } }
+    body { font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); min-height: 100vh; padding: 40px; }
+    .invoice-container { max-width: 850px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+    .header { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%); padding: 30px 40px; display: flex; justify-content: space-between; align-items: center; }
+    .logo-section { display: flex; align-items: center; gap: 15px; }
+    .logo { width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 30px; backdrop-filter: blur(10px); }
+    .company-name { color: white; font-size: 28px; font-weight: 900; letter-spacing: -0.5px; }
+    .company-tagline { color: rgba(255,255,255,0.8); font-size: 12px; font-weight: 500; margin-top: 2px; }
+    .invoice-badge { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 15px 25px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.2); }
+    .invoice-badge h1 { color: white; font-size: 24px; font-weight: 900; letter-spacing: 2px; }
+    .invoice-badge p { color: rgba(255,255,255,0.8); font-size: 11px; margin-top: 3px; }
+    .seller-buyer { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .seller-section { padding: 30px 40px; background: #f8fafc; border-right: 1px solid #e2e8f0; }
+    .buyer-section { padding: 30px 40px; background: #fffbeb; }
+    .section-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+    .company-details h3 { font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+    .company-details p { font-size: 12px; color: #475569; line-height: 1.6; }
+    .gstin-badge { display: inline-block; background: linear-gradient(135deg, #0f172a, #1e293b); color: white; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; margin-top: 12px; }
+    .invoice-meta { padding: 20px 40px; background: #0f172a; display: flex; justify-content: space-between; align-items: center; }
+    .meta-item { text-align: center; }
+    .meta-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+    .meta-value { font-size: 16px; font-weight: 700; color: white; margin-top: 4px; }
+    .items-section { padding: 30px 40px; }
+    .items-table { width: 100%; border-collapse: collapse; }
+    .items-table th { background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; padding: 15px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .items-table th:first-child { border-radius: 10px 0 0 10px; }
+    .items-table th:last-child { border-radius: 0 10px 10px 0; }
+    .items-table td { padding: 20px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155; }
+    .item-name { font-weight: 700; color: #0f172a; font-size: 14px; }
+    .item-desc { font-size: 11px; color: #64748b; margin-top: 4px; line-height: 1.5; }
+    .amount { font-weight: 700; color: #0f172a; }
+    .totals-section { padding: 0 40px 30px; display: flex; justify-content: flex-end; }
+    .totals-box { width: 300px; background: #f8fafc; border-radius: 12px; overflow: hidden; border: 2px solid #e2e8f0; }
+    .total-row { display: flex; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid #e2e8f0; }
+    .total-row.final { background: linear-gradient(135deg, #059669, #047857); border: none; }
+    .total-label { font-size: 13px; font-weight: 600; color: #475569; }
+    .total-value { font-size: 13px; font-weight: 700; color: #0f172a; }
+    .total-row.final .total-label, .total-row.final .total-value { color: white; font-size: 16px; }
+    .footer { padding: 30px 40px; background: #f8fafc; border-top: 2px solid #e2e8f0; display: flex; justify-content: space-between; }
+    .bank-details h4 { font-size: 12px; font-weight: 800; color: #0f172a; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .bank-details p { font-size: 11px; color: #475569; line-height: 1.8; }
+    .bank-details span { font-weight: 600; color: #0f172a; }
+    .signature-section { text-align: right; }
+    .signature-line { width: 180px; border-bottom: 2px solid #0f172a; margin-left: auto; margin-bottom: 8px; }
+    .signature-text { font-size: 12px; font-weight: 700; color: #0f172a; }
+    .watermark { text-align: center; padding: 15px; background: #0f172a; color: #64748b; font-size: 10px; }
+    @media print {
+      body { background: white; padding: 0; }
+      .invoice-container { box-shadow: none; border-radius: 0; }
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="company-info">
-      <div class="company-name">[YOUR PRODUCTION COMPANY NAME]</div>
-      <div class="company-address">
-        [YOUR COMPLETE ADDRESS]<br>
-        [CITY, STATE - PINCODE]
+  <div class="invoice-container">
+    <div class="header">
+      <div class="logo-section">
+        <div class="logo">🎬</div>
+        <div>
+          <div class="company-name">[YOUR PRODUCTION HOUSE]</div>
+          <div class="company-tagline">Film & Content Production</div>
+        </div>
       </div>
-      <div class="gstin">GSTIN -: [YOUR GSTIN NUMBER]</div>
-    </div>
-    <div class="invoice-title">
-      <h1>TAX INVOICE</h1>
-    </div>
-  </div>
-
-  <div class="bill-section">
-    <div class="bill-to">
-      <div class="bill-to-label">Bill To:</div>
-      <div><strong>STAGE Technologies Private Limited</strong></div>
-      <div style="font-size:11px;color:#666;margin-top:5px;">
-        2nd Floor, 2-A/3 S/F, Front SIDE, Kundan Mansion,<br>
-        Asaf Ali Road, New Delhi - 110002<br>
-        India
+      <div class="invoice-badge">
+        <h1>TAX INVOICE</h1>
+        <p>GST Compliant</p>
       </div>
-      <div class="gstin" style="margin-top:10px;">GSTIN -: 07AAICC1279L1ZC</div>
     </div>
-    <div class="invoice-details">
-      <p><strong>Invoice No.:</strong> GST-__/____</p>
-      <p><strong>Invoice Date:</strong> ___/___/____</p>
-      <p><strong>Due Date:</strong> ___/___/____</p>
+
+    <div class="seller-buyer">
+      <div class="seller-section">
+        <div class="section-label">From / Seller</div>
+        <div class="company-details">
+          <h3>[YOUR PRODUCTION COMPANY NAME]</h3>
+          <p>[Your Complete Address]<br>[City, State - Pincode]<br>India</p>
+          <div class="gstin-badge">GSTIN: [YOUR GSTIN]</div>
+        </div>
+      </div>
+      <div class="buyer-section">
+        <div class="section-label">Bill To / Buyer</div>
+        <div class="company-details">
+          <h3>STAGE Technologies Private Limited</h3>
+          <p>2nd Floor, 2-A/3 S/F, Front SIDE,<br>Kundan Mansion, Asaf Ali Road,<br>New Delhi - 110002, India</p>
+          <div class="gstin-badge">GSTIN: 07AAICC1279L1ZC</div>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="place-supply"><strong>Place of Supply:</strong> Delhi</div>
-
-  <table>
-    <thead>
-      <tr>
-        <th style="width:30px">#</th>
-        <th>Item Description</th>
-        <th style="width:70px">HSN/SAC</th>
-        <th style="width:40px">Qty</th>
-        <th style="width:100px">Rate</th>
-        <th style="width:50px">IGST</th>
-        <th style="width:40px">Cess</th>
-        <th style="width:100px" class="amount-col">Amount</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>1</td>
-        <td>
-          <strong>[Regional] Film "[PROJECT NAME]"</strong><br>
-          <span style="color:#666;font-size:11px;">
-            [1st/2nd/3rd/4th] Tranch<br>
-            [25%] upon [signing of the agreement]<br>
-            (of the total budget)
-          </span>
-        </td>
-        <td></td>
-        <td>1</td>
-        <td>₹ __,__,___.00</td>
-        <td></td>
-        <td>0</td>
-        <td class="amount-col">₹ __,__,___.00</td>
-      </tr>
-    </tbody>
-  </table>
-
-  <table class="totals">
-    <tr>
-      <td class="label">SUB TOTAL</td>
-      <td class="amount-col">₹ __,__,___.00</td>
-    </tr>
-    <tr>
-      <td class="label">IGST (18%)</td>
-      <td class="amount-col">₹ __,___.00</td>
-    </tr>
-    <tr class="total-row">
-      <td class="label">TOTAL</td>
-      <td class="amount-col">₹ __,__,___.00</td>
-    </tr>
-  </table>
-
-  <div class="bank-section">
-    <div class="bank-details">
-      <strong>BANK DETAILS</strong>
-      [YOUR COMPANY NAME]<br>
-      AC.NO: [ACCOUNT NUMBER]<br>
-      IFSC CODE: [IFSC CODE]<br>
-      [BRANCH NAME]<br>
-      [BANK NAME]<br>
-      PAN No -: [PAN NUMBER]<br>
-      Aadhar No - : [AADHAR NUMBER]
+    <div class="invoice-meta">
+      <div class="meta-item">
+        <div class="meta-label">Invoice Number</div>
+        <div class="meta-value">GST-__/25-26</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Invoice Date</div>
+        <div class="meta-value">__/__/2026</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Due Date</div>
+        <div class="meta-value">__/__/2026</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Place of Supply</div>
+        <div class="meta-value">Delhi</div>
+      </div>
     </div>
-    <div class="signature">
-      <div style="margin-top:30px;border-bottom:1px solid #000;width:150px;"></div>
-      <div class="signature-line">FOR [YOUR COMPANY NAME]</div>
+
+    <div class="items-section">
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th>Description</th>
+            <th style="width:80px">HSN/SAC</th>
+            <th style="width:50px">Qty</th>
+            <th style="width:120px;text-align:right">Rate</th>
+            <th style="width:70px;text-align:center">IGST</th>
+            <th style="width:120px;text-align:right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600">1</td>
+            <td>
+              <div class="item-name">[Regional Language] Film - "[PROJECT TITLE]"</div>
+              <div class="item-desc">
+                🎬 [1st/2nd/3rd/4th] Tranch Payment<br>
+                📋 [25%] upon [Agreement Signing / Pre-Production / Shoot Complete / Final Delivery]<br>
+                💰 As per Production Agreement dated [DD/MM/YYYY]
+              </div>
+            </td>
+            <td style="text-align:center">997212</td>
+            <td style="text-align:center">1</td>
+            <td style="text-align:right" class="amount">₹ __,__,___.00</td>
+            <td style="text-align:center">18%</td>
+            <td style="text-align:right" class="amount">₹ __,__,___.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="totals-section">
+      <div class="totals-box">
+        <div class="total-row">
+          <span class="total-label">Subtotal</span>
+          <span class="total-value">₹ __,__,___.00</span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">IGST @ 18%</span>
+          <span class="total-value">₹ __,___.00</span>
+        </div>
+        <div class="total-row final">
+          <span class="total-label">TOTAL</span>
+          <span class="total-value">₹ __,__,___.00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="bank-details">
+        <h4>💳 Bank Details</h4>
+        <p>
+          <span>Account Name:</span> [YOUR COMPANY NAME]<br>
+          <span>Account No:</span> [ACCOUNT NUMBER]<br>
+          <span>IFSC Code:</span> [IFSC CODE]<br>
+          <span>Bank & Branch:</span> [BANK NAME], [BRANCH]<br>
+          <span>PAN:</span> [PAN NUMBER]
+        </p>
+      </div>
+      <div class="signature-section">
+        <div class="signature-line"></div>
+        <div class="signature-text">Authorized Signatory</div>
+        <p style="font-size:11px;color:#64748b;margin-top:4px">[YOUR COMPANY NAME]</p>
+      </div>
+    </div>
+
+    <div class="watermark">
+      🎬 STAGE OTT Platform • Regional Content Production Partner • www.stageasai.com
     </div>
   </div>
 </body>
@@ -6637,7 +6692,7 @@ END:VCARD`;
                                           printWindow.print();
                                         }
                                       }}
-                                      className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-bold flex items-center gap-2"
+                                      className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-bold flex items-center gap-2 border border-white/20"
                                     >
                                       🖨️ Print PDF
                                     </button>
@@ -6817,81 +6872,115 @@ _Please fill your details and send back._`;
                                   </p>
                                 </div>
 
-                                {/* Invoice Preview Card */}
-                                <div className="bg-white border-2 border-gray-400 rounded-lg shadow-xl overflow-hidden">
-                                  {/* Invoice Header */}
-                                  <div className="p-6 border-b-2 border-gray-300 bg-gray-50">
-                                    <div className="flex justify-between items-start">
-                                      <div>
-                                        <h4 className="text-2xl font-black text-red-600">[YOUR PRODUCTION COMPANY]</h4>
-                                        <p className="text-sm text-gray-700 italic mt-1">[Your Full Address]<br/>[City, State - Pincode]</p>
-                                        <p className="text-sm font-bold mt-2 text-gray-900">GSTIN -: [YOUR GSTIN]</p>
+                                {/* Invoice Preview Card - Stylish OTT Design */}
+                                <div className="rounded-2xl shadow-2xl overflow-hidden border-2 border-red-500/30">
+                                  {/* Invoice Header - Premium Red Gradient */}
+                                  <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 p-6">
+                                    <div className="flex justify-between items-center">
+                                      <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                                          <span className="text-4xl">🎬</span>
+                                        </div>
+                                        <div>
+                                          <h4 className="text-2xl font-black text-white">[YOUR PRODUCTION HOUSE]</h4>
+                                          <p className="text-red-200 text-sm mt-1">Film & Content Production</p>
+                                        </div>
                                       </div>
-                                      <div className="text-right">
-                                        <h3 className="text-3xl font-black text-gray-900">TAX INVOICE</h3>
+                                      <div className="bg-white/15 backdrop-blur-sm px-6 py-4 rounded-xl border border-white/20 text-center">
+                                        <h3 className="text-2xl font-black text-white tracking-wider">TAX INVOICE</h3>
+                                        <p className="text-red-200 text-xs mt-1">GST Compliant</p>
                                       </div>
                                     </div>
                                   </div>
 
-                                  {/* Bill To Section */}
-                                  <div className="p-6 bg-amber-50 border-b-2 border-gray-300 flex justify-between">
-                                    <div>
-                                      <p className="font-bold italic text-base mb-2 text-gray-800">Bill To:</p>
-                                      <p className="font-bold text-lg text-gray-900">STAGE Technologies Private Limited</p>
-                                      <p className="text-sm text-gray-700 mt-1">2nd Floor, 2-A/3 S/F, Front SIDE, Kundan Mansion,<br/>Asaf Ali Road, New Delhi - 110002</p>
-                                      <p className="text-sm font-bold mt-2 text-gray-900">GSTIN -: 07AAICC1279L1ZC</p>
+                                  {/* Seller & Buyer Section */}
+                                  <div className="grid grid-cols-2">
+                                    {/* Seller */}
+                                    <div className="p-5 bg-slate-50 border-r border-gray-200">
+                                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">From / Seller</p>
+                                      <h5 className="font-bold text-lg text-slate-900">[YOUR COMPANY NAME]</h5>
+                                      <p className="text-sm text-slate-600 mt-2">[Your Complete Address]<br/>[City, State - Pincode]</p>
+                                      <div className="inline-block bg-slate-900 text-white px-3 py-1.5 rounded-md text-xs font-bold mt-3">
+                                        GSTIN: [YOUR GSTIN]
+                                      </div>
                                     </div>
-                                    <div className="text-right text-sm bg-white p-3 rounded-lg border border-gray-300">
-                                      <p className="mb-1"><span className="font-bold text-gray-700">Invoice No.:</span> <span className="text-gray-900">GST-__/25-26</span></p>
-                                      <p className="mb-1"><span className="font-bold text-gray-700">Invoice Date:</span> <span className="text-gray-900">__/__/2026</span></p>
-                                      <p><span className="font-bold text-gray-700">Due Date:</span> <span className="text-gray-900">__/__/2026</span></p>
+                                    {/* Buyer */}
+                                    <div className="p-5 bg-amber-50">
+                                      <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3">Bill To / Buyer</p>
+                                      <h5 className="font-bold text-lg text-slate-900">STAGE Technologies Pvt Ltd</h5>
+                                      <p className="text-sm text-slate-600 mt-2">2nd Floor, Kundan Mansion,<br/>Asaf Ali Road, New Delhi - 110002</p>
+                                      <div className="inline-block bg-slate-900 text-white px-3 py-1.5 rounded-md text-xs font-bold mt-3">
+                                        GSTIN: 07AAICC1279L1ZC
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Invoice Meta - Dark Strip */}
+                                  <div className="bg-slate-900 px-5 py-4 grid grid-cols-4 gap-4">
+                                    <div className="text-center">
+                                      <p className="text-slate-400 text-xs uppercase tracking-wider">Invoice No.</p>
+                                      <p className="text-white font-bold mt-1">GST-__/25-26</p>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="text-slate-400 text-xs uppercase tracking-wider">Invoice Date</p>
+                                      <p className="text-white font-bold mt-1">__/__/2026</p>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="text-slate-400 text-xs uppercase tracking-wider">Due Date</p>
+                                      <p className="text-white font-bold mt-1">__/__/2026</p>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="text-slate-400 text-xs uppercase tracking-wider">Place of Supply</p>
+                                      <p className="text-white font-bold mt-1">Delhi</p>
                                     </div>
                                   </div>
 
                                   {/* Items Table */}
-                                  <div className="p-4">
-                                    <table className="w-full text-sm border-2 border-gray-400">
+                                  <div className="p-5 bg-white">
+                                    <table className="w-full text-sm">
                                       <thead>
-                                        <tr className="bg-red-600 text-white">
-                                          <th className="p-3 text-left w-8 font-bold border-r border-red-500">#</th>
-                                          <th className="p-3 text-left font-bold border-r border-red-500">Item Description</th>
-                                          <th className="p-3 text-center w-20 font-bold border-r border-red-500">HSN/SAC</th>
-                                          <th className="p-3 text-center w-12 font-bold border-r border-red-500">Qty</th>
-                                          <th className="p-3 text-right w-28 font-bold border-r border-red-500">Rate</th>
-                                          <th className="p-3 text-center w-16 font-bold border-r border-red-500">IGST</th>
-                                          <th className="p-3 text-center w-12 font-bold border-r border-red-500">Cess</th>
-                                          <th className="p-3 text-right w-28 font-bold">Amount</th>
+                                        <tr className="bg-gradient-to-r from-red-600 to-red-700 text-white">
+                                          <th className="p-3 text-left w-10 font-bold rounded-l-lg">#</th>
+                                          <th className="p-3 text-left font-bold">Description</th>
+                                          <th className="p-3 text-center w-20 font-bold">HSN/SAC</th>
+                                          <th className="p-3 text-center w-12 font-bold">Qty</th>
+                                          <th className="p-3 text-right w-28 font-bold">Rate</th>
+                                          <th className="p-3 text-center w-16 font-bold">IGST</th>
+                                          <th className="p-3 text-right w-28 font-bold rounded-r-lg">Amount</th>
                                         </tr>
                                       </thead>
-                                      <tbody className="bg-white">
-                                        <tr className="border-b-2 border-gray-300">
-                                          <td className="p-3 text-gray-900 font-medium border-r border-gray-300">1</td>
-                                          <td className="p-3 border-r border-gray-300">
-                                            <span className="font-bold text-gray-900">[Regional] Film "[PROJECT NAME]"</span><br/>
-                                            <span className="text-sm text-gray-700">1st Tranch<br/>25% upon signing of the agreement<br/>(of the total budget)</span>
+                                      <tbody>
+                                        <tr className="border-b-2 border-gray-100">
+                                          <td className="p-4 font-bold text-slate-900">1</td>
+                                          <td className="p-4">
+                                            <p className="font-bold text-slate-900">[Regional] Film - "[PROJECT TITLE]"</p>
+                                            <p className="text-slate-500 text-xs mt-2 leading-relaxed">
+                                              🎬 1st Tranch Payment<br/>
+                                              📋 25% upon Agreement Signing<br/>
+                                              💰 As per Production Agreement
+                                            </p>
                                           </td>
-                                          <td className="p-3 text-center text-gray-700 border-r border-gray-300">-</td>
-                                          <td className="p-3 text-center text-gray-900 font-medium border-r border-gray-300">1</td>
-                                          <td className="p-3 text-right text-gray-900 font-medium border-r border-gray-300">₹ 10,94,417.00</td>
-                                          <td className="p-3 text-center text-gray-700 border-r border-gray-300">-</td>
-                                          <td className="p-3 text-center text-gray-900 border-r border-gray-300">0</td>
-                                          <td className="p-3 text-right font-bold text-gray-900">₹ 10,94,417.00</td>
+                                          <td className="p-4 text-center text-slate-600 font-medium">997212</td>
+                                          <td className="p-4 text-center text-slate-900 font-bold">1</td>
+                                          <td className="p-4 text-right text-slate-900 font-bold">₹ 10,94,417</td>
+                                          <td className="p-4 text-center text-slate-600 font-medium">18%</td>
+                                          <td className="p-4 text-right text-slate-900 font-black">₹ 10,94,417</td>
                                         </tr>
                                       </tbody>
                                     </table>
 
                                     {/* Totals */}
-                                    <div className="flex justify-end mt-4">
-                                      <div className="w-72 border-2 border-gray-400 rounded-lg overflow-hidden">
-                                        <div className="flex justify-between py-3 px-4 border-b border-gray-300 bg-gray-50">
-                                          <span className="font-bold text-gray-800">SUB TOTAL</span>
-                                          <span className="font-bold text-gray-900">₹ 10,94,417.00</span>
+                                    <div className="flex justify-end mt-5">
+                                      <div className="w-80 rounded-xl overflow-hidden border-2 border-slate-200 shadow-lg">
+                                        <div className="flex justify-between py-3 px-5 bg-slate-50 border-b border-slate-200">
+                                          <span className="font-bold text-slate-700">Subtotal</span>
+                                          <span className="font-bold text-slate-900">₹ 10,94,417.00</span>
                                         </div>
-                                        <div className="flex justify-between py-3 px-4 border-b border-gray-300 bg-gray-50">
-                                          <span className="font-bold text-gray-800">IGST (18%)</span>
-                                          <span className="font-bold text-gray-900">₹ 1,96,996.00</span>
+                                        <div className="flex justify-between py-3 px-5 bg-slate-50 border-b border-slate-200">
+                                          <span className="font-bold text-slate-700">IGST @ 18%</span>
+                                          <span className="font-bold text-slate-900">₹ 1,96,996.00</span>
                                         </div>
-                                        <div className="flex justify-between py-3 px-4 bg-green-600 text-white">
+                                        <div className="flex justify-between py-4 px-5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white">
                                           <span className="font-black text-lg">TOTAL</span>
                                           <span className="font-black text-lg">₹ 12,91,413.00</span>
                                         </div>
@@ -6899,22 +6988,30 @@ _Please fill your details and send back._`;
                                     </div>
                                   </div>
 
-                                  {/* Bank Details */}
-                                  <div className="p-6 border-t-2 border-gray-300 bg-gray-50 flex justify-between items-end">
-                                    <div className="text-sm text-gray-800">
-                                      <p className="font-black text-base mb-2 text-gray-900">BANK DETAILS</p>
-                                      <p className="font-bold">[YOUR COMPANY NAME]</p>
-                                      <p>AC.NO: <span className="font-medium">[ACCOUNT NUMBER]</span></p>
-                                      <p>IFSC CODE: <span className="font-medium">[IFSC CODE]</span></p>
-                                      <p>[BRANCH NAME]</p>
-                                      <p>[BANK NAME]</p>
-                                      <p>PAN No -: <span className="font-medium">[PAN NUMBER]</span></p>
-                                      <p>Aadhar No -: <span className="font-medium">[AADHAR NUMBER]</span></p>
+                                  {/* Footer - Bank Details */}
+                                  <div className="p-5 bg-slate-50 border-t-2 border-slate-200 flex justify-between items-end">
+                                    <div>
+                                      <p className="font-black text-sm text-slate-900 mb-3 flex items-center gap-2">💳 Bank Details</p>
+                                      <div className="text-sm text-slate-600 leading-relaxed">
+                                        <p><span className="font-bold text-slate-800">Account Name:</span> [YOUR COMPANY]</p>
+                                        <p><span className="font-bold text-slate-800">Account No:</span> [ACCOUNT NUMBER]</p>
+                                        <p><span className="font-bold text-slate-800">IFSC:</span> [IFSC CODE]</p>
+                                        <p><span className="font-bold text-slate-800">Bank:</span> [BANK NAME], [BRANCH]</p>
+                                        <p><span className="font-bold text-slate-800">PAN:</span> [PAN NUMBER]</p>
+                                      </div>
                                     </div>
                                     <div className="text-center">
-                                      <div className="border-b-2 border-gray-600 w-40 mb-2"></div>
-                                      <p className="text-sm font-black text-gray-900">FOR [YOUR COMPANY]</p>
+                                      <div className="border-b-2 border-slate-400 w-44 mb-2"></div>
+                                      <p className="text-sm font-black text-slate-900">Authorized Signatory</p>
+                                      <p className="text-xs text-slate-500 mt-1">[YOUR COMPANY NAME]</p>
                                     </div>
+                                  </div>
+
+                                  {/* Watermark Footer */}
+                                  <div className="bg-slate-900 py-3 px-5 text-center">
+                                    <p className="text-slate-400 text-xs">
+                                      🎬 STAGE OTT Platform • Regional Content Production Partner • www.stageasai.com
+                                    </p>
                                   </div>
                                 </div>
                               </div>
