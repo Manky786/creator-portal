@@ -6288,6 +6288,7 @@ END:VCARD`;
                     icon: '📄',
                     color: 'bg-purple-500',
                     desc: 'No Objection Certificates',
+                    hasNocTemplate: true,
                     content: {
                       title: 'NOC Requirements',
                       sections: [
@@ -7045,6 +7046,478 @@ _Please fill your details and send back._`;
 
                               {/* Guidelines Section */}
                               <h4 className="font-bold text-gray-800 mb-4">Invoice Guidelines</h4>
+                            </div>
+                          )}
+
+                          {/* NOC Template Section */}
+                          {(selectedCat as any).hasNocTemplate && (
+                            <div className="mb-8">
+                              {/* NOC Header */}
+                              <div className="bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-800 border-2 border-purple-500/50 rounded-2xl p-6 mb-6 shadow-2xl">
+                                <div className="flex items-center justify-between mb-6">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                                      <span className="text-3xl">📜</span>
+                                    </div>
+                                    <div>
+                                      <h3 className="text-2xl font-black text-white">STAGE NOC Templates</h3>
+                                      <p className="text-purple-300 text-sm font-medium">No Objection Certificate Formats</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => {
+                                        const nocHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>No Objection Certificate - STAGE Production</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #581c87 0%, #312e81 100%); min-height: 100vh; padding: 40px; }
+    .noc-container { max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+    .header { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%); padding: 30px 40px; text-align: center; }
+    .logo { width: 70px; height: 70px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 15px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.3); }
+    .title { color: white; font-size: 32px; font-weight: 900; letter-spacing: 2px; }
+    .subtitle { color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 5px; }
+    .ref-strip { background: #0f172a; padding: 15px 40px; display: flex; justify-content: space-between; }
+    .ref-item { text-align: center; }
+    .ref-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+    .ref-value { font-size: 14px; font-weight: 700; color: white; margin-top: 3px; }
+    .content { padding: 40px; }
+    .date-section { text-align: right; margin-bottom: 30px; }
+    .date-section p { font-size: 14px; color: #475569; }
+    .to-section { margin-bottom: 30px; }
+    .to-label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .to-content { font-size: 15px; color: #0f172a; line-height: 1.8; }
+    .subject { background: linear-gradient(135deg, #f3e8ff, #e9d5ff); padding: 20px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid #7c3aed; }
+    .subject-label { font-size: 11px; font-weight: 700; color: #7c3aed; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .subject-text { font-size: 16px; font-weight: 700; color: #0f172a; }
+    .body-text { font-size: 14px; color: #334155; line-height: 2; text-align: justify; margin-bottom: 30px; }
+    .highlight { background: #fef3c7; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .details-box { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 25px; margin-bottom: 30px; }
+    .details-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .detail-item { display: flex; }
+    .detail-label { font-size: 13px; color: #64748b; min-width: 140px; }
+    .detail-value { font-size: 13px; font-weight: 600; color: #0f172a; }
+    .terms { margin-bottom: 30px; }
+    .terms-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 15px; }
+    .terms-list { list-style: none; }
+    .terms-list li { font-size: 13px; color: #475569; padding: 8px 0; border-bottom: 1px solid #e2e8f0; display: flex; align-items: flex-start; gap: 10px; }
+    .terms-list li:last-child { border-bottom: none; }
+    .check-icon { color: #10b981; font-size: 16px; }
+    .signature-section { display: flex; justify-content: space-between; margin-top: 50px; padding-top: 30px; border-top: 2px solid #e2e8f0; }
+    .sign-box { text-align: center; width: 200px; }
+    .sign-line { border-bottom: 2px solid #0f172a; margin-bottom: 10px; height: 60px; }
+    .sign-label { font-size: 12px; font-weight: 700; color: #0f172a; }
+    .sign-sublabel { font-size: 11px; color: #64748b; margin-top: 3px; }
+    .footer { background: #0f172a; padding: 15px; text-align: center; }
+    .footer p { color: #64748b; font-size: 11px; }
+    @media print { body { background: white; padding: 0; } .noc-container { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="noc-container">
+    <div class="header">
+      <div class="logo">📜</div>
+      <div class="title">NO OBJECTION CERTIFICATE</div>
+      <div class="subtitle">For Film / Content Production</div>
+    </div>
+
+    <div class="ref-strip">
+      <div class="ref-item">
+        <div class="ref-label">Reference No.</div>
+        <div class="ref-value">STAGE/NOC/____/25-26</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-label">NOC Type</div>
+        <div class="ref-value">[Location / Talent / Music]</div>
+      </div>
+      <div class="ref-item">
+        <div class="ref-label">Valid Until</div>
+        <div class="ref-value">__/__/2026</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="date-section">
+        <p><strong>Date:</strong> __/__/2026</p>
+        <p><strong>Place:</strong> ___________</p>
+      </div>
+
+      <div class="to-section">
+        <div class="to-label">To Whomsoever It May Concern</div>
+      </div>
+
+      <div class="subject">
+        <div class="subject-label">Subject</div>
+        <div class="subject-text">No Objection Certificate for "[PROJECT TITLE]" - [Regional Language] Film/Series Production</div>
+      </div>
+
+      <div class="body-text">
+        This is to certify that <span class="highlight">[ISSUING PARTY NAME]</span>, having address at <span class="highlight">[COMPLETE ADDRESS]</span>, hereby grants No Objection Certificate (NOC) to <span class="highlight">STAGE Technologies Private Limited</span> and its authorized production partner <span class="highlight">[PRODUCTION COMPANY NAME]</span> for the purpose mentioned below.
+      </div>
+
+      <div class="details-box">
+        <div class="details-title">📋 Production Details</div>
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Project Title:</span>
+            <span class="detail-value">[PROJECT NAME]</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Language:</span>
+            <span class="detail-value">[REGIONAL LANGUAGE]</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Production House:</span>
+            <span class="detail-value">[COMPANY NAME]</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Director:</span>
+            <span class="detail-value">[DIRECTOR NAME]</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Shoot Dates:</span>
+            <span class="detail-value">__/__/2026 to __/__/2026</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Location/Purpose:</span>
+            <span class="detail-value">[SPECIFY LOCATION/PURPOSE]</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="terms">
+        <div class="terms-title">✅ Terms & Conditions</div>
+        <ul class="terms-list">
+          <li><span class="check-icon">✓</span> This NOC is valid only for the project and dates mentioned above</li>
+          <li><span class="check-icon">✓</span> The production team shall follow all safety and security guidelines</li>
+          <li><span class="check-icon">✓</span> Any damage caused during production shall be borne by the production house</li>
+          <li><span class="check-icon">✓</span> This NOC is non-transferable and cannot be used for any other purpose</li>
+          <li><span class="check-icon">✓</span> The issuing party reserves the right to revoke this NOC if terms are violated</li>
+        </ul>
+      </div>
+
+      <div class="signature-section">
+        <div class="sign-box">
+          <div class="sign-line"></div>
+          <div class="sign-label">Issuing Authority</div>
+          <div class="sign-sublabel">[Name & Designation]</div>
+        </div>
+        <div class="sign-box">
+          <div class="sign-line"></div>
+          <div class="sign-label">Official Stamp/Seal</div>
+          <div class="sign-sublabel">[Organization]</div>
+        </div>
+        <div class="sign-box">
+          <div class="sign-line"></div>
+          <div class="sign-label">Witness</div>
+          <div class="sign-sublabel">[Name & Contact]</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>🎬 STAGE OTT Platform • Regional Content Production • This is a computer generated NOC template</p>
+    </div>
+  </div>
+</body>
+</html>`;
+                                        const printWindow = window.open('', '_blank');
+                                        if (printWindow) {
+                                          printWindow.document.write(nocHtml);
+                                          printWindow.document.close();
+                                          printWindow.print();
+                                        }
+                                      }}
+                                      className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-bold flex items-center gap-2 border border-white/20"
+                                    >
+                                      🖨️ Print PDF
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Download Options */}
+                                <div className="bg-white border-2 border-purple-300 rounded-xl p-5 mb-4">
+                                  <h4 className="font-bold text-purple-800 mb-4 flex items-center gap-2 text-lg">
+                                    📥 Download Editable NOC Template
+                                  </h4>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {/* Google Sheets */}
+                                    <button
+                                      onClick={() => {
+                                        const sheetsUrl = 'https://docs.google.com/spreadsheets/create';
+                                        window.open(sheetsUrl, '_blank');
+                                        const csvData = `NO OBJECTION CERTIFICATE - STAGE PRODUCTION
+
+Reference No.:,STAGE/NOC/____/25-26
+NOC Type:,[Location / Talent / Music]
+Date:,__/__/2026
+Valid Until:,__/__/2026
+
+TO WHOMSOEVER IT MAY CONCERN
+
+SUBJECT:,"No Objection Certificate for [PROJECT TITLE] - [Regional Language] Production"
+
+ISSUING PARTY DETAILS:
+Name:,[ISSUING PARTY NAME]
+Address:,[COMPLETE ADDRESS]
+Contact:,[PHONE NUMBER]
+
+PRODUCTION DETAILS:
+Project Title:,[PROJECT NAME]
+Language:,[REGIONAL LANGUAGE]
+Production House:,[COMPANY NAME]
+Director:,[DIRECTOR NAME]
+Shoot Dates:,"__/__/2026 to __/__/2026"
+Location/Purpose:,[SPECIFY LOCATION/PURPOSE]
+
+CERTIFICATE TEXT:
+"This is to certify that the above-mentioned issuing party has no objection to STAGE Technologies Private Limited and its authorized production partner for the specified purpose."
+
+TERMS & CONDITIONS:
+1.,"This NOC is valid only for the project and dates mentioned above"
+2.,"The production team shall follow all safety guidelines"
+3.,"Any damage during production shall be borne by the production house"
+4.,"This NOC is non-transferable"
+
+SIGNATURES:
+Issuing Authority:,____________________
+Designation:,[DESIGNATION]
+Stamp/Seal:,
+Witness Name:,____________________
+Witness Contact:,[PHONE]`;
+                                        navigator.clipboard.writeText(csvData);
+                                        alert('Google Sheets opened! NOC data copied - paste it (Ctrl+V)');
+                                      }}
+                                      className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-400 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
+                                    >
+                                      <div className="w-14 h-14 bg-purple-500 rounded-xl flex items-center justify-center">
+                                        <span className="text-3xl">📊</span>
+                                      </div>
+                                      <div className="text-center">
+                                        <p className="font-bold text-purple-800">Google Sheets</p>
+                                        <p className="text-xs text-purple-600">Open & Edit Online</p>
+                                      </div>
+                                    </button>
+
+                                    {/* Excel Download */}
+                                    <button
+                                      onClick={() => {
+                                        const csvContent = `"NO OBJECTION CERTIFICATE"
+
+"Reference No.:","STAGE/NOC/____/25-26"
+"NOC Type:","[Location / Talent / Music]"
+"Date:","__/__/2026"
+"Valid Until:","__/__/2026"
+
+"TO WHOMSOEVER IT MAY CONCERN"
+
+"SUBJECT:","No Objection Certificate for [PROJECT TITLE]"
+
+"ISSUING PARTY:"
+"Name:","[ISSUING PARTY NAME]"
+"Address:","[COMPLETE ADDRESS]"
+"Contact:","[PHONE NUMBER]"
+
+"PRODUCTION DETAILS:"
+"Project Title:","[PROJECT NAME]"
+"Language:","[REGIONAL LANGUAGE]"
+"Production House:","[COMPANY NAME]"
+"Director:","[DIRECTOR NAME]"
+"Shoot Dates:","__/__/2026 to __/__/2026"
+"Purpose:","[SPECIFY PURPOSE]"
+
+"CERTIFICATE:"
+"This is to certify that the issuing party has no objection to the production activities mentioned above."
+
+"TERMS:"
+"1.","Valid only for mentioned project and dates"
+"2.","Follow all safety guidelines"
+"3.","Damage liability on production house"
+"4.","Non-transferable"
+
+"SIGNATURES:"
+"Issuing Authority:","____________________"
+"Stamp/Seal:","[OFFICIAL SEAL]"
+"Witness:","____________________"`;
+
+                                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                                        const url = URL.createObjectURL(blob);
+                                        const link = document.createElement('a');
+                                        link.href = url;
+                                        link.download = 'STAGE_NOC_Template.csv';
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                        URL.revokeObjectURL(url);
+                                        alert('NOC Excel file downloaded!');
+                                      }}
+                                      className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-indigo-400 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
+                                    >
+                                      <div className="w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center">
+                                        <span className="text-3xl">📗</span>
+                                      </div>
+                                      <div className="text-center">
+                                        <p className="font-bold text-indigo-800">Download Excel</p>
+                                        <p className="text-xs text-indigo-600">Edit in MS Excel</p>
+                                      </div>
+                                    </button>
+
+                                    {/* WhatsApp Share */}
+                                    <button
+                                      onClick={() => {
+                                        const message = `*NO OBJECTION CERTIFICATE*
+*STAGE OTT Production*
+
+📜 *Reference:* STAGE/NOC/____/25-26
+📅 *Date:* __/__/2026
+⏳ *Valid Until:* __/__/2026
+
+*TO WHOMSOEVER IT MAY CONCERN*
+
+*Subject:* NOC for "[PROJECT TITLE]" - [Regional] Production
+
+*ISSUING PARTY:*
+Name: [ISSUING PARTY NAME]
+Address: [COMPLETE ADDRESS]
+Contact: [PHONE]
+
+*PRODUCTION DETAILS:*
+🎬 Project: [PROJECT NAME]
+🗣️ Language: [REGIONAL LANGUAGE]
+🎥 Production: [COMPANY NAME]
+🎭 Director: [DIRECTOR NAME]
+📅 Dates: __/__/2026 to __/__/2026
+📍 Purpose: [SPECIFY]
+
+*CERTIFICATE:*
+This is to certify that the issuing party has no objection to the above production activities.
+
+*SIGNATURES REQUIRED:*
+✍️ Issuing Authority
+🔖 Official Stamp/Seal
+👁️ Witness
+
+_Fill details and share back_`;
+                                        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                                        window.open(whatsappUrl, '_blank');
+                                      }}
+                                      className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-500 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
+                                    >
+                                      <div className="w-14 h-14 bg-green-600 rounded-xl flex items-center justify-center">
+                                        <span className="text-3xl">💬</span>
+                                      </div>
+                                      <div className="text-center">
+                                        <p className="font-bold text-green-800">WhatsApp</p>
+                                        <p className="text-xs text-green-600">Share via WhatsApp</p>
+                                      </div>
+                                    </button>
+                                  </div>
+                                  <p className="text-xs text-gray-500 mt-4 text-center">
+                                    💡 Location owner ya authority ko template bhejo - wo fill karke sign kar sakte hain
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* NOC Preview Card */}
+                              <div className="rounded-2xl shadow-2xl overflow-hidden border-2 border-purple-500/30">
+                                {/* Header */}
+                                <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 p-6 text-center">
+                                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-4 border border-white/30">
+                                    <span className="text-4xl">📜</span>
+                                  </div>
+                                  <h3 className="text-2xl font-black text-white tracking-wider">NO OBJECTION CERTIFICATE</h3>
+                                  <p className="text-purple-200 text-sm mt-1">For Film / Content Production</p>
+                                </div>
+
+                                {/* Reference Strip */}
+                                <div className="bg-slate-900 px-5 py-4 grid grid-cols-3 gap-4">
+                                  <div className="text-center">
+                                    <p className="text-slate-400 text-xs uppercase tracking-wider">Reference No.</p>
+                                    <p className="text-white font-bold mt-1">STAGE/NOC/____/25-26</p>
+                                  </div>
+                                  <div className="text-center">
+                                    <p className="text-slate-400 text-xs uppercase tracking-wider">NOC Type</p>
+                                    <p className="text-white font-bold mt-1">[Location/Talent/Music]</p>
+                                  </div>
+                                  <div className="text-center">
+                                    <p className="text-slate-400 text-xs uppercase tracking-wider">Valid Until</p>
+                                    <p className="text-white font-bold mt-1">__/__/2026</p>
+                                  </div>
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-6 bg-white">
+                                  <div className="text-right mb-4">
+                                    <p className="text-sm text-slate-600"><span className="font-bold">Date:</span> __/__/2026</p>
+                                  </div>
+
+                                  <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">To Whomsoever It May Concern</p>
+
+                                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-xl border-l-4 border-purple-500 mb-6">
+                                    <p className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">Subject</p>
+                                    <p className="font-bold text-slate-900">No Objection Certificate for "[PROJECT TITLE]" - [Regional Language] Production</p>
+                                  </div>
+
+                                  <p className="text-sm text-slate-700 leading-relaxed mb-6">
+                                    This is to certify that <span className="bg-amber-100 px-1 rounded font-semibold">[ISSUING PARTY NAME]</span>, hereby grants No Objection Certificate to <span className="bg-amber-100 px-1 rounded font-semibold">STAGE Technologies Pvt Ltd</span> and its production partner <span className="bg-amber-100 px-1 rounded font-semibold">[PRODUCTION COMPANY]</span> for the purpose mentioned below.
+                                  </p>
+
+                                  {/* Details Box */}
+                                  <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-5 mb-6">
+                                    <p className="font-bold text-sm text-slate-900 mb-4 uppercase tracking-wider">📋 Production Details</p>
+                                    <div className="grid grid-cols-2 gap-3 text-sm">
+                                      <div><span className="text-slate-500">Project:</span> <span className="font-bold text-slate-900">[PROJECT NAME]</span></div>
+                                      <div><span className="text-slate-500">Language:</span> <span className="font-bold text-slate-900">[REGIONAL]</span></div>
+                                      <div><span className="text-slate-500">Production:</span> <span className="font-bold text-slate-900">[COMPANY]</span></div>
+                                      <div><span className="text-slate-500">Director:</span> <span className="font-bold text-slate-900">[NAME]</span></div>
+                                      <div><span className="text-slate-500">Dates:</span> <span className="font-bold text-slate-900">__/__/2026 to __/__/2026</span></div>
+                                      <div><span className="text-slate-500">Purpose:</span> <span className="font-bold text-slate-900">[SPECIFY]</span></div>
+                                    </div>
+                                  </div>
+
+                                  {/* Terms */}
+                                  <div className="mb-6">
+                                    <p className="font-bold text-sm text-slate-900 mb-3">✅ Terms & Conditions</p>
+                                    <div className="space-y-2 text-sm text-slate-600">
+                                      <p className="flex items-center gap-2"><span className="text-green-500">✓</span> Valid only for mentioned project and dates</p>
+                                      <p className="flex items-center gap-2"><span className="text-green-500">✓</span> Production team shall follow all safety guidelines</p>
+                                      <p className="flex items-center gap-2"><span className="text-green-500">✓</span> Any damage shall be borne by production house</p>
+                                      <p className="flex items-center gap-2"><span className="text-green-500">✓</span> This NOC is non-transferable</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Signatures */}
+                                  <div className="grid grid-cols-3 gap-4 pt-6 border-t-2 border-slate-200">
+                                    <div className="text-center">
+                                      <div className="h-16 border-b-2 border-slate-400 mb-2"></div>
+                                      <p className="text-sm font-bold text-slate-900">Issuing Authority</p>
+                                      <p className="text-xs text-slate-500">[Name & Designation]</p>
+                                    </div>
+                                    <div className="text-center">
+                                      <div className="h-16 border-b-2 border-slate-400 mb-2"></div>
+                                      <p className="text-sm font-bold text-slate-900">Official Stamp</p>
+                                      <p className="text-xs text-slate-500">[Seal]</p>
+                                    </div>
+                                    <div className="text-center">
+                                      <div className="h-16 border-b-2 border-slate-400 mb-2"></div>
+                                      <p className="text-sm font-bold text-slate-900">Witness</p>
+                                      <p className="text-xs text-slate-500">[Name & Contact]</p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Footer */}
+                                <div className="bg-slate-900 py-3 px-5 text-center">
+                                  <p className="text-slate-400 text-xs">🎬 STAGE OTT Platform • Regional Content Production • NOC Template</p>
+                                </div>
+                              </div>
+
+                              <h4 className="font-bold text-gray-800 mb-4 mt-6">NOC Guidelines</h4>
                             </div>
                           )}
 
