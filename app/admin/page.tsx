@@ -2491,6 +2491,19 @@ END:VCARD`;
                       <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
                     )}
                   </button>
+                  <button
+                    onClick={() => setActiveTab('invites')}
+                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
+                      activeTab === 'invites'
+                        ? 'text-white bg-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                    }`}
+                  >
+                    📨 Invites
+                    {activeTab === 'invites' && (
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
+                    )}
+                  </button>
                   </nav>
               </div>
               {/* Action Buttons - Mobile Responsive */}
@@ -2551,6 +2564,8 @@ END:VCARD`;
                 { id: 'budget', label: '💰 Budget' },
                 { id: 'library', label: '📚 Library' },
                 { id: 'projects', label: '📊 Projects' },
+                { id: 'documents', label: '📁 Docs' },
+                { id: 'invites', label: '📨 Invites' },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -10538,6 +10553,13 @@ STAGE Technologies Private Limited`;
                   ))}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Invites Tab */}
+          {activeTab === 'invites' && (
+            <div className="space-y-6">
+              <InviteTracker />
             </div>
           )}
         </div>
