@@ -1,17 +1,67 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import * as XLSX from 'xlsx';
 import InviteCreatorModal from '@/components/InviteCreatorModal';
+import InviteTracker from '@/components/InviteTracker';
+import { supabase } from '@/lib/supabase';
 
 // Projects data - stored in localStorage for persistence
 const sampleSubmissions: any[] = [];
 
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library' | 'projects' | 'documents'>('overview');
+  const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library' | 'projects' | 'documents' | 'invites'>('overview');
+  const [showInviteTracker, setShowInviteTracker] = useState(false);
+
+  // Check if user is @stage.in admin
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!session?.user) {
+          router.push('/login');
+          return;
+        }
+
+        const userEmail = session.user.email || '';
+
+        // Check if user is @stage.in OR has admin role in profile
+        if (userEmail.endsWith('@stage.in')) {
+          setIsAuthorized(true);
+        } else {
+          // Check profile role
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profile?.role === 'admin') {
+            setIsAuthorized(true);
+          } else {
+            // Not authorized - redirect to creator
+            router.push('/creator');
+            return;
+          }
+        }
+      } catch (e) {
+        console.log('Auth check error');
+        router.push('/login');
+      } finally {
+        setAuthLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
   const [productionDocs, setProductionDocs] = useState<{id: string, name: string, category: string, url: string, uploadedAt: string}[]>([]);
   const [selectedDocCategory, setSelectedDocCategory] = useState<string | null>(null);
   const [expandedSopSections, setExpandedSopSections] = useState<{[key: string]: boolean}>({});
@@ -2310,6 +2360,23 @@ END:VCARD`;
       return sortOrder === 'desc' ? -comparison : comparison;
     });
 
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If not authorized, show nothing (redirect will happen)
+  if (!isAuthorized) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 text-gray-800">
       {/* Subtle Background Decoration */}
@@ -2546,6 +2613,13 @@ END:VCARD`;
                     <span>Invite Creator</span>
                   </button>
                   <button
+                    onClick={() => setShowInviteTracker(!showInviteTracker)}
+                    className={`px-5 py-2.5 ${showInviteTracker ? 'bg-purple-700' : 'bg-purple-600 hover:bg-purple-700'} text-white font-semibold rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2`}
+                  >
+                    <span>📋</span>
+                    <span>Sent Invites</span>
+                  </button>
+                  <button
                     onClick={() => setShowAddProjectModal(true)}
                     className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2"
                   >
@@ -2616,6 +2690,13 @@ END:VCARD`;
                 </div>
               </button>
             </div>
+
+            {/* Invite Tracker Panel */}
+            {showInviteTracker && (
+              <div className="mb-6">
+                <InviteTracker />
+              </div>
+            )}
 
             {/* Budget Breakdown Panel - Expandable */}
             {showBudgetBreakdown && (

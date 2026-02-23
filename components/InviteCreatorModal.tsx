@@ -100,9 +100,8 @@ export default function InviteCreatorModal({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const sendEmail = () => {
-    const emailBody = `
-Hi ${fullName},
+  const getEmailBody = () => {
+    return `Hi ${fullName},
 
 ${message || 'You have been invited to join STAGE Creator Portal.'}
 
@@ -117,31 +116,25 @@ Your Invite Code: ${inviteCode}
 Welcome to STAGE!
 
 Best regards,
-STAGE Team
-    `.trim();
+STAGE Team`.trim();
+  };
 
-    const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
-    window.open(mailtoLink, '_blank');
+  // Open Gmail directly in browser
+  const openGmail = () => {
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(getEmailBody())}`;
+    window.open(gmailUrl, '_blank');
+    setEmailSent(true);
+  };
+
+  // Fallback mailto
+  const sendMailto = () => {
+    const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(getEmailBody())}`;
+    window.location.href = mailtoLink;
     setEmailSent(true);
   };
 
   const copyFullInvite = () => {
-    const fullText = `
-Hi ${fullName},
-
-${message || 'You have been invited to join STAGE Creator Portal.'}
-
-${projectTitle ? `Project: ${projectTitle}` : ''}
-
-Click here to get started: ${inviteLink}
-
-Your Invite Code: ${inviteCode}
-(Valid for 7 days)
-
-Welcome to STAGE!
-    `.trim();
-
-    navigator.clipboard.writeText(fullText);
+    navigator.clipboard.writeText(getEmailBody());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -172,7 +165,7 @@ Welcome to STAGE!
       {/* Modal */}
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5 sticky top-0">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -308,17 +301,28 @@ Welcome to STAGE!
                 <p className="text-2xl font-mono font-black text-gray-800 tracking-wider">{inviteCode}</p>
               </div>
 
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                {/* Primary: Send Email */}
+              {/* Send Email Buttons */}
+              <div className="space-y-2">
+                {/* Gmail Direct */}
                 <button
-                  onClick={sendEmail}
-                  className={`w-full py-3 ${emailSent ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-colors`}
+                  onClick={openGmail}
+                  className={`w-full py-3 ${emailSent ? 'bg-green-600' : 'bg-red-500 hover:bg-red-600'} text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-colors`}
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
+                  </svg>
+                  {emailSent ? '✓ Gmail Opened' : 'Open in Gmail'}
+                </button>
+
+                {/* Default Mail App */}
+                <button
+                  onClick={sendMailto}
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg flex items-center justify-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  {emailSent ? '✓ Email App Opened' : `Send Email to ${email}`}
+                  Open in Default Mail App
                 </button>
 
                 {/* Copy Full Message */}
@@ -329,24 +333,20 @@ Welcome to STAGE!
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                   </svg>
-                  Copy Full Invite Message
+                  Copy Full Message
                 </button>
               </div>
 
               {/* Preview Message */}
               <details className="bg-gray-50 border border-gray-200 rounded-lg">
                 <summary className="px-4 py-3 cursor-pointer text-sm font-bold text-gray-600 hover:text-gray-800">
-                  Preview Message
+                  Preview Email Message
                 </summary>
                 <div className="px-4 pb-4 text-sm text-gray-600 whitespace-pre-line border-t border-gray-200 pt-3">
+                  <p><strong>To:</strong> {email}</p>
                   <p><strong>Subject:</strong> {subject}</p>
                   <hr className="my-2" />
-                  <p>Hi {fullName},</p>
-                  <p className="mt-2">{message || 'You have been invited to join STAGE Creator Portal.'}</p>
-                  {projectTitle && <p className="mt-2">Project: {projectTitle}</p>}
-                  <p className="mt-2">Click here to get started: {inviteLink}</p>
-                  <p className="mt-2">Your Invite Code: {inviteCode}</p>
-                  <p className="text-gray-400">(Valid for 7 days)</p>
+                  <p className="whitespace-pre-wrap">{getEmailBody()}</p>
                 </div>
               </details>
 
