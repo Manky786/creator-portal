@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import * as XLSX from 'xlsx';
+import InviteCreatorModal from '@/components/InviteCreatorModal';
 
 // Projects data - stored in localStorage for persistence
 const sampleSubmissions: any[] = [];
@@ -48,6 +49,7 @@ export default function AdminDashboard() {
     preparedBy: '', approvedBy: ''
   });
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+  const [showInviteCreatorModal, setShowInviteCreatorModal] = useState(false);
   const [newProject, setNewProject] = useState({
     projectName: '', creator: '', culture: '', format: '', genre: '',
     totalBudget: '', episodes: '', status: 'pending',
@@ -2535,13 +2537,22 @@ END:VCARD`;
                   <h1 className="text-2xl font-bold text-gray-800">Production Team</h1>
                   <p className="text-gray-500 text-sm">Content Management & Review Platform</p>
                 </div>
-                <button
-                  onClick={() => setShowAddProjectModal(true)}
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2"
-                >
-                  <span>+</span>
-                  <span>Add Project</span>
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowInviteCreatorModal(true)}
+                    className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2"
+                  >
+                    <span>📨</span>
+                    <span>Invite Creator</span>
+                  </button>
+                  <button
+                    onClick={() => setShowAddProjectModal(true)}
+                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2"
+                  >
+                    <span>+</span>
+                    <span>Add Project</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -15647,6 +15658,12 @@ STAGE Technologies Private Limited`;
             </div>
           </div>
         )}
+
+        {/* Invite Creator Modal */}
+        <InviteCreatorModal
+          isOpen={showInviteCreatorModal}
+          onClose={() => setShowInviteCreatorModal(false)}
+        />
       </div>
     </div>
   );
