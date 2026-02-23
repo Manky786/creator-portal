@@ -101,7 +101,8 @@ function LoginContent() {
         options: {
           data: {
             full_name: fullName,
-            role: 'creator', // New signups are always creators
+            role: 'creator',
+            invite_code: inviteCode || '', // Pass invite code to trigger
           },
         },
       });
