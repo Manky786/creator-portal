@@ -8,7 +8,7 @@ interface InviteCreatorModalProps {
   onClose: () => void;
   projectId?: string;
   projectTitle?: string;
-  onInviteSent?: (inviteCode: string, inviteLink: string) => void;
+  onInviteSent?: (inviteData: any) => void;
 }
 
 export default function InviteCreatorModal({
@@ -20,10 +20,14 @@ export default function InviteCreatorModal({
 }: InviteCreatorModalProps) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [subject, setSubject] = useState(projectTitle ? `Invitation to join ${projectTitle}` : 'Invitation to join STAGE Creator Portal');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [inviteLink, setInviteLink] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const generateInviteCode = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -41,8 +45,10 @@ export default function InviteCreatorModal({
 
     try {
       const code = generateInviteCode();
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      const link = `${baseUrl}/login?invite=${code}`;
 
-      // Try to save to database
+      // Save to database
       try {
         const { error: dbError } = await supabase
           .from('creator_invites')
@@ -52,25 +58,34 @@ export default function InviteCreatorModal({
             invite_code: code,
             project_id: projectId || null,
             status: 'pending',
-            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+            subject: subject,
+            message: message,
+            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
           });
 
         if (dbError) {
-          console.log('Database insert skipped (tables may not exist yet):', dbError.message);
+          console.log('Database insert info:', dbError.message);
         }
       } catch (e) {
-        console.log('Database not configured yet, generating local invite');
+        console.log('Database operation skipped');
       }
-
-      // Generate invite link
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-      const link = `${baseUrl}/login?invite=${code}`;
 
       setInviteCode(code);
       setInviteLink(link);
 
+      // Notify parent component
       if (onInviteSent) {
-        onInviteSent(code, link);
+        onInviteSent({
+          fullName,
+          email,
+          inviteCode: code,
+          inviteLink: link,
+          subject,
+          message,
+          projectId,
+          projectTitle,
+          sentAt: new Date().toISOString(),
+        });
       }
     } catch (err: any) {
       setError(err.message || 'Failed to create invite');
@@ -81,15 +96,66 @@ export default function InviteCreatorModal({
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const sendEmail = () => {
+    const emailBody = `
+Hi ${fullName},
+
+${message || 'You have been invited to join STAGE Creator Portal.'}
+
+${projectTitle ? `Project: ${projectTitle}` : ''}
+
+Click the link below to create your account and get started:
+${inviteLink}
+
+Your Invite Code: ${inviteCode}
+(Valid for 7 days)
+
+Welcome to STAGE!
+
+Best regards,
+STAGE Team
+    `.trim();
+
+    const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+    window.open(mailtoLink, '_blank');
+    setEmailSent(true);
+  };
+
+  const copyFullInvite = () => {
+    const fullText = `
+Hi ${fullName},
+
+${message || 'You have been invited to join STAGE Creator Portal.'}
+
+${projectTitle ? `Project: ${projectTitle}` : ''}
+
+Click here to get started: ${inviteLink}
+
+Your Invite Code: ${inviteCode}
+(Valid for 7 days)
+
+Welcome to STAGE!
+    `.trim();
+
+    navigator.clipboard.writeText(fullText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleClose = () => {
     setFullName('');
     setEmail('');
+    setSubject(projectTitle ? `Invitation to join ${projectTitle}` : 'Invitation to join STAGE Creator Portal');
+    setMessage('');
     setInviteCode('');
     setInviteLink('');
     setError('');
+    setCopied(false);
+    setEmailSent(false);
     onClose();
   };
 
@@ -104,9 +170,9 @@ export default function InviteCreatorModal({
       ></div>
 
       {/* Modal */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-5 sticky top-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -114,7 +180,7 @@ export default function InviteCreatorModal({
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">Invite Creator</h2>
-                <p className="text-blue-100 text-sm">Send invite link via Email</p>
+                <p className="text-blue-100 text-sm">Send personalized invite via Email</p>
               </div>
             </div>
             <button
@@ -174,6 +240,32 @@ export default function InviteCreatorModal({
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Email Subject
+                </label>
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="Invitation to join STAGE"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Personal Message (Optional)
+                </label>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Write a personal message for the creator..."
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none resize-none"
+                />
+              </div>
+
               <button
                 type="submit"
                 disabled={loading || !fullName || !email}
@@ -187,64 +279,83 @@ export default function InviteCreatorModal({
               {/* Success */}
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
                 <span className="text-4xl mb-2 block">✅</span>
-                <p className="text-green-800 font-bold">Invite Created!</p>
-                <p className="text-green-600 text-sm">Share the link with {fullName}</p>
+                <p className="text-green-800 font-bold">Invite Ready!</p>
+                <p className="text-green-600 text-sm">Send to {fullName} ({email})</p>
               </div>
 
-              {/* Invite Code */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <p className="text-xs text-gray-500 uppercase font-bold mb-2">Invite Code</p>
-                <div className="flex items-center justify-between">
-                  <p className="text-2xl font-mono font-black text-gray-800 tracking-wider">{inviteCode}</p>
-                  <button
-                    onClick={() => copyToClipboard(inviteCode)}
-                    className="text-blue-600 hover:text-blue-700 text-sm font-bold"
-                  >
-                    Copy
-                  </button>
-                </div>
-              </div>
-
-              {/* Invite Link */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <p className="text-xs text-gray-500 uppercase font-bold mb-2">Invite Link</p>
+              {/* Invite Link - Prominent */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4">
+                <p className="text-xs text-blue-600 uppercase font-bold mb-2">Invite Link</p>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={inviteLink}
                     readOnly
-                    className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-600"
+                    className="flex-1 px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm text-gray-700 font-medium"
                   />
                   <button
                     onClick={() => copyToClipboard(inviteLink)}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-sm"
+                    className={`px-4 py-2 ${copied ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold rounded-lg text-sm transition-colors`}
                   >
-                    Copy
+                    {copied ? '✓ Copied!' : 'Copy'}
                   </button>
                 </div>
               </div>
 
-              {/* Send Email Button */}
-              <button
-                onClick={() => {
-                  const subject = `STAGE Creator Portal Invite${projectTitle ? ` - ${projectTitle}` : ''}`;
-                  const body = `Hi ${fullName},%0D%0A%0D%0AYou've been invited to join STAGE Creator Portal.%0D%0A%0D%0AClick here to get started: ${inviteLink}%0D%0A%0D%0AInvite Code: ${inviteCode}%0D%0A%0D%0AWelcome to STAGE!`;
-                  window.open(`mailto:${email}?subject=${subject}&body=${body}`);
-                }}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                Send Email to {email}
-              </button>
+              {/* Invite Code */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <p className="text-xs text-gray-500 uppercase font-bold mb-2">Invite Code</p>
+                <p className="text-2xl font-mono font-black text-gray-800 tracking-wider">{inviteCode}</p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                {/* Primary: Send Email */}
+                <button
+                  onClick={sendEmail}
+                  className={`w-full py-3 ${emailSent ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-700'} text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-colors`}
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  {emailSent ? '✓ Email App Opened' : `Send Email to ${email}`}
+                </button>
+
+                {/* Copy Full Message */}
+                <button
+                  onClick={copyFullInvite}
+                  className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                  </svg>
+                  Copy Full Invite Message
+                </button>
+              </div>
+
+              {/* Preview Message */}
+              <details className="bg-gray-50 border border-gray-200 rounded-lg">
+                <summary className="px-4 py-3 cursor-pointer text-sm font-bold text-gray-600 hover:text-gray-800">
+                  Preview Message
+                </summary>
+                <div className="px-4 pb-4 text-sm text-gray-600 whitespace-pre-line border-t border-gray-200 pt-3">
+                  <p><strong>Subject:</strong> {subject}</p>
+                  <hr className="my-2" />
+                  <p>Hi {fullName},</p>
+                  <p className="mt-2">{message || 'You have been invited to join STAGE Creator Portal.'}</p>
+                  {projectTitle && <p className="mt-2">Project: {projectTitle}</p>}
+                  <p className="mt-2">Click here to get started: {inviteLink}</p>
+                  <p className="mt-2">Your Invite Code: {inviteCode}</p>
+                  <p className="text-gray-400">(Valid for 7 days)</p>
+                </div>
+              </details>
 
               {/* Done Button */}
               <button
                 onClick={handleClose}
-                className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-lg"
+                className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg"
               >
-                Done
+                Done - Close
               </button>
             </div>
           )}
