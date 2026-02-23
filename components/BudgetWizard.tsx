@@ -39,6 +39,35 @@ const steps = [
   { id: 11, name: 'Review', component: ReviewStep },
 ];
 
+// Activity Log Helper - unified logging for both creator and admin
+const addActivityLog = (projectId: string, action: string, description: string, type: string, user: string = 'Creator', source: string = 'creator') => {
+  const now = new Date();
+  const activity = {
+    id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    projectId,
+    action,
+    description,
+    type,
+    user,
+    source, // 'creator' or 'admin'
+    date: now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+    time: now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
+    timestamp: now.toISOString(),
+  };
+
+  // Save to unified activity logs
+  if (typeof window !== 'undefined') {
+    const existingLogs = JSON.parse(localStorage.getItem('stage_activity_logs') || '{}');
+    if (!existingLogs[projectId]) {
+      existingLogs[projectId] = [];
+    }
+    existingLogs[projectId].unshift(activity);
+    localStorage.setItem('stage_activity_logs', JSON.stringify(existingLogs));
+  }
+
+  return activity;
+};
+
 export default function BudgetWizard({ formData, setFormData, autoSaveStatus, lastSaved, onClearDraft }: Props) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -196,6 +225,12 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
 
         existingSubmissions[index] = { ...data, changeHistory };
 
+        // Add Activity Log for update
+        const activityDesc = changes.length > 0
+          ? `Updated ${changes.length} field(s): ${deptSummary}${comment ? `. Comment: "${comment}"` : ''}`
+          : `Resubmitted project${comment ? ` with comment: "${comment}"` : ''}`;
+        addActivityLog(editingId, 'Project Updated', activityDesc, 'edit', data.creatorName || 'Creator', 'creator');
+
         // Create notification for admin about creator changes
         if (changes.length > 0 || comment) {
           createAdminNotification(data, changes, comment);
@@ -206,6 +241,9 @@ export default function BudgetWizard({ formData, setFormData, autoSaveStatus, la
     } else {
       // New submission - add to beginning
       existingSubmissions.unshift(data);
+
+      // Add Activity Log for new submission
+      addActivityLog(data.id, 'Project Submitted', `New project "${data.projectName}" submitted for review`, 'submit', data.creatorName || 'Creator', 'creator');
 
       // Create notification for admin about new submission
       createNewSubmissionNotification(data);

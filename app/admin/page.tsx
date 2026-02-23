@@ -5,810 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import * as XLSX from 'xlsx';
 
-// Sample data - in production would come from Supabase with full creator onboarding data
-const sampleSubmissions = [
-  {
-    id: 1,
-    projectName: 'Mahapunarjanam',
-    creator: 'Ravi Sharma',
-    culture: 'Haryanvi',
-    format: 'Long Series',
-    genre: 'Drama/Mythology',
-    subGenre: 'Mythological Drama',
-    contentRating: 'U/A 13+',
-    totalBudget: 11000000,
-    completeness: 92,
-    warnings: 1,
-    status: 'pending',
-    submittedDate: '2026-01-30',
-    episodes: 26,
-    thumbnail: '/api/placeholder/400/225',
+// Projects data - stored in localStorage for persistence
+const sampleSubmissions: any[] = [];
 
-    // POC (Point of Contact)
-    productionPOC: '',
-    contentPOC: '',
-
-
-    // Activity Log
-    activityLog: [
-      { date: '2026-01-30', time: '10:30 AM', action: 'Project Submitted', description: 'Creator submitted project for review', user: 'Ravi Sharma', type: 'submit' },
-      { date: '2026-01-30', time: '11:15 AM', action: 'Under Initial Review', description: 'Production team started initial screening', user: 'Admin Team', type: 'review' },
-    ],
-
-    // Full creator onboarding data
-    logline: 'A modern retelling of ancient Haryanvi folklore through the lens of reincarnation',
-    synopsis: 'Mahapunarjanam explores the cyclical nature of life and death through traditional Haryanvi storytelling...',
-    targetAudience: 'Adults 18-45, mythology enthusiasts, regional content viewers',
-    language: 'Haryanvi with Hindi subtitles',
-    productionCompany: 'Ravi Sharma Productions',
-    productionType: 'Original',
-    sourceMaterial: 'Original Script',
-    ipRightsStatus: 'Owned',
-
-    // Creator details
-    creatorAge: '42',
-    officialEmail: 'ravi@rsproductions.com',
-    phone: '+91 98765 43210',
-    panNumber: 'ABCDE1234F',
-    gstNumber: '07ABCDE1234F1Z5',
-    yearsOfExperience: '15',
-    previousProjects: 'Haryanvi Nights (Web Series), Folklore Stories (YouTube)',
-
-    // Complete crew details
-    director: 'Rajesh Kumar',
-    associateDirector: 'Neha Verma',
-    assistantDirector1: 'Rahul Mehra',
-
-    showRunner: 'Vikram Singh',
-    creativeDirector: 'Anjali Kapoor',
-    projectHead: 'Suresh Kumar',
-
-    headOfProduction: 'Ramesh Gupta',
-    executiveProducer: 'Manoj Sharma',
-    lineProducer: 'Deepak Yadav',
-
-    writer: 'Ravi Sharma',
-    storyBy: 'Ravi Sharma',
-    screenplayBy: 'Ravi Sharma',
-    dialoguesBy: 'Rajesh Talwar',
-
-    dop: 'Amit Singh',
-    firstCameraOperator: 'Sameer Khan',
-    steadicamOperator: 'Rohit Desai',
-
-    editor: 'Priya Sharma',
-    colorist: 'Vishal Mehta',
-    onLocationEditor: 'Karan Johar',
-
-    soundRecordist: 'Anil Kumar',
-    soundDesigner: 'Resul Pookutty',
-    foleyArtist: 'Sudhir Chandra',
-
-    musicComposer: 'Suresh Wadkar',
-    bgmComposer: 'Ajay-Atul',
-    playbackSinger: 'Shreya Ghoshal',
-
-    productionDesigner: 'Nitin Desai',
-    artDirector: 'Sharmishta Roy',
-    setDesigner: 'Rajat Poddar',
-
-    costumeDesigner: 'Manish Malhotra',
-    makeupArtist: 'Mickey Contractor',
-    hairStylist: 'Avan Contractor',
-
-    vfxSupervisor: 'Prasad Sutar',
-    diArtist: 'Ashirwad Hadkar',
-
-    castingDirector: 'Mukesh Chhabra',
-    stillPhotographer: 'Avinash Gowariker',
-    btsVideographer: 'Rohit Kumar',
-
-    // Timeline
-    shootStartDate: '2026-03-15',
-    shootEndDate: '2026-07-30',
-    shootDays: '120',
-    finalDeliveryDate: '2026-11-15',
-
-    // Budget breakdown
-    budgetBreakdown: [
-      { category: 'Cast', amount: 2200000, percentage: 20 },
-      { category: 'Crew', amount: 1980000, percentage: 18 },
-      { category: 'Production', amount: 2750000, percentage: 25 },
-      { category: 'Post-Production', amount: 1650000, percentage: 15 },
-      { category: 'Music & Songs', amount: 1320000, percentage: 12 },
-      { category: 'Marketing', amount: 1100000, percentage: 10 },
-    ],
-
-    // Cast data
-    castData: {
-      primaryCast: [
-        { id: '1', artistName: 'Yogesh Kumar', characterName: 'Vikram Singh', socialMediaLink: 'https://instagram.com/yogeshkumar', photographUrl: '' },
-        { id: '2', artistName: 'Neetu Kapoor', characterName: 'Radha Devi', socialMediaLink: '', photographUrl: '' },
-        { id: '3', artistName: 'Arjun Yadav', characterName: 'Suresh', socialMediaLink: '', photographUrl: '' },
-      ],
-      secondaryCast: [
-        { id: '4', artistName: 'Rajesh Sharma', characterName: 'Village Chief', socialMediaLink: '', photographUrl: '' },
-        { id: '5', artistName: 'Meena Kumari', characterName: 'Dai Maa', socialMediaLink: '', photographUrl: '' },
-      ],
-      tertiaryCast: [
-        { id: '6', artistName: 'Various Local Artists', characterName: 'Village People', socialMediaLink: '', photographUrl: '' },
-      ],
-    },
-
-    // Technical specs
-    technicalSpecs: {
-      cameraModel: 'ARRI Alexa Mini LF',
-      cameraSetupType: 'double' as const,
-      lensTypes: [
-        { name: 'Zeiss Master Prime', quantity: 5 },
-        { name: 'Cooke S4', quantity: 3 },
-      ],
-      cameraOthers: [],
-      lightingEquipment: [
-        { name: 'ARRI SkyPanel S60', quantity: 8 },
-        { name: 'Aputure 600d', quantity: 4 },
-      ],
-      lightingOthers: [],
-      cinematicTools: [
-        { name: 'DJI Ronin 2', quantity: 2 },
-      ],
-      cinematicOthers: [],
-      droneModels: [
-        { name: 'DJI Inspire 2', quantity: 1 },
-      ],
-      droneOthers: [],
-      soundEquipment: [
-        { name: 'Sound Devices 888', quantity: 2 },
-        { name: 'Sennheiser MKH 416', quantity: 4 },
-      ],
-      soundOthers: [],
-    },
-
-    // Uploaded files
-    uploadedFiles: [
-      { name: 'Mahapunarjanam_Script_Final.pdf', size: 2458000, type: 'application/pdf', uploadDate: '2026-01-28' },
-      { name: 'Episode_Breakdown.xlsx', size: 156000, type: 'application/vnd.ms-excel', uploadDate: '2026-01-29' },
-      { name: 'Vision_Deck.pdf', size: 8945000, type: 'application/pdf', uploadDate: '2026-01-29' },
-    ],
-    cloudLinks: [
-      'https://drive.google.com/file/d/1234567890/character-references',
-      'https://dropbox.com/s/abcdef/location-scouting',
-    ],
-
-    // Additional fields
-    companyType: 'Private Limited',
-    teamSize: '15-25',
-    notableWorks: 'Haryanvi Folk Tales (YouTube Series), Regional Stories Collection',
-    imdbLink: 'https://www.imdb.com/name/nm1234567/',
-    portfolioLink: 'https://ravisharmaproductions.com/portfolio',
-  },
-  {
-    id: 2,
-    projectName: 'Urban Dreams',
-    creator: 'Anjali Productions',
-    culture: 'Rajasthani',
-    format: 'Feature Film',
-    genre: 'Romance/Drama',
-    subGenre: 'Contemporary Romance',
-    contentRating: 'U/A 16+',
-    totalBudget: 85000000,
-    completeness: 95,
-    warnings: 0,
-    status: 'approved',
-    submittedDate: '2026-01-28',
-    episodes: null,
-    thumbnail: '/api/placeholder/400/225',
-
-    // POC (Point of Contact)
-    productionPOC: '',
-    contentPOC: '',
-
-    // Activity Log
-    activityLog: [
-      { date: '2026-01-28', time: '09:00 AM', action: 'Project Submitted', description: 'Creator submitted project for review', user: 'Anjali Verma', type: 'submit' },
-      { date: '2026-01-28', time: '02:30 PM', action: 'Under Review', description: 'Content team reviewing project details', user: 'Content Head', type: 'review' },
-      { date: '2026-01-29', time: '11:00 AM', action: 'Approved', description: 'Project approved for production', user: 'Production Head', type: 'approved' },
-      { date: '2026-01-29', time: '03:45 PM', action: 'Pre-Production', description: 'Team preparing for production kickoff', user: 'Production Team', type: 'progress' },
-    ],
-
-    logline: 'Two aspiring artists navigate love and ambition in modern Rajasthan',
-    synopsis: 'Urban Dreams follows the intertwining lives of a musician and a painter as they pursue their dreams in the vibrant city of Jaipur, exploring Rajasthani culture and modern aspirations...',
-    targetAudience: 'Youth 18-35, urban audiences, romance fans',
-    language: 'Rajasthani with Hindi subtitles',
-    productionCompany: 'Anjali Productions Pvt Ltd',
-    productionType: 'Original',
-
-    creatorAge: '38',
-    officialEmail: 'contact@anjaliproductions.in',
-    phone: '+91 99887 76655',
-    yearsOfExperience: '12',
-    previousProjects: 'City Lights (Feature), Dreams Unfold (Web Series)',
-
-    director: 'Meera Kapoor',
-    associateDirector: 'Karan Johar',
-
-    showRunner: 'Farhan Akhtar',
-    executiveProducer: 'Ritesh Sidhwani',
-
-    writer: 'Anjali Verma',
-    screenplayBy: 'Anjali Verma',
-    dialoguesBy: 'Javed Akhtar',
-
-    dop: 'Vikram Malhotra',
-    firstCameraOperator: 'Santosh Thundiyil',
-
-    editor: 'Sanjay Leela',
-    colorist: 'Navneet Singh',
-
-    soundRecordist: 'Bishwadeep Chatterjee',
-    soundDesigner: 'Anish John',
-
-    musicComposer: 'AR Rahman',
-    bgmComposer: 'Amit Trivedi',
-
-    productionDesigner: 'Sabu Cyril',
-    artDirector: 'Amrita Mahal',
-
-    costumeDesigner: 'Anaita Shroff Adajania',
-    makeupArtist: 'Clover Wootton',
-
-    shootStartDate: '2026-04-01',
-    shootEndDate: '2026-06-30',
-    shootDays: '65',
-    finalDeliveryDate: '2026-10-01',
-
-    budgetBreakdown: [
-      { category: 'Cast', amount: 25500000, percentage: 30 },
-      { category: 'Crew', amount: 17000000, percentage: 20 },
-      { category: 'Production', amount: 21250000, percentage: 25 },
-      { category: 'Post-Production', amount: 12750000, percentage: 15 },
-      { category: 'Music & Songs', amount: 5100000, percentage: 6 },
-      { category: 'Marketing', amount: 3400000, percentage: 4 },
-    ],
-
-    castData: {
-      primaryCast: [
-        { id: '1', artistName: 'Rajkummar Rao', characterName: 'Aditya', socialMediaLink: 'https://instagram.com/rajkummar_rao', photographUrl: '' },
-        { id: '2', artistName: 'Shraddha Kapoor', characterName: 'Maya', socialMediaLink: 'https://instagram.com/shraddhakapoor', photographUrl: '' },
-      ],
-      secondaryCast: [
-        { id: '3', artistName: 'Pankaj Tripathi', characterName: 'Masterji', socialMediaLink: '', photographUrl: '' },
-        { id: '4', artistName: 'Ratna Pathak Shah', characterName: "Aditya's Mother", socialMediaLink: '', photographUrl: '' },
-      ],
-      tertiaryCast: [],
-    },
-
-    technicalSpecs: {
-      cameraModel: 'Sony Venice 2',
-      cameraSetupType: 'triple' as const,
-      lensTypes: [
-        { name: 'Cooke Anamorphic/i', quantity: 6 },
-      ],
-      cameraOthers: [],
-      lightingEquipment: [
-        { name: 'ARRI M18', quantity: 6 },
-        { name: 'Kino Flo', quantity: 10 },
-      ],
-      lightingOthers: [],
-      cinematicTools: [
-        { name: 'Chapman Crane', quantity: 1 },
-        { name: 'DJI Ronin 4D', quantity: 2 },
-      ],
-      cinematicOthers: [],
-      droneModels: [
-        { name: 'DJI Inspire 3', quantity: 1 },
-      ],
-      droneOthers: [],
-      soundEquipment: [
-        { name: 'Sound Devices 833', quantity: 1 },
-        { name: 'Schoeps CMIT 5U', quantity: 3 },
-      ],
-      soundOthers: [],
-    },
-
-    uploadedFiles: [
-      { name: 'Urban_Dreams_Screenplay.pdf', size: 3200000, type: 'application/pdf', uploadDate: '2026-01-25' },
-      { name: 'Shot_Division.pdf', size: 890000, type: 'application/pdf', uploadDate: '2026-01-26' },
-      { name: 'Music_References.pdf', size: 1240000, type: 'application/pdf', uploadDate: '2026-01-26' },
-    ],
-    cloudLinks: ['https://drive.google.com/file/d/9876543210/complete-bible'],
-
-    companyType: 'Private Limited Company',
-    teamSize: '50+',
-    notableWorks: 'City Lights (Feature Film), Dreams Unfold (Web Series), Urban Chronicles (Documentary)',
-    imdbLink: 'https://www.imdb.com/name/nm9876543/',
-    portfolioLink: 'https://anjaliproductions.in',
-  },
-  {
-    id: 3,
-    projectName: 'The Last Stand',
-    creator: 'Cinematic Vision',
-    culture: 'Haryanvi',
-    format: 'Limited Series',
-    genre: 'Action/Thriller',
-    subGenre: 'Military Action',
-    contentRating: 'A (Adults Only)',
-    totalBudget: 120000000,
-    completeness: 88,
-    warnings: 3,
-    status: 'under-review',
-    submittedDate: '2026-01-27',
-    episodes: 8,
-    thumbnail: '/api/placeholder/400/225',
-
-    // POC (Point of Contact)
-    productionPOC: '',
-    contentPOC: '',
-
-    // Activity Log
-    activityLog: [
-      { date: '2026-01-27', time: '01:15 PM', action: 'Project Submitted', description: 'Creator submitted project for review', user: 'Rohit Mehra', type: 'submit' },
-      { date: '2026-01-27', time: '04:00 PM', action: 'Initial Screening', description: 'Quality check completed', user: 'QC Team', type: 'review' },
-      { date: '2026-01-28', time: '10:30 AM', action: 'Under Detailed Review', description: 'Content & Budget analysis in progress', user: 'Review Committee', type: 'review' },
-      { date: '2026-01-29', time: '09:00 AM', action: 'Pending Clarification', description: 'Waiting for creator response on budget queries', user: 'Finance Team', type: 'pending' },
-    ],
-
-    logline: 'An elite military unit faces impossible odds in a high-stakes mission at the Haryana border',
-    synopsis: 'The Last Stand is a gripping action thriller that follows a special forces team defending the Haryana border, showcasing the bravery and resilience of Haryanvi soldiers...',
-    targetAudience: 'Adults 25-50, action enthusiasts, military drama fans',
-    language: 'Haryanvi with Hindi subtitles',
-    productionCompany: 'Cinematic Vision Studios',
-
-    creatorAge: '45',
-    officialEmail: 'info@cinematicvision.com',
-    phone: '+91 98123 45678',
-    yearsOfExperience: '20',
-
-    director: 'Rohit Shetty',
-    assistantDirector1: 'Amar Kaushik',
-
-    executiveProducer: 'Karan Johar',
-    lineProducer: 'Sanjay Routray',
-
-    writer: 'Vijay Kumar',
-    screenplayBy: 'Vijay Kumar',
-    dialoguesBy: 'Sriram Raghavan',
-
-    dop: 'Santosh Thundiyil',
-    firstCameraOperator: 'Ayananka Bose',
-    steadicamOperator: 'Sunil Patel',
-
-    editor: 'Bunty Negi',
-    colorist: 'Shantanu Kulkarni',
-
-    soundRecordist: 'Nakul Kamte',
-    soundDesigner: 'Justin Jose',
-
-    musicComposer: 'Vishal-Shekhar',
-    bgmComposer: 'Salim-Sulaiman',
-
-    productionDesigner: 'Rajat Poddar',
-    artDirector: 'Subrata Chakraborty',
-
-    costumeDesigner: 'Eka Lakhani',
-
-    vfxSupervisor: 'Red Chillies VFX Team',
-
-    actionDirector: 'Sham Kaushal',
-    stuntCoordinator: 'Parvez Shaikh',
-
-    castingDirector: 'Shanoo Sharma',
-
-    shootStartDate: '2026-05-01',
-    shootEndDate: '2026-08-15',
-    shootDays: '85',
-
-    budgetBreakdown: [
-      { category: 'Cast', amount: 36000000, percentage: 30 },
-      { category: 'Crew', amount: 24000000, percentage: 20 },
-      { category: 'Production', amount: 30000000, percentage: 25 },
-      { category: 'Post-Production', amount: 18000000, percentage: 15 },
-      { category: 'VFX & Action', amount: 9600000, percentage: 8 },
-      { category: 'Marketing', amount: 2400000, percentage: 2 },
-    ],
-
-    castData: {
-      primaryCast: [
-        { id: '1', artistName: 'Vicky Kaushal', characterName: 'Major Arjun Saxena', socialMediaLink: 'https://instagram.com/vickykaushal09', photographUrl: '' },
-        { id: '2', artistName: 'Kiara Advani', characterName: 'Captain Priya Nair', socialMediaLink: 'https://instagram.com/kiaraadvani', photographUrl: '' },
-        { id: '3', artistName: 'Manoj Bajpayee', characterName: 'Colonel Rathore', socialMediaLink: '', photographUrl: '' },
-      ],
-      secondaryCast: [
-        { id: '4', artistName: 'Kay Kay Menon', characterName: 'General Vikram', socialMediaLink: '', photographUrl: '' },
-        { id: '5', artistName: 'Rajit Kapur', characterName: 'Defense Minister', socialMediaLink: '', photographUrl: '' },
-      ],
-      tertiaryCast: [
-        { id: '6', artistName: 'Military Unit Cast', characterName: 'Special Forces Team', socialMediaLink: '', photographUrl: '' },
-      ],
-    },
-
-    technicalSpecs: {
-      cameraModel: 'RED V-Raptor 8K VV',
-      cameraSetupType: 'triple' as const,
-      lensTypes: [
-        { name: 'Panavision G Series', quantity: 8 },
-        { name: 'Zeiss Supreme Prime', quantity: 5 },
-      ],
-      cameraOthers: [],
-      lightingEquipment: [
-        { name: 'ARRI SkyPanel S360', quantity: 12 },
-        { name: 'Aputure 1200d Pro', quantity: 6 },
-      ],
-      lightingOthers: [],
-      cinematicTools: [
-        { name: 'Chapman Super Nova Crane', quantity: 1 },
-        { name: 'MōVI Pro', quantity: 3 },
-      ],
-      cinematicOthers: [],
-      droneModels: [
-        { name: 'DJI Inspire 3', quantity: 2 },
-        { name: 'Freefly Alta X', quantity: 1 },
-      ],
-      droneOthers: [],
-      soundEquipment: [
-        { name: 'Sound Devices 888', quantity: 2 },
-        { name: 'Sennheiser MKH 50', quantity: 6 },
-      ],
-      soundOthers: [],
-    },
-
-    uploadedFiles: [
-      { name: 'The_Last_Stand_Script.pdf', size: 4100000, type: 'application/pdf', uploadDate: '2026-01-24' },
-      { name: 'Action_Sequences_Breakdown.pdf', size: 2890000, type: 'application/pdf', uploadDate: '2026-01-25' },
-      { name: 'VFX_References.pdf', size: 5670000, type: 'application/pdf', uploadDate: '2026-01-25' },
-    ],
-    cloudLinks: [
-      'https://drive.google.com/file/d/action-choreography-videos',
-    ],
-
-    companyType: 'Production House',
-    teamSize: '100+',
-    notableWorks: 'Border 2.0 (Feature), Surgical Strike Series (Web Series)',
-    imdbLink: 'https://www.imdb.com/name/nm5555555/',
-  },
-  {
-    id: 4,
-    projectName: 'Comedy Nights Special',
-    creator: 'Laugh Factory Studios',
-    culture: 'Bhojpuri',
-    format: 'Microdrama',
-    genre: 'Comedy',
-    subGenre: 'Situational Comedy',
-    contentRating: 'U/A 13+',
-    totalBudget: 4500000,
-    completeness: 78,
-    warnings: 2,
-    status: 'revision-requested',
-    submittedDate: '2026-01-26',
-    episodes: 15,
-    thumbnail: '/api/placeholder/400/225',
-
-    // POC (Point of Contact)
-    productionPOC: '',
-    contentPOC: '',
-
-    // Activity Log
-    activityLog: [
-      { date: '2026-01-26', time: '11:00 AM', action: 'Project Submitted', description: 'Creator submitted project for review', user: 'Bhojpuri Films Co.', type: 'submit' },
-      { date: '2026-01-26', time: '03:30 PM', action: 'Under Review', description: 'Initial review started', user: 'Content Team', type: 'review' },
-      { date: '2026-01-27', time: '10:00 AM', action: 'Issues Identified', description: 'Technical specifications need updates', user: 'Technical Head', type: 'issue' },
-      { date: '2026-01-27', time: '02:15 PM', action: 'Revision Requested', description: 'Sent back to creator for technical spec revisions and budget realignment', user: 'Admin Team', type: 'revision' },
-      { date: '2026-01-28', time: '09:30 AM', action: 'Awaiting Response', description: 'Waiting for creator to resubmit with changes', user: 'System', type: 'pending' },
-    ],
-
-    logline: 'Hilarious misadventures of a Bhojpuri family in modern times',
-    synopsis: 'Comedy Nights Special brings laughter through relatable family situations...',
-    targetAudience: 'Family audiences 13+, comedy lovers, regional content viewers',
-    language: 'Bhojpuri',
-
-    creatorAge: '35',
-    officialEmail: 'laughs@laughfactory.in',
-    phone: '+91 97654 32109',
-    yearsOfExperience: '8',
-
-    director: 'Manoj Tiwari',
-    writer: 'Ravi Kishan',
-
-    shootStartDate: '2026-02-15',
-    shootEndDate: '2026-04-30',
-    shootDays: '45',
-
-    budgetBreakdown: [
-      { category: 'Cast', amount: 1350000, percentage: 30 },
-      { category: 'Crew', amount: 900000, percentage: 20 },
-      { category: 'Production', amount: 1125000, percentage: 25 },
-      { category: 'Post-Production', amount: 675000, percentage: 15 },
-      { category: 'Music', amount: 270000, percentage: 6 },
-      { category: 'Marketing', amount: 180000, percentage: 4 },
-    ],
-
-    uploadedFiles: [],
-    cloudLinks: ['https://drive.google.com/file/d/comedy-scripts-folder'],
-  },
-  {
-    id: 5,
-    projectName: 'Mor Bani Thangat Kare',
-    creator: 'Gujarat Stories Production',
-    culture: 'Gujarati',
-    format: 'Long Series',
-    genre: 'Family Drama/Romance',
-    subGenre: 'Family Saga',
-    contentRating: 'U/A 13+',
-    totalBudget: 45000000,
-    completeness: 85,
-    warnings: 2,
-    status: 'on-hold',
-    submittedDate: '2026-01-25',
-    episodes: 100,
-    thumbnail: '/api/placeholder/400/225',
-
-    // POC (Point of Contact)
-    productionPOC: '',
-    contentPOC: '',
-
-    // Activity Log
-    activityLog: [
-      { date: '2026-01-25', time: '02:00 PM', action: 'Project Submitted', description: 'Creator submitted project for review', user: 'Gujarat Studios', type: 'submit' },
-      { date: '2026-01-25', time: '05:30 PM', action: 'Under Review', description: 'Production team reviewing', user: 'Content Head', type: 'review' },
-      { date: '2026-01-26', time: '11:00 AM', action: 'Budget Committee Review', description: 'High-value project - special approval needed', user: 'Finance Committee', type: 'review' },
-      { date: '2026-01-27', time: '03:00 PM', action: 'Put On Hold', description: 'Temporarily paused pending market research for long series viability', user: 'Strategy Head', type: 'hold' },
-      { date: '2026-01-28', time: '10:00 AM', action: 'Market Research', description: 'Conducting audience research for Gujarati long series', user: 'Research Team', type: 'progress' },
-    ],
-
-    logline: 'A multi-generational Gujarati family saga exploring love, tradition, and modern values',
-    synopsis: 'Mor Bani Thangat Kare follows the lives of the Thakkar family across three generations in Ahmedabad. From traditional joint family values to modern individual aspirations, the story weaves together love, business rivalries, and cultural traditions in contemporary Gujarat.',
-    targetAudience: 'Gujarati families, 18-60 age group, regional drama enthusiasts',
-    language: 'Gujarati with Hindi subtitles',
-    productionCompany: 'Gujarat Stories Production House',
-    productionType: 'Original',
-    sourceMaterial: 'Original Script',
-    ipRightsStatus: 'Owned',
-
-    // Creator details
-    creatorAge: '48',
-    officialEmail: 'contact@gujaratstories.com',
-    phone: '+91 98250 12345',
-    panNumber: 'AABCG1234H',
-    gstNumber: '24AABCG1234H1Z5',
-    yearsOfExperience: '18',
-    previousProjects: 'Aapnu Gujarat (Web Series), Dhollywood Dreams (Feature Film), Garba Nights (YouTube Series)',
-    companyType: 'Production House',
-    teamSize: '25-50',
-    notableWorks: 'Award-winning Gujarati content creator, 3 successful web series',
-    imdbLink: 'https://www.imdb.com/name/nm3456789/',
-    portfolioLink: 'https://gujaratstories.com/portfolio',
-
-    // Complete crew details
-    director: 'Vipul Mehta',
-    associateDirector: 'Nayan Shah',
-    assistantDirector1: 'Kinjal Rajput',
-
-    showRunner: 'Hetal Gada',
-    creativeDirector: 'Parthiv Gohil',
-    projectHead: 'Manish Munshi',
-
-    headOfProduction: 'Jignesh Mevani',
-    executiveProducer: 'Siddharth Randeria',
-    lineProducer: 'Bhavesh Bhatia',
-
-    writer: 'Saumya Joshi',
-    storyBy: 'Saumya Joshi',
-    screenplayBy: 'Saumya Joshi & Vipul Mehta',
-    dialoguesBy: 'Bhavesh Patel',
-
-    dop: 'Rajeev Ravi',
-    firstCameraOperator: 'Chirag Thakkar',
-    steadicamOperator: 'Nirav Patel',
-
-    editor: 'Hemanti Sarkar',
-    colorist: 'Jayesh Modi',
-    onLocationEditor: 'Pratik Vora',
-
-    soundRecordist: 'Tapan Das',
-    soundDesigner: 'Suketu Pandya',
-
-    musicComposer: 'Sachin-Jigar',
-    bgmComposer: 'Kedar-Bhargav',
-    playbackSinger: 'Kinjal Dave',
-
-    productionDesigner: 'Rupin Suchak',
-    artDirector: 'Jayesh Sheth',
-    setDesigner: 'Mona Thakkar',
-
-    costumeDesigner: 'Varsha Thakkar',
-    makeupArtist: 'Ekta Shah',
-    hairStylist: 'Nisha Desai',
-
-    castingDirector: 'Krunal Pandit',
-    stillPhotographer: 'Viral Bhayani',
-    btsVideographer: 'Mehul Parekh',
-
-    // Timeline
-    shootStartDate: '2026-04-15',
-    shootEndDate: '2026-12-30',
-    shootDays: '180',
-    finalDeliveryDate: '2027-03-15',
-
-    // Budget breakdown
-    budgetBreakdown: [
-      { category: 'Cast', amount: 13500000, percentage: 30 },
-      { category: 'Crew', amount: 9000000, percentage: 20 },
-      { category: 'Production', amount: 11250000, percentage: 25 },
-      { category: 'Post-Production', amount: 6750000, percentage: 15 },
-      { category: 'Music & Songs', amount: 2250000, percentage: 5 },
-      { category: 'Marketing', amount: 2250000, percentage: 5 },
-    ],
-
-    // Cast data
-    castData: {
-      primaryCast: [
-        { id: '1', artistName: 'Malhar Thakar', characterName: 'Karan Thakkar', socialMediaLink: 'https://instagram.com/malhar_thakar', photographUrl: '' },
-        { id: '2', artistName: 'Aarohi Patel', characterName: 'Nandini Thakkar', socialMediaLink: 'https://instagram.com/aarohi_patel', photographUrl: '' },
-        { id: '3', artistName: 'Siddharth Randeria', characterName: 'Hasmukh Thakkar (Grandfather)', socialMediaLink: '', photographUrl: '' },
-        { id: '4', artistName: 'Aarti Patel', characterName: 'Kokila Thakkar (Grandmother)', socialMediaLink: '', photographUrl: '' },
-      ],
-      secondaryCast: [
-        { id: '5', artistName: 'Vyom Thakkar', characterName: 'Harsh Thakkar', socialMediaLink: '', photographUrl: '' },
-        { id: '6', artistName: 'Janki Bodiwala', characterName: 'Priya', socialMediaLink: '', photographUrl: '' },
-        { id: '7', artistName: 'Pratik Gandhi', characterName: 'Rajesh Uncle', socialMediaLink: '', photographUrl: '' },
-      ],
-      tertiaryCast: [
-        { id: '8', artistName: 'Muni Jha', characterName: 'Family Friend', socialMediaLink: '', photographUrl: '' },
-        { id: '9', artistName: 'Raunaq Kamdar', characterName: 'Business Partner', socialMediaLink: '', photographUrl: '' },
-      ],
-    },
-
-    // Technical specs
-    technicalSpecs: {
-      cameraModel: 'Sony FX6',
-      cameraSetupType: 'double' as const,
-      lensTypes: [
-        { name: 'Sony G Master', quantity: 4 },
-        { name: 'Sigma Art', quantity: 3 },
-      ],
-      cameraOthers: [],
-      lightingEquipment: [
-        { name: 'Aputure 300d', quantity: 6 },
-        { name: 'LED Panel Lights', quantity: 12 },
-      ],
-      lightingOthers: [],
-      cinematicTools: [
-        { name: 'DJI RS 3 Pro', quantity: 2 },
-        { name: 'Slider Rail', quantity: 1 },
-      ],
-      cinematicOthers: [],
-      droneModels: [
-        { name: 'DJI Mini 3 Pro', quantity: 1 },
-      ],
-      droneOthers: [],
-      soundEquipment: [
-        { name: 'Zoom F6', quantity: 1 },
-        { name: 'Rode NTG5', quantity: 3 },
-      ],
-      soundOthers: [],
-    },
-
-    // Uploaded files
-    uploadedFiles: [
-      { name: 'Mor_Bani_Thangat_Kare_Script_Episodes_1-10.pdf', size: 5200000, type: 'application/pdf', uploadDate: '2026-01-23' },
-      { name: 'Character_Bible.pdf', size: 1890000, type: 'application/pdf', uploadDate: '2026-01-24' },
-      { name: 'Location_References_Gujarat.pdf', size: 3450000, type: 'application/pdf', uploadDate: '2026-01-24' },
-    ],
-    cloudLinks: [
-      'https://drive.google.com/file/d/gujarati-series-complete-scripts',
-      'https://drive.google.com/file/d/episode-wise-breakdown',
-    ],
-  },
-  {
-    id: 6,
-    projectName: 'Rangmanch',
-    creator: 'Indie Creators Collective',
-    culture: 'Rajasthani',
-    format: 'Mini Film',
-    genre: 'Social Drama',
-    subGenre: 'Experimental',
-    contentRating: 'U/A 16+',
-    totalBudget: 8500000,
-    completeness: 88,
-    warnings: 1,
-    status: 'approved',
-    submittedDate: '2026-01-29',
-    episodes: null,
-    thumbnail: '/api/placeholder/400/225',
-
-    // POC (Point of Contact)
-    productionPOC: '',
-    contentPOC: '',
-
-    // Activity Log
-    activityLog: [
-      { date: '2026-01-29', time: '08:00 AM', action: 'Project Submitted', description: 'Creator submitted project for review', user: 'Rajasthani Creations', type: 'submit' },
-      { date: '2026-01-29', time: '12:30 PM', action: 'Fast Track Review', description: 'Mini film - expedited review process', user: 'Content Team', type: 'review' },
-      { date: '2026-01-29', time: '04:00 PM', action: 'Quality Check Passed', description: 'All technical specs verified', user: 'QC Team', type: 'progress' },
-      { date: '2026-01-30', time: '10:00 AM', action: 'Approved', description: 'Project approved for immediate production', user: 'Production Head', type: 'approved' },
-    ],
-
-    logline: 'A poignant exploration of street theater artists fighting for their art in modern Rajasthan',
-    synopsis: 'Rangmanch tells the story of a traditional Rajasthani theater troupe struggling to keep their art form alive in the age of digital entertainment. Through three interconnected stories, it explores the passion, sacrifice, and resilience of artists who refuse to let their culture fade away.',
-    targetAudience: 'Art lovers, 20-45 age group, indie cinema enthusiasts',
-    language: 'Rajasthani with Hindi subtitles',
-    productionCompany: 'Indie Creators Collective',
-    productionType: 'Original',
-    sourceMaterial: 'Original Script',
-    ipRightsStatus: 'Owned',
-
-    creatorAge: '32',
-    officialEmail: 'hello@indiecreators.in',
-    phone: '+91 98201 23456',
-    panNumber: 'AABCI1234J',
-    gstNumber: '27AABCI1234J1Z5',
-    yearsOfExperience: '10',
-    previousProjects: 'Zhala Bobhata (Short Film), Aamhi Kahi (Web Series)',
-    companyType: 'Independent Production',
-    teamSize: '10-15',
-
-    director: 'Nagraj Manjule',
-    dop: 'Sudhakar Reddy',
-    editor: 'Abhijit Kokate',
-    musicComposer: 'Ajay-Atul',
-    writer: 'Vaibhav Tatwawaadi',
-    screenplayBy: 'Vaibhav Tatwawaadi',
-
-    shootStartDate: '2026-03-01',
-    shootEndDate: '2026-03-25',
-    shootDays: '20',
-    finalDeliveryDate: '2026-05-15',
-
-    budgetBreakdown: [
-      { category: 'Cast', amount: 2125000, percentage: 25 },
-      { category: 'Crew', amount: 1700000, percentage: 20 },
-      { category: 'Production', amount: 2550000, percentage: 30 },
-      { category: 'Post-Production', amount: 1275000, percentage: 15 },
-      { category: 'Music & Songs', amount: 510000, percentage: 6 },
-      { category: 'Marketing', amount: 340000, percentage: 4 },
-    ],
-
-    castData: {
-      primaryCast: [
-        { id: '1', artistName: 'Subodh Bhave', characterName: 'Vishwas Patil', socialMediaLink: '', photographUrl: '' },
-        { id: '2', artistName: 'Sonali Kulkarni', characterName: 'Asha Rao', socialMediaLink: '', photographUrl: '' },
-      ],
-      secondaryCast: [
-        { id: '3', artistName: 'Pushkar Jog', characterName: 'Younger Actor', socialMediaLink: '', photographUrl: '' },
-      ],
-      tertiaryCast: [],
-    },
-
-    technicalSpecs: {
-      cameraModel: 'Blackmagic Pocket 6K Pro',
-      cameraSetupType: 'single' as const,
-      lensTypes: [
-        { name: 'Canon EF Cinema', quantity: 3 },
-      ],
-      cameraOthers: [],
-      lightingEquipment: [
-        { name: 'Godox VL300', quantity: 4 },
-      ],
-      lightingOthers: [],
-      cinematicTools: [
-        { name: 'Zhiyun Crane 3S', quantity: 1 },
-      ],
-      cinematicOthers: [],
-      droneModels: [],
-      droneOthers: [],
-      soundEquipment: [
-        { name: 'Zoom F8n', quantity: 1 },
-      ],
-      soundOthers: [],
-    },
-
-    uploadedFiles: [
-      { name: 'Rangmanch_Script.pdf', size: 1890000, type: 'application/pdf', uploadDate: '2026-01-27' },
-      { name: 'Theater_References.pdf', size: 980000, type: 'application/pdf', uploadDate: '2026-01-28' },
-    ],
-    cloudLinks: [],
-  },
-];
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library' | 'projects' | 'documents'>('overview');
@@ -831,6 +30,31 @@ export default function AdminDashboard() {
   const [showEditRequestsPanel, setShowEditRequestsPanel] = useState(false);
   const [showNotificationsPanel, setShowNotificationsPanel] = useState(false);
   const [denyReason, setDenyReason] = useState('');
+  const [customDocuments, setCustomDocuments] = useState<{id: string, name: string, content: string, createdAt: string}[]>([]);
+  const [showAddDocModal, setShowAddDocModal] = useState(false);
+  const [newDocName, setNewDocName] = useState('');
+  const [newDocContent, setNewDocContent] = useState('');
+  const [savedDPRs, setSavedDPRs] = useState<{id: string, title: string, data: any, createdAt: string, sharedWith: string[]}[]>([]);
+  const [currentDPR, setCurrentDPR] = useState<any>({
+    title: '', date: '', dayNumber: '', producer: '', director: '',
+    firstShootDate: '', scheduledFinish: '', revisedFinish: '', location: '',
+    crewCall: '', rollTime: '', firstShot: '', mealBreakStart: '', mealBreakEnd: '',
+    firstShotAfter: '', packup: '', lastPersonOut: '', lastPersonDept: '',
+    scriptScenes: '', scriptPages: '', prevScenes: '', prevPages: '',
+    todayScenes: '', todayPages: '', totalScenes: '', totalPages: '',
+    remainingScenes: '', remainingPages: '',
+    prevSetups: '', todaySetups: '', totalSetups: '', remainingSetups: '',
+    comments: '', nextDate: '', nextLocation: '', nextCallTime: '', nextScenes: '',
+    preparedBy: '', approvedBy: ''
+  });
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+  const [newProject, setNewProject] = useState({
+    projectName: '', creator: '', culture: '', format: '', genre: '',
+    totalBudget: '', episodes: '', status: 'pending',
+    productionPOC: '', productionPOCPhone: '', productionPOCEmail: '',
+    contentPOC: '', contentPOCPhone: '', contentPOCEmail: '',
+    logline: '', synopsis: '', language: '', productionCompany: ''
+  });
   const [activityNote, setActivityNote] = useState('');
   const [projectsCultureFilter, setProjectsCultureFilter] = useState<string>('all');
   const [selectedPOC, setSelectedPOC] = useState<string | null>(null);
@@ -839,8 +63,17 @@ export default function AdminDashboard() {
   const [customPOCs, setCustomPOCs] = useState<string[]>([]);
   const [showAddPOCModal, setShowAddPOCModal] = useState(false);
   const [newPOCName, setNewPOCName] = useState('');
+  const [customCultures, setCustomCultures] = useState<string[]>([]);
+  const [showAddCultureModal, setShowAddCultureModal] = useState(false);
+  const [newCultureName, setNewCultureName] = useState('');
+  const [customFormats, setCustomFormats] = useState<string[]>([]);
+  const [showAddFormatModal, setShowAddFormatModal] = useState(false);
+  const [newFormatName, setNewFormatName] = useState('');
   const [expandedBudgetProject, setExpandedBudgetProject] = useState<string | null>(null);
   const [activityNoteType, setActivityNoteType] = useState('note');
+
+  // Internal Projects (separate from submissions - for internal tracking only)
+  const [internalProjects, setInternalProjects] = useState<any[]>([]);
 
   // Status change with comment modal states
   const [showStatusChangeModal, setShowStatusChangeModal] = useState(false);
@@ -1006,6 +239,17 @@ END:VCARD`;
   // Load viewed projects from localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // One-time reset - clear all old data for fresh start
+      const hasReset = localStorage.getItem('stage_data_reset_v2');
+      if (!hasReset) {
+        localStorage.removeItem('stage_submissions');
+        localStorage.removeItem('stage_talent_library');
+        localStorage.removeItem('stage_viewed_projects');
+        localStorage.removeItem('stage_edit_requests');
+        localStorage.removeItem('creator_submissions');
+        localStorage.setItem('stage_data_reset_v2', 'true');
+      }
+
       const viewed = JSON.parse(localStorage.getItem('stage_viewed_projects') || '[]');
       setViewedProjects(new Set(viewed));
 
@@ -1020,8 +264,47 @@ END:VCARD`;
       // Load production documents
       const savedDocs = JSON.parse(localStorage.getItem('production_docs') || '[]');
       setProductionDocs(savedDocs);
+
+      // Load custom documents for Others section
+      const savedCustomDocs = JSON.parse(localStorage.getItem('custom_documents') || '[]');
+      setCustomDocuments(savedCustomDocs);
+
+      // Load saved DPRs
+      const dprs = JSON.parse(localStorage.getItem('saved_dprs') || '[]');
+      setSavedDPRs(dprs);
+
+      // Load custom cultures, formats, and POCs
+      const savedCustomCultures = JSON.parse(localStorage.getItem('stage_custom_cultures') || '[]');
+      setCustomCultures(savedCustomCultures);
+      const savedCustomFormats = JSON.parse(localStorage.getItem('stage_custom_formats') || '[]');
+      setCustomFormats(savedCustomFormats);
+      const savedCustomPOCs = JSON.parse(localStorage.getItem('stage_custom_pocs') || '[]');
+      setCustomPOCs(savedCustomPOCs);
+
+      // Load internal projects (separate from submissions)
+      const savedInternalProjects = JSON.parse(localStorage.getItem('stage_internal_projects') || '[]');
+      setInternalProjects(savedInternalProjects);
     }
   }, []);
+
+  // Save custom cultures, formats, and POCs to localStorage when they change
+  useEffect(() => {
+    if (typeof window !== 'undefined' && customCultures.length > 0) {
+      localStorage.setItem('stage_custom_cultures', JSON.stringify(customCultures));
+    }
+  }, [customCultures]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && customFormats.length > 0) {
+      localStorage.setItem('stage_custom_formats', JSON.stringify(customFormats));
+    }
+  }, [customFormats]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && customPOCs.length > 0) {
+      localStorage.setItem('stage_custom_pocs', JSON.stringify(customPOCs));
+    }
+  }, [customPOCs]);
 
   // Extract talents from a project and add to library
   const extractTalentsFromProject = (project: any) => {
@@ -1518,7 +801,7 @@ END:VCARD`;
           };
         });
 
-        setSubmissions([...transformedSubmissions, ...sampleSubmissions]);
+        setSubmissions(transformedSubmissions);
       }
       setLocalSubmissionsLoaded(true);
 
@@ -1719,17 +1002,18 @@ END:VCARD`;
     }
   };
 
-  // Activity Log Helper - Save activity for a project
-  const addActivityLog = (projectId: number, action: string, description: string, type: string, user: string = 'Admin Team') => {
+  // Activity Log Helper - Save activity for a project (unified format)
+  const addActivityLog = (projectId: number | string, action: string, description: string, type: string, user: string = 'Admin Team', source: string = 'admin') => {
     const now = new Date();
     const activity = {
-      id: `activity_${Date.now()}`,
+      id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       projectId,
       action,
       description,
       type, // 'submit' | 'status' | 'assign' | 'feedback' | 'review' | 'edit' | 'access'
       user,
-      date: now.toISOString().split('T')[0],
+      source, // 'creator' or 'admin'
+      date: now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
       time: now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
       timestamp: now.toISOString(),
     };
@@ -1903,13 +1187,20 @@ END:VCARD`;
     console.log('Notification created:', notification);
   };
 
-  const handleDeleteProject = (submissionId: number) => {
+  const handleDeleteProject = (submissionId: number | string) => {
     // Remove submission from list
-    setSubmissions(prevSubmissions =>
-      prevSubmissions.filter(s => s.id !== submissionId)
-    );
+    const updatedSubmissions = submissions.filter(s => s.id !== submissionId);
+    setSubmissions(updatedSubmissions);
+
+    // Persist to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('stage_submissions', JSON.stringify(updatedSubmissions));
+    }
 
     setShowDeleteConfirm(null);
+    if (selectedSubmission?.id === submissionId) {
+      setSelectedSubmission(null);
+    }
     console.log(`Deleted submission ${submissionId}`);
   };
 
@@ -3018,16 +2309,16 @@ END:VCARD`;
     });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-900 text-white">
-      {/* Animated Background */}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 text-gray-800">
+      {/* Subtle Background Decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-red-600/10 to-transparent rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-purple-600/10 to-transparent rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-gradient-to-br from-blue-100/30 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-1/2 -right-1/2 w-full h-full bg-gradient-to-tl from-indigo-100/30 to-transparent rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative z-10">
         {/* Header - Mobile Responsive */}
-        <header className="border-b border-white/10 backdrop-blur-xl bg-black/20 sticky top-0 z-50">
+        <header className="border-b border-gray-200 bg-white shadow-sm sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-3 md:px-6 py-3 md:py-4">
             {/* Top Row - Logo & Actions */}
             <div className="flex items-center justify-between mb-3 md:mb-0">
@@ -3045,8 +2336,8 @@ END:VCARD`;
                     onClick={() => setActiveTab('overview')}
                     className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
                       activeTab === 'overview'
-                        ? 'text-white bg-red-600 shadow-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                        ? 'text-white bg-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
                     }`}
                   >
                     Overview
@@ -3055,13 +2346,13 @@ END:VCARD`;
                     onClick={() => setActiveTab('submissions')}
                     className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
                       activeTab === 'submissions'
-                        ? 'text-white bg-red-600 shadow-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                        ? 'text-white bg-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
                     }`}
                   >
                     Submissions
                     {newSubmissionsCount > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-pink-500 to-red-500 rounded-full flex items-center justify-center text-[10px] font-black text-white border-2 border-gray-900">
+                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-[10px] font-black text-white border-2 border-white shadow-sm">
                         {newSubmissionsCount}
                       </span>
                     )}
@@ -3070,114 +2361,114 @@ END:VCARD`;
                     onClick={() => setActiveTab('analytics')}
                     className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
                       activeTab === 'analytics'
-                        ? 'text-white bg-red-600 shadow-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                        ? 'text-white bg-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
                     }`}
                   >
                     Analytics
                     {activeTab === 'analytics' && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full"></div>
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
                     )}
                   </button>
                   <button
                     onClick={() => setActiveTab('budget')}
                     className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
                       activeTab === 'budget'
-                        ? 'text-white bg-red-600 shadow-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                        ? 'text-white bg-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
                     }`}
                   >
                     Budget
                     {activeTab === 'budget' && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full"></div>
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
                     )}
                   </button>
                   <button
                     onClick={() => setActiveTab('library')}
                     className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
                       activeTab === 'library'
-                        ? 'text-white bg-red-600 shadow-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                        ? 'text-white bg-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
                     }`}
                   >
                     📚 Library
                     {activeTab === 'library' && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full"></div>
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
                     )}
                   </button>
                   <button
                     onClick={() => setActiveTab('projects')}
                     className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
                       activeTab === 'projects'
-                        ? 'text-white bg-red-600 shadow-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                        ? 'text-white bg-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
                     }`}
                   >
                     📊 Projects
                     {activeTab === 'projects' && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full"></div>
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
                     )}
                   </button>
                   <button
                     onClick={() => setActiveTab('documents')}
                     className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
                       activeTab === 'documents'
-                        ? 'text-white bg-red-600 shadow-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                        ? 'text-white bg-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
                     }`}
                   >
                     📁 Docs
                     {activeTab === 'documents' && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 rounded-full"></div>
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
                     )}
                   </button>
-                </nav>
+                  </nav>
               </div>
               {/* Action Buttons - Mobile Responsive */}
               <div className="flex items-center gap-2 md:gap-4">
                 {/* Edit Access Requests Button */}
                 <button
-                  className="relative p-2 md:p-2.5 bg-white/10 backdrop-blur-lg rounded-lg border border-white/20 hover:bg-white/20 transition-all"
+                  className="relative p-2 md:p-2.5 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-all"
                   onClick={() => setShowEditRequestsPanel(!showEditRequestsPanel)}
                 >
                   <span className="text-lg md:text-2xl">✏️</span>
                   {pendingEditRequestsCount > 0 && (
-                    <div className="absolute -top-1 -right-1 min-w-[18px] md:min-w-[24px] h-[18px] md:h-6 px-1 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                    <div className="absolute -top-1 -right-1 min-w-[18px] md:min-w-[24px] h-[18px] md:h-6 px-1 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-md animate-pulse">
                       <span className="text-[10px] md:text-xs font-black text-white">{pendingEditRequestsCount}</span>
                     </div>
                   )}
                 </button>
                 {/* Creator Updates Button */}
                 <button
-                  className="relative p-2 md:p-2.5 bg-white/10 backdrop-blur-lg rounded-lg border border-white/20 hover:bg-white/20 transition-all"
+                  className="relative p-2 md:p-2.5 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-all"
                   onClick={() => setShowCreatorUpdatesPanel(!showCreatorUpdatesPanel)}
                   title="Creator Updates & Changes"
                 >
                   <span className="text-lg md:text-2xl">📝</span>
                   {adminNotifications.filter(n => !n.read).length > 0 && (
-                    <div className="absolute -top-1 -right-1 min-w-[18px] md:min-w-[24px] h-[18px] md:h-6 px-1 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                    <div className="absolute -top-1 -right-1 min-w-[18px] md:min-w-[24px] h-[18px] md:h-6 px-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md animate-pulse">
                       <span className="text-[10px] md:text-xs font-black text-white">{adminNotifications.filter(n => !n.read).length}</span>
                     </div>
                   )}
                 </button>
                 {/* Notification Bell */}
                 <button
-                  className="relative p-2 md:p-2.5 bg-white/10 backdrop-blur-lg rounded-lg border border-white/20 hover:bg-white/20 transition-all"
+                  className="relative p-2 md:p-2.5 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-all"
                   onClick={() => setShowNotificationsPanel(!showNotificationsPanel)}
                 >
                   <span className="text-lg md:text-2xl">🔔</span>
                   {newSubmissionsCount > 0 && (
-                    <div className="absolute -top-1 -right-1 min-w-[18px] md:min-w-[24px] h-[18px] md:h-6 px-1 bg-gradient-to-r from-red-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg animate-pulse">
+                    <div className="absolute -top-1 -right-1 min-w-[18px] md:min-w-[24px] h-[18px] md:h-6 px-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md animate-pulse">
                       <span className="text-[10px] md:text-xs font-black text-white">{newSubmissionsCount}</span>
                     </div>
                   )}
                 </button>
                 {/* Admin Badge - Hidden on mobile */}
-                <div className="hidden md:block bg-white/10 backdrop-blur-lg rounded-lg px-4 py-2 border border-white/20">
-                  <div className="text-xs text-gray-400">Admin</div>
-                  <div className="text-sm font-bold">STAGE Team</div>
+                <div className="hidden md:block bg-blue-50 rounded-lg px-4 py-2 border border-blue-200">
+                  <div className="text-xs text-gray-500">Admin</div>
+                  <div className="text-sm font-bold text-gray-800">STAGE Team</div>
                 </div>
-                <Link href="/" className="text-xs md:text-sm font-bold text-gray-400 hover:text-white">
+                <Link href="/" className="text-xs md:text-sm font-bold text-gray-500 hover:text-blue-600">
                   Exit
                 </Link>
               </div>
@@ -3197,13 +2488,13 @@ END:VCARD`;
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`relative flex-shrink-0 px-3 py-1.5 text-xs font-bold transition-all rounded-lg ${
                     activeTab === tab.id
-                      ? 'text-white bg-red-600'
-                      : 'text-gray-400 bg-white/5'
+                      ? 'text-white bg-blue-600'
+                      : 'text-gray-600 bg-gray-100'
                   }`}
                 >
                   {tab.label}
                   {tab.badge && tab.badge > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 bg-pink-500 rounded-full flex items-center justify-center text-[8px] font-black text-white">
+                    <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 bg-blue-500 rounded-full flex items-center justify-center text-[8px] font-black text-white shadow-sm">
                       {tab.badge}
                     </span>
                   )}
@@ -3227,94 +2518,102 @@ END:VCARD`;
             </div>
           </div>
 
-          {/* OVERVIEW TAB - Netflix Style */}
+          {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
             <>
-          {/* Netflix-Style Dark Container */}
-          <div className="bg-gradient-to-b from-gray-900 via-black to-gray-900 rounded-3xl overflow-hidden -mx-6 -mt-2 px-6 py-8">
+            {/* Clean Light Theme Container */}
+            <div className="min-h-screen bg-gray-50 rounded-2xl -mx-6 -mt-2 px-6 py-6">
 
-            {/* Hero Banner */}
-            <div className="relative mb-8 rounded-2xl overflow-hidden bg-gradient-to-r from-red-900/50 via-black to-purple-900/50 p-8">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30"></div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="px-3 py-1 bg-red-600 text-white text-xs font-black rounded">STAGE</span>
-                  <span className="text-gray-400 text-sm font-semibold">Admin Dashboard</span>
+            {/* Header Section */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-lg">STAGE</span>
+                    <span className="text-gray-500 text-sm font-medium">Admin Dashboard</span>
+                  </div>
+                  <h1 className="text-2xl font-bold text-gray-800">Production Team</h1>
+                  <p className="text-gray-500 text-sm">Content Management & Review Platform</p>
                 </div>
-                <h1 className="text-4xl font-black text-white mb-2">Production Team</h1>
-                <p className="text-gray-300 text-lg font-medium mb-6">Content Management & Review Platform</p>
+                <button
+                  onClick={() => setShowAddProjectModal(true)}
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2"
+                >
+                  <span>+</span>
+                  <span>Add Project</span>
+                </button>
+              </div>
+            </div>
 
-                {/* Quick Stats Row - All Clickable */}
-                <div className="flex items-center gap-4 flex-wrap">
-                  <button
-                    onClick={() => {
-                      setFilterStatus('all');
-                      setFilterCulture('all');
-                      setFilterFormat('all');
-                      setTimeout(() => document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-all"
-                  >
-                    <span className="text-3xl font-black text-white">{stats.total}</span>
-                    <span className="text-gray-400 text-sm">Total</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setFilterStatus('approved');
-                      setFilterCulture('all');
-                      setFilterFormat('all');
-                      setTimeout(() => document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600/20 hover:bg-green-600/40 border border-green-500/30 transition-all"
-                  >
-                    <span className="text-3xl font-black text-green-500">{stats.approved}</span>
-                    <span className="text-gray-400 text-sm">Approved</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setFilterStatus('pending');
-                      setFilterCulture('all');
-                      setFilterFormat('all');
-                      setTimeout(() => document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-yellow-600/20 hover:bg-yellow-600/40 border border-yellow-500/30 transition-all"
-                  >
-                    <span className="text-3xl font-black text-yellow-500">{stats.pending}</span>
-                    <span className="text-gray-400 text-sm">Pending</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setFilterStatus('in-production');
-                      setFilterCulture('all');
-                      setFilterFormat('all');
-                      setTimeout(() => document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth' }), 100);
-                    }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-600/20 hover:bg-cyan-600/40 border border-cyan-500/30 transition-all"
-                  >
-                    <span className="text-3xl font-black text-cyan-500">{stats.inProduction}</span>
-                    <span className="text-gray-400 text-sm">Production</span>
-                  </button>
-                  <button
-                    onClick={() => setShowBudgetBreakdown(!showBudgetBreakdown)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600/20 hover:bg-emerald-600/40 border border-emerald-500/30 transition-all"
-                  >
-                    <span className="text-2xl font-black text-emerald-400">{formatBudgetInWords(stats.totalBudget)}</span>
-                    <span className="text-gray-400 text-sm">Total Value</span>
-                    <span className="text-emerald-400 ml-1">{showBudgetBreakdown ? '▲' : '▼'}</span>
-                  </button>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+              <button
+                onClick={() => {
+                  setFilterStatus('all');
+                  setFilterCulture('all');
+                  setFilterFormat('all');
+                  setTimeout(() => document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-blue-300 transition-all text-left"
+              >
+                <div className="text-3xl font-bold text-gray-800">{stats.total}</div>
+                <div className="text-gray-500 text-sm font-medium">Total Projects</div>
+              </button>
+              <button
+                onClick={() => {
+                  setFilterStatus('approved');
+                  setFilterCulture('all');
+                  setFilterFormat('all');
+                  setTimeout(() => document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-green-300 transition-all text-left"
+              >
+                <div className="text-3xl font-bold text-green-600">{stats.approved}</div>
+                <div className="text-gray-500 text-sm font-medium">Approved</div>
+              </button>
+              <button
+                onClick={() => {
+                  setFilterStatus('pending');
+                  setFilterCulture('all');
+                  setFilterFormat('all');
+                  setTimeout(() => document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-amber-300 transition-all text-left"
+              >
+                <div className="text-3xl font-bold text-amber-600">{stats.pending}</div>
+                <div className="text-gray-500 text-sm font-medium">Pending</div>
+              </button>
+              <button
+                onClick={() => {
+                  setFilterStatus('in-production');
+                  setFilterCulture('all');
+                  setFilterFormat('all');
+                  setTimeout(() => document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth' }), 100);
+                }}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-blue-300 transition-all text-left"
+              >
+                <div className="text-3xl font-bold text-blue-600">{stats.inProduction}</div>
+                <div className="text-gray-500 text-sm font-medium">In Production</div>
+              </button>
+              <button
+                onClick={() => setShowBudgetBreakdown(!showBudgetBreakdown)}
+                className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md hover:border-emerald-300 transition-all text-left"
+              >
+                <div className="text-2xl font-bold text-emerald-600">{formatBudgetInWords(stats.totalBudget)}</div>
+                <div className="text-gray-500 text-sm font-medium flex items-center gap-1">
+                  Total Value <span className="text-xs">{showBudgetBreakdown ? '▲' : '▼'}</span>
                 </div>
+              </button>
+            </div>
 
-                {/* Budget Breakdown Panel - Expandable */}
-                {showBudgetBreakdown && (
-                  <div className="mt-6 bg-black/50 backdrop-blur-sm rounded-xl p-6 border border-emerald-500/30">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                      <span className="text-emerald-400">💰</span>
-                      Approved Projects - Budget Breakdown
-                    </h3>
+            {/* Budget Breakdown Panel - Expandable */}
+            {showBudgetBreakdown && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
+                <h3 className="text-lg font-bold text-gray-800 mb-4">Budget Breakdown</h3>
 
                     {/* Culture-wise Breakdown */}
-                    <div className="mb-6">
-                      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-3">By Culture</h4>
+                    <div className="mb-5">
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">By Culture</h4>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'].map((culture) => {
                           const cultureProjects = approvedProjects.filter(p => p.culture?.toLowerCase() === culture.toLowerCase());
@@ -3329,11 +2628,11 @@ END:VCARD`;
                                 setShowBudgetBreakdown(false);
                                 setTimeout(() => document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth' }), 100);
                               }}
-                              className={`p-3 rounded-lg bg-gradient-to-br ${getCultureColor(culture)} hover:scale-105 transition-all text-left`}
+                              className="p-3 rounded-lg bg-gray-50 border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all text-left"
                             >
-                              <div className="text-white font-bold">{culture}</div>
-                              <div className="text-white/80 text-sm">{cultureProjects.length} Projects</div>
-                              <div className="text-white font-black text-lg mt-1">{formatBudgetInWords(cultureBudget)}</div>
+                              <div className="text-gray-800 font-semibold">{culture}</div>
+                              <div className="text-gray-500 text-sm">{cultureProjects.length} Projects</div>
+                              <div className="text-blue-600 font-bold mt-1">{formatBudgetInWords(cultureBudget)}</div>
                             </button>
                           );
                         })}
@@ -3341,15 +2640,15 @@ END:VCARD`;
                     </div>
 
                     {/* Format-wise Breakdown */}
-                    <div className="mb-6">
-                      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-3">By Format</h4>
+                    <div className="mb-5">
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">By Format</h4>
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                         {[
-                          { name: 'Feature Film', icon: '🎬', color: 'from-red-600 to-rose-700' },
-                          { name: 'Mini Film', icon: '🎞️', color: 'from-amber-500 to-orange-600' },
-                          { name: 'Long Series', icon: '📺', color: 'from-green-600 to-emerald-700' },
-                          { name: 'Limited Series', icon: '🎭', color: 'from-purple-600 to-violet-700' },
-                          { name: 'Microdrama', icon: '⚡', color: 'from-cyan-500 to-blue-600' },
+                          { name: 'Feature Film', icon: '🎬' },
+                          { name: 'Mini Film', icon: '🎞️' },
+                          { name: 'Long Series', icon: '📺' },
+                          { name: 'Limited Series', icon: '🎭' },
+                          { name: 'Microdrama', icon: '⚡' },
                         ].map((format) => {
                           const formatProjects = approvedProjects.filter(p => p.format === format.name);
                           const formatBudget = formatProjects.reduce((sum, p) => sum + (p.totalBudget || 0), 0);
@@ -3363,12 +2662,12 @@ END:VCARD`;
                                 setShowBudgetBreakdown(false);
                                 setTimeout(() => document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth' }), 100);
                               }}
-                              className={`p-3 rounded-lg bg-gradient-to-br ${format.color} hover:scale-105 transition-all text-left`}
+                              className="p-3 rounded-lg bg-gray-50 border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all text-left"
                             >
-                              <div className="text-2xl mb-1">{format.icon}</div>
-                              <div className="text-white font-bold text-sm">{format.name}</div>
-                              <div className="text-white/80 text-xs">{formatProjects.length} Projects</div>
-                              <div className="text-white font-bold text-sm mt-1">{formatBudgetInWords(formatBudget)}</div>
+                              <div className="text-xl mb-1">{format.icon}</div>
+                              <div className="text-gray-800 font-semibold text-sm">{format.name}</div>
+                              <div className="text-gray-500 text-xs">{formatProjects.length} Projects</div>
+                              <div className="text-blue-600 font-bold text-sm mt-1">{formatBudgetInWords(formatBudget)}</div>
                             </button>
                           );
                         })}
@@ -3377,7 +2676,7 @@ END:VCARD`;
 
                     {/* Approved Projects List */}
                     <div>
-                      <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wide mb-3">Approved Projects ({approvedProjects.length})</h4>
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Approved Projects ({approvedProjects.length})</h4>
                       <div className="max-h-60 overflow-y-auto space-y-2">
                         {approvedProjects.map((project) => (
                           <div
@@ -3387,21 +2686,21 @@ END:VCARD`;
                               setSelectedSubmission(project);
                               setShowBudgetBreakdown(false);
                             }}
-                            className="flex items-center justify-between p-3 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 cursor-pointer transition-all"
+                            className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200 hover:border-blue-300 cursor-pointer transition-all"
                           >
                             <div className="flex items-center gap-3">
-                              <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${getCultureColor(project.culture)} flex items-center justify-center text-lg`}>
+                              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-lg">
                                 {project.format === 'Feature Film' ? '🎬' :
                                  project.format === 'Mini Film' ? '🎞️' :
                                  project.format === 'Long Series' ? '📺' :
                                  project.format === 'Limited Series' ? '🎭' : '⚡'}
                               </div>
                               <div>
-                                <div className="text-white font-bold text-sm">{project.projectName}</div>
-                                <div className="text-gray-400 text-xs">{project.culture} • {project.format} • {project.creator}</div>
+                                <div className="text-gray-800 font-semibold text-sm">{project.projectName}</div>
+                                <div className="text-gray-500 text-xs">{project.culture} • {project.format} • {project.creator}</div>
                               </div>
                             </div>
-                            <div className="text-emerald-400 font-bold">{formatBudgetInWords(project.totalBudget)}</div>
+                            <div className="text-green-600 font-bold">{formatBudgetInWords(project.totalBudget)}</div>
                           </div>
                         ))}
                         {approvedProjects.length === 0 && (
@@ -3411,21 +2710,19 @@ END:VCARD`;
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
 
             {/* Status Quick Access Bar */}
-            <div className="flex items-center gap-3 mb-8 overflow-x-auto pb-2 hide-scrollbar">
+            <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
               {[
-                { status: 'all', label: 'All', count: stats.total, color: 'bg-gray-700 hover:bg-gray-600' },
-                { status: 'pending', label: 'Pending', count: stats.pending, color: 'bg-yellow-600/20 hover:bg-yellow-600/40 border border-yellow-600/50' },
-                { status: 'under-review', label: 'Under Review', count: stats.underReview, color: 'bg-blue-600/20 hover:bg-blue-600/40 border border-blue-600/50' },
-                { status: 'approved', label: 'Approved', count: stats.approved, color: 'bg-green-600/20 hover:bg-green-600/40 border border-green-600/50' },
-                { status: 'agreement-signed', label: 'Agreement', count: submissions.filter(s => s.status === 'agreement-signed').length, color: 'bg-teal-600/20 hover:bg-teal-600/40 border border-teal-600/50' },
-                { status: 'in-production', label: 'In Production', count: stats.inProduction, color: 'bg-cyan-600/20 hover:bg-cyan-600/40 border border-cyan-600/50' },
-                { status: 'revision-requested', label: 'Revision', count: stats.revisionRequested, color: 'bg-purple-600/20 hover:bg-purple-600/40 border border-purple-600/50' },
-                { status: 'on-hold', label: 'On Hold', count: stats.onHold, color: 'bg-orange-600/20 hover:bg-orange-600/40 border border-orange-600/50' },
-                { status: 'scrapped', label: 'Scrapped', count: stats.scrapped, color: 'bg-gray-600/20 hover:bg-gray-600/40 border border-gray-500/50' },
+                { status: 'all', label: 'All', count: stats.total },
+                { status: 'pending', label: 'Pending', count: stats.pending },
+                { status: 'under-review', label: 'Under Review', count: stats.underReview },
+                { status: 'approved', label: 'Approved', count: stats.approved },
+                { status: 'agreement-signed', label: 'Agreement', count: submissions.filter(s => s.status === 'agreement-signed').length },
+                { status: 'in-production', label: 'In Production', count: stats.inProduction },
+                { status: 'revision-requested', label: 'Revision', count: stats.revisionRequested },
+                { status: 'on-hold', label: 'On Hold', count: stats.onHold },
+                { status: 'scrapped', label: 'Scrapped', count: stats.scrapped },
               ].map((item) => (
                 <button
                   key={item.status}
@@ -3437,88 +2734,90 @@ END:VCARD`;
                       document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }, 100);
                   }}
-                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${
+                  className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     filterStatus === item.status
-                      ? 'bg-white text-black'
-                      : `${item.color} text-white`
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-white text-gray-700 border border-gray-200 hover:border-blue-300'
                   }`}
                 >
-                  {item.label} <span className="ml-1 opacity-70">{item.count}</span>
+                  {item.label} <span className="ml-1 text-xs opacity-70">{item.count}</span>
                 </button>
               ))}
             </div>
 
             {/* Search & Sort Bar */}
-            <div className="mb-8 flex flex-col md:flex-row gap-4">
-              {/* Search Input */}
-              <div className="flex-1 relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
-                <input
-                  type="text"
-                  placeholder="Search projects by name, creator, director, culture, format..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 transition-all"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                {/* Search Input */}
+                <div className="flex-1 relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+                  <input
+                    type="text"
+                    placeholder="Search projects by name, creator, director, culture, format..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-12 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
 
-              {/* Sort Options */}
-              <div className="flex items-center gap-2">
-                <span className="text-gray-400 text-sm hidden md:inline">Sort by:</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-red-500 appearance-none cursor-pointer"
-                >
-                  <option value="date">📅 Date</option>
-                  <option value="name">📝 Name</option>
-                  <option value="budget">💰 Budget</option>
-                  <option value="status">🔄 Status</option>
-                </select>
-                <button
-                  onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                  className="px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white hover:bg-white/10 transition-all"
-                  title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
-                >
-                  {sortOrder === 'asc' ? '↑' : '↓'}
-                </button>
-                <button
-                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  className={`px-4 py-3 rounded-xl font-bold text-sm transition-all ${
-                    showAdvancedFilters
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white'
-                      : 'bg-white/5 border border-white/20 text-white hover:bg-white/10'
-                  }`}
-                >
-                  🎛️ Filters
-                </button>
-                <button
-                  onClick={() => setShowAnalytics(!showAnalytics)}
-                  className={`px-4 py-3 rounded-xl font-bold text-sm transition-all ${
-                    showAnalytics
-                      ? 'bg-gradient-to-r from-red-500 to-pink-600 text-white'
-                      : 'bg-white/5 border border-white/20 text-white hover:bg-white/10'
-                  }`}
-                >
+                {/* Sort Options */}
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500 text-sm hidden md:inline">Sort:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 text-sm focus:outline-none focus:border-blue-400 cursor-pointer"
+                  >
+                    <option value="date">Date</option>
+                    <option value="name">Name</option>
+                    <option value="budget">Budget</option>
+                    <option value="status">Status</option>
+                  </select>
+                  <button
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    className="px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-100 transition-all"
+                    title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                  >
+                    {sortOrder === 'asc' ? '↑' : '↓'}
+                  </button>
+                  <button
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className={`px-3 py-2.5 rounded-lg font-medium text-sm transition-all ${
+                      showAdvancedFilters
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    Filters
+                  </button>
+                  <button
+                    onClick={() => setShowAnalytics(!showAnalytics)}
+                    className={`px-3 py-2.5 rounded-lg font-medium text-sm transition-all ${
+                      showAnalytics
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
                   📊 Analytics
                 </button>
+                </div>
               </div>
             </div>
 
             {/* Advanced Filters Panel */}
             {showAdvancedFilters && (
-              <div className="mb-6 bg-gradient-to-br from-purple-900/30 to-pink-900/30 rounded-2xl border border-purple-500/30 p-5">
+              <div className="mb-6 bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-black text-white flex items-center gap-2">
-                    <span>🎛️</span> Advanced Filters
+                  <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <span className="text-blue-500">🎛️</span> Advanced Filters
                   </h3>
                   <button
                     onClick={() => {
@@ -3530,7 +2829,7 @@ END:VCARD`;
                       setFilterFormat('all');
                       setFilterCulture('all');
                     }}
-                    className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-sm font-bold rounded-lg transition-all"
+                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-lg transition-all"
                   >
                     Clear All
                   </button>
@@ -3539,57 +2838,57 @@ END:VCARD`;
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Date Range From */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2">📅 From Date</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">📅 From Date</label>
                     <input
                       type="date"
                       value={dateRangeFrom}
                       onChange={(e) => setDateRangeFrom(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
                     />
                   </div>
 
                   {/* Date Range To */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2">📅 To Date</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">📅 To Date</label>
                     <input
                       type="date"
                       value={dateRangeTo}
                       onChange={(e) => setDateRangeTo(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100"
                     />
                   </div>
 
                   {/* Budget Min */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2">💰 Min Budget (₹)</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">💰 Min Budget (₹)</label>
                     <input
                       type="number"
                       value={budgetMin}
                       onChange={(e) => setBudgetMin(e.target.value)}
                       placeholder="e.g., 1000000"
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 placeholder-gray-500"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 placeholder-gray-400"
                     />
                   </div>
 
                   {/* Budget Max */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2">💰 Max Budget (₹)</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">💰 Max Budget (₹)</label>
                     <input
                       type="number"
                       value={budgetMax}
                       onChange={(e) => setBudgetMax(e.target.value)}
                       placeholder="e.g., 50000000"
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 placeholder-gray-500"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 text-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 placeholder-gray-400"
                     />
                   </div>
 
                   {/* Culture Filter */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2">🌍 Culture</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">🌍 Culture</label>
                     <select
                       value={filterCulture}
                       onChange={(e) => setFilterCulture(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 appearance-none cursor-pointer"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 text-sm focus:outline-none focus:border-blue-400 appearance-none cursor-pointer"
                     >
                       <option value="all">All Cultures</option>
                       <option value="haryanvi">Haryanvi</option>
@@ -3601,11 +2900,11 @@ END:VCARD`;
 
                   {/* Format Filter */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2">🎬 Format</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">🎬 Format</label>
                     <select
                       value={filterFormat}
                       onChange={(e) => setFilterFormat(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 appearance-none cursor-pointer"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 text-sm focus:outline-none focus:border-blue-400 appearance-none cursor-pointer"
                     >
                       <option value="all">All Formats</option>
                       <option value="Feature Film">Feature Film</option>
@@ -3618,11 +2917,11 @@ END:VCARD`;
 
                   {/* Status Filter */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2">📋 Status</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">📋 Status</label>
                     <select
                       value={filterStatus}
                       onChange={(e) => setFilterStatus(e.target.value)}
-                      className="w-full px-4 py-2.5 bg-white/5 border border-white/20 rounded-xl text-white text-sm focus:outline-none focus:border-purple-500 appearance-none cursor-pointer"
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 text-sm focus:outline-none focus:border-blue-400 appearance-none cursor-pointer"
                     >
                       <option value="all">All Statuses</option>
                       <option value="pending">Pending</option>
@@ -3638,23 +2937,23 @@ END:VCARD`;
 
                   {/* Quick Budget Presets */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-400 mb-2">⚡ Quick Budget</label>
+                    <label className="block text-sm font-medium text-gray-600 mb-2">⚡ Quick Budget</label>
                     <div className="flex gap-2 flex-wrap">
                       <button
                         onClick={() => { setBudgetMin(''); setBudgetMax('5000000'); }}
-                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg transition-all"
+                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium rounded-lg transition-all border border-blue-200"
                       >
                         Under 50L
                       </button>
                       <button
                         onClick={() => { setBudgetMin('5000000'); setBudgetMax('20000000'); }}
-                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg transition-all"
+                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium rounded-lg transition-all border border-blue-200"
                       >
                         50L - 2Cr
                       </button>
                       <button
                         onClick={() => { setBudgetMin('20000000'); setBudgetMax(''); }}
-                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-lg transition-all"
+                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium rounded-lg transition-all border border-blue-200"
                       >
                         Above 2Cr
                       </button>
@@ -3664,31 +2963,31 @@ END:VCARD`;
 
                 {/* Active Filters Summary */}
                 {(dateRangeFrom || dateRangeTo || budgetMin || budgetMax) && (
-                  <div className="mt-4 pt-4 border-t border-white/10">
+                  <div className="mt-4 pt-4 border-t border-gray-100">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-gray-400 text-sm">Active filters:</span>
+                      <span className="text-gray-500 text-sm">Active filters:</span>
                       {dateRangeFrom && (
-                        <span className="px-2 py-1 bg-purple-500/30 text-purple-300 text-xs font-bold rounded-lg flex items-center gap-1">
+                        <span className="px-2 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-lg flex items-center gap-1 border border-blue-200">
                           From: {dateRangeFrom}
-                          <button onClick={() => setDateRangeFrom('')} className="hover:text-white">×</button>
+                          <button onClick={() => setDateRangeFrom('')} className="hover:text-blue-800">×</button>
                         </span>
                       )}
                       {dateRangeTo && (
-                        <span className="px-2 py-1 bg-purple-500/30 text-purple-300 text-xs font-bold rounded-lg flex items-center gap-1">
+                        <span className="px-2 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-lg flex items-center gap-1 border border-blue-200">
                           To: {dateRangeTo}
-                          <button onClick={() => setDateRangeTo('')} className="hover:text-white">×</button>
+                          <button onClick={() => setDateRangeTo('')} className="hover:text-blue-800">×</button>
                         </span>
                       )}
                       {budgetMin && (
-                        <span className="px-2 py-1 bg-green-500/30 text-green-300 text-xs font-bold rounded-lg flex items-center gap-1">
+                        <span className="px-2 py-1 bg-green-50 text-green-600 text-xs font-medium rounded-lg flex items-center gap-1 border border-green-200">
                           Min: ₹{parseInt(budgetMin).toLocaleString('en-IN')}
-                          <button onClick={() => setBudgetMin('')} className="hover:text-white">×</button>
+                          <button onClick={() => setBudgetMin('')} className="hover:text-green-800">×</button>
                         </span>
                       )}
                       {budgetMax && (
-                        <span className="px-2 py-1 bg-green-500/30 text-green-300 text-xs font-bold rounded-lg flex items-center gap-1">
+                        <span className="px-2 py-1 bg-green-50 text-green-600 text-xs font-medium rounded-lg flex items-center gap-1 border border-green-200">
                           Max: ₹{parseInt(budgetMax).toLocaleString('en-IN')}
-                          <button onClick={() => setBudgetMax('')} className="hover:text-white">×</button>
+                          <button onClick={() => setBudgetMax('')} className="hover:text-green-800">×</button>
                         </span>
                       )}
                     </div>
@@ -3699,14 +2998,14 @@ END:VCARD`;
 
             {/* Quick Stats Summary */}
             {showAnalytics && (
-              <div className="mb-8 bg-gradient-to-br from-gray-800/50 to-gray-900/50 rounded-2xl border border-white/10 p-6">
+              <div className="mb-8 bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-black text-white flex items-center gap-2">
-                    <span>📊</span> Quick Stats
+                  <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <span className="text-blue-500">📊</span> Quick Stats
                   </h2>
                   <Link
                     href="/admin/analytics"
-                    className="px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold rounded-lg transition-all text-sm flex items-center gap-2"
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all text-sm flex items-center gap-2"
                   >
                     <span>View Full Analytics</span>
                     <span>→</span>
@@ -3715,38 +3014,38 @@ END:VCARD`;
 
                 {/* Simple Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
-                    <div className="text-3xl font-black text-blue-400">{stats.total}</div>
-                    <div className="text-sm text-gray-400">Total</div>
+                  <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-100">
+                    <div className="text-3xl font-bold text-blue-600">{stats.total}</div>
+                    <div className="text-sm text-gray-600">Total</div>
                   </div>
-                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
-                    <div className="text-3xl font-black text-yellow-400">{stats.pending + stats.underReview}</div>
-                    <div className="text-sm text-gray-400">Pipeline</div>
+                  <div className="bg-amber-50 rounded-xl p-4 text-center border border-amber-100">
+                    <div className="text-3xl font-bold text-amber-600">{stats.pending + stats.underReview}</div>
+                    <div className="text-sm text-gray-600">Pipeline</div>
                   </div>
-                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
-                    <div className="text-3xl font-black text-green-400">{stats.approved}</div>
-                    <div className="text-sm text-gray-400">Approved</div>
+                  <div className="bg-green-50 rounded-xl p-4 text-center border border-green-100">
+                    <div className="text-3xl font-bold text-green-600">{stats.approved}</div>
+                    <div className="text-sm text-gray-600">Approved</div>
                   </div>
-                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
-                    <div className="text-3xl font-black text-purple-400">{stats.inProduction}</div>
-                    <div className="text-sm text-gray-400">Production</div>
+                  <div className="bg-purple-50 rounded-xl p-4 text-center border border-purple-100">
+                    <div className="text-3xl font-bold text-purple-600">{stats.inProduction}</div>
+                    <div className="text-sm text-gray-600">Production</div>
                   </div>
-                  <div className="bg-white/5 rounded-xl p-4 text-center border border-white/10">
-                    <div className="text-xl font-black text-emerald-400">{formatBudgetInWords(stats.totalBudget)}</div>
-                    <div className="text-sm text-gray-400">Total Value</div>
+                  <div className="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100">
+                    <div className="text-xl font-bold text-emerald-600">{formatBudgetInWords(stats.totalBudget)}</div>
+                    <div className="text-sm text-gray-600">Total Value</div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* CULTURE-WISE ROW - Netflix Style */}
-            <div className="mb-10">
+            {/* CULTURE-WISE ROW */}
+            <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-white">Browse by Culture</h2>
+                <h2 className="text-xl font-bold text-gray-800">Browse by Culture</h2>
                 {filterCulture !== 'all' && (
                   <button
                     onClick={() => setFilterCulture('all')}
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                    className="text-sm text-blue-600 hover:text-blue-800 transition-colors font-medium"
                   >
                     Clear Filter
                   </button>
@@ -3754,10 +3053,10 @@ END:VCARD`;
               </div>
               <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
                 {[
-                  { name: 'Haryanvi', color: 'from-green-600 to-teal-700' },
-                  { name: 'Rajasthani', color: 'from-pink-600 to-purple-700' },
-                  { name: 'Bhojpuri', color: 'from-orange-600 to-red-700' },
-                  { name: 'Gujarati', color: 'from-amber-500 to-yellow-600' },
+                  { name: 'Haryanvi', color: 'from-emerald-400 to-teal-500', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+                  { name: 'Rajasthani', color: 'from-pink-400 to-rose-500', bg: 'bg-pink-50', border: 'border-pink-200' },
+                  { name: 'Bhojpuri', color: 'from-orange-400 to-amber-500', bg: 'bg-orange-50', border: 'border-orange-200' },
+                  { name: 'Gujarati', color: 'from-yellow-400 to-amber-400', bg: 'bg-yellow-50', border: 'border-yellow-200' },
                 ].map((cultureItem) => {
                   const count = submissions.filter(s =>
                     s.culture?.toLowerCase() === cultureItem.name.toLowerCase()
@@ -3773,19 +3072,18 @@ END:VCARD`;
                           document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }, 100);
                       }}
-                      className={`flex-shrink-0 w-48 group relative rounded-lg overflow-hidden transition-all duration-300 ${
-                        filterCulture === cultureItem.name ? 'ring-2 ring-white scale-105' : 'hover:scale-105'
+                      className={`flex-shrink-0 w-48 group relative rounded-xl overflow-hidden transition-all duration-300 border-2 shadow-sm hover:shadow-md ${
+                        filterCulture === cultureItem.name ? `ring-2 ring-blue-500 scale-105 ${cultureItem.border}` : `${cultureItem.border} hover:scale-105`
                       }`}
                     >
-                      <div className={`h-28 bg-gradient-to-br ${cultureItem.color}`}></div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                      <div className="absolute bottom-0 left-0 right-0 p-3">
-                        <div className="text-white font-bold text-lg">{cultureItem.name}</div>
-                        <div className="text-gray-300 text-xs">{count} Projects</div>
+                      <div className={`h-24 bg-gradient-to-br ${cultureItem.color}`}></div>
+                      <div className={`${cultureItem.bg} p-3`}>
+                        <div className="text-gray-800 font-bold text-lg">{cultureItem.name}</div>
+                        <div className="text-gray-500 text-xs">{count} Projects</div>
                       </div>
                       {filterCulture === cultureItem.name && (
-                        <div className="absolute top-2 right-2 w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                          <span className="text-black text-xs font-black">✓</span>
+                        <div className="absolute top-2 right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">✓</span>
                         </div>
                       )}
                     </button>
@@ -3794,14 +3092,14 @@ END:VCARD`;
               </div>
             </div>
 
-            {/* FORMAT-WISE ROW - Netflix Style */}
-            <div className="mb-10">
+            {/* FORMAT-WISE ROW */}
+            <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-white">Browse by Format</h2>
+                <h2 className="text-xl font-bold text-gray-800">Browse by Format</h2>
                 {filterFormat !== 'all' && (
                   <button
                     onClick={() => setFilterFormat('all')}
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                    className="text-sm text-blue-600 hover:text-blue-800 transition-colors font-medium"
                   >
                     Clear Filter
                   </button>
@@ -3809,12 +3107,12 @@ END:VCARD`;
               </div>
               <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
                 {[
-                  { key: 'Feature Film', icon: '🎬', color: 'from-red-600 to-rose-700' },
-                  { key: 'Mini Film', icon: '🎞️', color: 'from-amber-500 to-orange-600' },
-                  { key: 'Long Series', icon: '📺', color: 'from-green-600 to-emerald-700' },
-                  { key: 'Limited Series', icon: '🎭', color: 'from-purple-600 to-violet-700' },
-                  { key: 'Microdrama', icon: '⚡', color: 'from-cyan-500 to-blue-600' },
-                ].map(({ key, icon, color }) => {
+                  { key: 'Feature Film', icon: '🎬', bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
+                  { key: 'Mini Film', icon: '🎞️', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-600' },
+                  { key: 'Long Series', icon: '📺', bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-600' },
+                  { key: 'Limited Series', icon: '🎭', bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-600' },
+                  { key: 'Microdrama', icon: '⚡', bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-600' },
+                ].map(({ key, icon, bg, border, text }) => {
                   const count = stats.byFormat[key] || 0;
                   return (
                     <button
@@ -3827,21 +3125,20 @@ END:VCARD`;
                           document.getElementById('netflix-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }, 100);
                       }}
-                      className={`flex-shrink-0 w-40 group relative rounded-lg overflow-hidden transition-all duration-300 ${
-                        filterFormat === key ? 'ring-2 ring-white scale-105' : 'hover:scale-105'
+                      className={`flex-shrink-0 w-40 group relative rounded-xl overflow-hidden transition-all duration-300 border-2 shadow-sm hover:shadow-md ${bg} ${
+                        filterFormat === key ? `ring-2 ring-blue-500 scale-105 ${border}` : `${border} hover:scale-105`
                       }`}
                     >
-                      <div className={`h-24 bg-gradient-to-br ${color} flex items-center justify-center`}>
+                      <div className="h-20 flex items-center justify-center">
                         <span className="text-4xl">{icon}</span>
                       </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                      <div className="absolute bottom-0 left-0 right-0 p-2">
-                        <div className="text-white font-bold text-sm">{key}</div>
-                        <div className="text-gray-300 text-xs">{count} Projects</div>
+                      <div className="p-2 border-t border-gray-100">
+                        <div className={`font-bold text-sm ${text}`}>{key}</div>
+                        <div className="text-gray-500 text-xs">{count} Projects</div>
                       </div>
                       {filterFormat === key && (
-                        <div className="absolute top-2 right-2 w-5 h-5 bg-white rounded-full flex items-center justify-center">
-                          <span className="text-black text-xs font-black">✓</span>
+                        <div className="absolute top-2 right-2 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs font-bold">✓</span>
                         </div>
                       )}
                     </button>
@@ -3850,11 +3147,11 @@ END:VCARD`;
               </div>
             </div>
 
-            {/* RECENT SUBMISSIONS ROW - Netflix Style */}
-            <div className="mb-10">
+            {/* RECENT SUBMISSIONS ROW */}
+            <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-white">Recent Submissions</h2>
-                <span className="text-gray-400 text-sm">{newSubmissionsCount} new</span>
+                <h2 className="text-xl font-bold text-gray-800">Recent Submissions</h2>
+                <span className="text-blue-600 text-sm font-medium">{newSubmissionsCount} new</span>
               </div>
               <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
                 {[...submissions]
@@ -3870,17 +3167,17 @@ END:VCARD`;
                           markAsViewed(project.id);
                           setSelectedSubmission(project);
                         }}
-                        className={`flex-shrink-0 w-56 bg-gray-800 rounded-lg overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10 relative group ${
-                          isNew ? 'ring-2 ring-red-500' : ''
+                        className={`flex-shrink-0 w-56 bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10 relative group border border-gray-200 shadow-sm hover:shadow-lg ${
+                          isNew ? 'ring-2 ring-blue-500' : ''
                         }`}
                       >
                         {isNew && (
-                          <div className="absolute top-2 left-2 z-10 px-2 py-0.5 bg-red-600 text-white text-xs font-bold rounded">
+                          <div className="absolute top-2 left-2 z-10 px-2 py-0.5 bg-blue-600 text-white text-xs font-bold rounded">
                             NEW
                           </div>
                         )}
-                        <div className={`h-32 bg-gradient-to-br ${getCultureColor(project.culture)} flex items-center justify-center relative`}>
-                          <span className="text-5xl opacity-50">{
+                        <div className={`h-28 bg-gradient-to-br ${getCultureColor(project.culture)} flex items-center justify-center relative`}>
+                          <span className="text-5xl opacity-60">{
                             project.format === 'Feature Film' ? '🎬' :
                             project.format === 'Mini Film' ? '🎞️' :
                             project.format === 'Long Series' ? '📺' :
@@ -3893,19 +3190,19 @@ END:VCARD`;
                           </div>
                         </div>
                         <div className="p-3">
-                          <div className="text-white font-bold text-sm truncate mb-1">{project.projectName}</div>
-                          <div className="text-gray-400 text-xs mb-2">{project.culture} • {project.format}</div>
+                          <div className="text-gray-800 font-bold text-sm truncate mb-1">{project.projectName}</div>
+                          <div className="text-gray-500 text-xs mb-2">{project.culture} • {project.format}</div>
                           <div className="flex items-center justify-between">
-                            <span className="text-green-400 text-xs font-bold">{formatBudgetInWords(project.totalBudget)}</span>
-                            <span className="text-gray-500 text-xs">{getTimeElapsed(project.submittedDate)}</span>
+                            <span className="text-green-600 text-xs font-bold">{formatBudgetInWords(project.totalBudget)}</span>
+                            <span className="text-gray-400 text-xs">{getTimeElapsed(project.submittedDate)}</span>
                           </div>
                         </div>
                         {/* Hover Overlay */}
-                        <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4">
-                          <button className="w-full py-2 bg-white text-black font-bold rounded text-sm hover:bg-gray-200 transition-colors">
+                        <div className="absolute inset-0 bg-blue-900/90 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4">
+                          <button className="w-full py-2 bg-white text-blue-600 font-bold rounded-lg text-sm hover:bg-blue-50 transition-colors">
                             Review
                           </button>
-                          <div className="text-gray-300 text-xs text-center">
+                          <div className="text-blue-100 text-xs text-center">
                             <div>{project.creator}</div>
                             <div>{project.genre}</div>
                           </div>
@@ -3917,10 +3214,10 @@ END:VCARD`;
             </div>
 
             {/* TOP BUDGET PROJECTS ROW */}
-            <div className="mb-10">
+            <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-white">Top Budget Projects</h2>
-                <span className="text-gray-400 text-sm">By total value</span>
+                <h2 className="text-xl font-bold text-gray-800">Top Budget Projects</h2>
+                <span className="text-gray-500 text-sm">By total value</span>
               </div>
               <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
                 {[...submissions]
@@ -3935,13 +3232,13 @@ END:VCARD`;
                           markAsViewed(project.id);
                           setSelectedSubmission(project);
                         }}
-                        className="flex-shrink-0 w-64 bg-gray-800 rounded-lg overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10 relative group"
+                        className="flex-shrink-0 w-64 bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10 relative group border border-gray-200 shadow-sm hover:shadow-lg"
                       >
-                        <div className="absolute top-2 left-2 z-10 w-8 h-8 bg-gradient-to-br from-yellow-400 to-amber-600 rounded-full flex items-center justify-center">
-                          <span className="text-black font-black text-sm">#{index + 1}</span>
+                        <div className="absolute top-2 left-2 z-10 w-8 h-8 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center shadow-md">
+                          <span className="text-white font-bold text-sm">#{index + 1}</span>
                         </div>
-                        <div className={`h-36 bg-gradient-to-br ${getCultureColor(project.culture)} flex items-center justify-center relative`}>
-                          <span className="text-6xl opacity-50">💰</span>
+                        <div className={`h-32 bg-gradient-to-br ${getCultureColor(project.culture)} flex items-center justify-center relative`}>
+                          <span className="text-6xl opacity-60">💰</span>
                           <div className="absolute bottom-2 right-2">
                             <span className={`px-2 py-0.5 rounded text-xs font-bold ${statusConfig.badge}`}>
                               {statusConfig.text}
@@ -3949,16 +3246,16 @@ END:VCARD`;
                           </div>
                         </div>
                         <div className="p-3">
-                          <div className="text-white font-bold text-sm truncate mb-1">{project.projectName}</div>
-                          <div className="text-gray-400 text-xs mb-2">{project.culture} • {project.format}</div>
-                          <div className="text-emerald-400 text-lg font-black">{formatBudgetInWords(project.totalBudget)}</div>
+                          <div className="text-gray-800 font-bold text-sm truncate mb-1">{project.projectName}</div>
+                          <div className="text-gray-500 text-xs mb-2">{project.culture} • {project.format}</div>
+                          <div className="text-emerald-600 text-lg font-bold">{formatBudgetInWords(project.totalBudget)}</div>
                         </div>
                         {/* Hover Overlay */}
-                        <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4">
-                          <button className="w-full py-2 bg-white text-black font-bold rounded text-sm hover:bg-gray-200 transition-colors">
+                        <div className="absolute inset-0 bg-blue-900/90 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 p-4">
+                          <button className="w-full py-2 bg-white text-blue-600 font-bold rounded-lg text-sm hover:bg-blue-50 transition-colors">
                             Review
                           </button>
-                          <div className="text-gray-300 text-xs text-center">
+                          <div className="text-blue-100 text-xs text-center">
                             <div>{project.creator}</div>
                             <div>Director: {project.director || 'TBD'}</div>
                           </div>
@@ -3970,9 +3267,9 @@ END:VCARD`;
             </div>
 
             {/* ACTIVITY LOG ROW */}
-            <div className="mb-10">
-              <h2 className="text-xl font-bold text-white mb-4">Activity Log</h2>
-              <div className="bg-gray-800/50 rounded-xl p-4 max-h-80 overflow-y-auto">
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">Activity Log</h2>
+              <div className="bg-white rounded-xl p-4 max-h-80 overflow-y-auto border border-gray-200 shadow-sm">
                 {[...submissions]
                   .sort((a, b) => new Date(b.submittedDate).getTime() - new Date(a.submittedDate).getTime())
                   .slice(0, 15)
@@ -3981,7 +3278,7 @@ END:VCARD`;
                     return (
                       <div
                         key={project.id}
-                        className="flex items-center gap-4 py-3 border-b border-gray-700/50 last:border-0 hover:bg-gray-700/30 rounded px-2 transition-colors cursor-pointer"
+                        className="flex items-center gap-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50 rounded px-2 transition-colors cursor-pointer"
                         onClick={() => {
                           markAsViewed(project.id);
                           setSelectedSubmission(project);
@@ -3990,18 +3287,18 @@ END:VCARD`;
                         <div className="w-2 h-2 rounded-full bg-green-500"></div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-white font-semibold text-sm">{project.projectName}</span>
+                            <span className="text-gray-800 font-semibold text-sm">{project.projectName}</span>
                             <span className={`px-2 py-0.5 rounded text-xs font-bold ${statusConfig.badge}`}>
                               {statusConfig.text}
                             </span>
                           </div>
-                          <div className="text-gray-400 text-xs mt-0.5">
+                          <div className="text-gray-500 text-xs mt-0.5">
                             Submitted by {project.creator} • {project.culture} • {project.format}
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-gray-300 text-xs">{formatDate(project.submittedDate)}</div>
-                          <div className="text-gray-500 text-xs">{getTimeElapsed(project.submittedDate)}</div>
+                          <div className="text-gray-600 text-xs">{formatDate(project.submittedDate)}</div>
+                          <div className="text-gray-400 text-xs">{getTimeElapsed(project.submittedDate)}</div>
                         </div>
                       </div>
                     );
@@ -4009,26 +3306,26 @@ END:VCARD`;
               </div>
             </div>
 
-            {/* Active Filters Bar - Netflix Style */}
+            {/* Active Filters Bar */}
             {(filterFormat !== 'all' || filterCulture !== 'all' || filterStatus !== 'all') && (
-              <div className="mb-6 flex items-center gap-3 flex-wrap">
-                <span className="text-gray-400 text-sm">Active Filters:</span>
+              <div className="mb-6 flex items-center gap-3 flex-wrap bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                <span className="text-gray-500 text-sm font-medium">Active Filters:</span>
                 {filterCulture !== 'all' && (
-                  <span className="px-3 py-1 bg-blue-600/30 border border-blue-500/50 rounded-full text-blue-300 text-sm flex items-center gap-2">
+                  <span className="px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-blue-600 text-sm flex items-center gap-2 font-medium">
                     Culture: {filterCulture}
-                    <button onClick={() => setFilterCulture('all')} className="hover:text-white">✕</button>
+                    <button onClick={() => setFilterCulture('all')} className="hover:text-blue-800">✕</button>
                   </span>
                 )}
                 {filterFormat !== 'all' && (
-                  <span className="px-3 py-1 bg-purple-600/30 border border-purple-500/50 rounded-full text-purple-300 text-sm flex items-center gap-2">
+                  <span className="px-3 py-1 bg-purple-50 border border-purple-200 rounded-full text-purple-600 text-sm flex items-center gap-2 font-medium">
                     Format: {filterFormat}
-                    <button onClick={() => setFilterFormat('all')} className="hover:text-white">✕</button>
+                    <button onClick={() => setFilterFormat('all')} className="hover:text-purple-800">✕</button>
                   </span>
                 )}
                 {filterStatus !== 'all' && (
-                  <span className="px-3 py-1 bg-red-600/30 border border-red-500/50 rounded-full text-red-300 text-sm flex items-center gap-2">
+                  <span className="px-3 py-1 bg-red-50 border border-red-200 rounded-full text-red-600 text-sm flex items-center gap-2 font-medium">
                     Status: {filterStatus.replace('-', ' ')}
-                    <button onClick={() => setFilterStatus('all')} className="hover:text-white">✕</button>
+                    <button onClick={() => setFilterStatus('all')} className="hover:text-red-800">✕</button>
                   </span>
                 )}
                 <button
@@ -4037,16 +3334,16 @@ END:VCARD`;
                     setFilterFormat('all');
                     setFilterStatus('all');
                   }}
-                  className="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded-full text-gray-300 text-sm transition-colors"
+                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-600 text-sm transition-colors font-medium"
                 >
                   Clear All
                 </button>
               </div>
             )}
 
-            {/* Results Header - Netflix Style */}
+            {/* Results Header */}
             <div id="netflix-results" className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-2">
-              <h2 className="text-lg md:text-xl font-bold text-white">
+              <h2 className="text-lg md:text-xl font-bold text-gray-800">
                 {searchQuery
                   ? `Search Results for "${searchQuery}" (${filteredSubmissions.length})`
                   : filterCulture !== 'all' || filterFormat !== 'all' || filterStatus !== 'all'
@@ -4054,13 +3351,13 @@ END:VCARD`;
                   : `All Projects (${submissions.length})`
                 }
               </h2>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
+              <div className="flex items-center gap-2 text-sm text-gray-500">
                 <span>Sorted by: {sortBy === 'date' ? '📅 Date' : sortBy === 'name' ? '📝 Name' : sortBy === 'budget' ? '💰 Budget' : '🔄 Status'}</span>
                 <span>({sortOrder === 'desc' ? 'Newest first' : 'Oldest first'})</span>
               </div>
             </div>
 
-            {/* Projects Grid - Netflix Card Style */}
+            {/* Projects Grid - Card Style */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8">
               {filteredSubmissions.map((submission) => {
                 const statusConfig = getStatusConfig(submission.status);
@@ -4068,8 +3365,8 @@ END:VCARD`;
                 return (
                   <div
                     key={submission.id}
-                    className={`group bg-gray-800 rounded-lg overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10 relative ${
-                      isNew ? 'ring-2 ring-red-500' : ''
+                    className={`group bg-white rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10 relative border border-gray-200 shadow-sm hover:shadow-lg ${
+                      isNew ? 'ring-2 ring-blue-500' : ''
                     }`}
                     onClick={() => {
                       markAsViewed(submission.id);
@@ -4078,14 +3375,14 @@ END:VCARD`;
                   >
                     {/* NEW Badge */}
                     {isNew && (
-                      <div className="absolute top-2 left-2 z-10 px-2 py-0.5 bg-red-600 text-white text-xs font-bold rounded animate-pulse">
+                      <div className="absolute top-2 left-2 z-10 px-2 py-0.5 bg-blue-600 text-white text-xs font-bold rounded animate-pulse">
                         NEW
                       </div>
                     )}
 
                     {/* Card Visual */}
-                    <div className={`h-40 bg-gradient-to-br ${getCultureColor(submission.culture)} flex items-center justify-center relative`}>
-                      <span className="text-6xl opacity-40">{
+                    <div className={`h-36 bg-gradient-to-br ${getCultureColor(submission.culture)} flex items-center justify-center relative`}>
+                      <span className="text-6xl opacity-50">{
                         submission.format === 'Feature Film' ? '🎬' :
                         submission.format === 'Mini Film' ? '🎞️' :
                         submission.format === 'Long Series' ? '📺' :
@@ -4101,7 +3398,7 @@ END:VCARD`;
 
                       {/* Budget Badge */}
                       <div className="absolute top-2 right-2">
-                        <span className="px-2 py-0.5 bg-black/60 rounded text-xs font-bold text-emerald-400">
+                        <span className="px-2 py-0.5 bg-white/90 rounded text-xs font-bold text-emerald-600 shadow-sm">
                           {formatBudgetInWords(submission.totalBudget)}
                         </span>
                       </div>
@@ -4109,49 +3406,49 @@ END:VCARD`;
 
                     {/* Card Info */}
                     <div className="p-3">
-                      <div className="text-white font-bold text-sm truncate mb-1">{submission.projectName}</div>
-                      <div className="text-gray-400 text-xs mb-2">{submission.culture} • {submission.format}</div>
+                      <div className="text-gray-800 font-bold text-sm truncate mb-1">{submission.projectName}</div>
+                      <div className="text-gray-500 text-xs mb-2">{submission.culture} • {submission.format}</div>
                       <div className="flex items-center justify-between">
-                        <span className="text-gray-500 text-xs">{submission.creator}</span>
-                        <span className="text-gray-600 text-xs">{getTimeElapsed(submission.submittedDate)}</span>
+                        <span className="text-gray-600 text-xs">{submission.creator}</span>
+                        <span className="text-gray-400 text-xs">{getTimeElapsed(submission.submittedDate)}</span>
                       </div>
                     </div>
 
                     {/* Hover Overlay */}
-                    <div className="absolute inset-0 bg-black/90 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col p-4">
+                    <div className="absolute inset-0 bg-blue-900/95 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col p-4">
                       <div className="flex-1">
                         <div className="text-white font-bold mb-1">{submission.projectName}</div>
-                        <div className="text-gray-300 text-xs mb-2">{submission.culture} • {submission.format} • {submission.genre}</div>
-                        <div className="text-gray-400 text-xs mb-1">Creator: {submission.creator}</div>
-                        <div className="text-gray-400 text-xs mb-1">Director: {submission.director || 'TBD'}</div>
-                        <div className="text-emerald-400 text-sm font-bold mb-2">{formatBudgetInWords(submission.totalBudget)}</div>
+                        <div className="text-blue-200 text-xs mb-2">{submission.culture} • {submission.format} • {submission.genre}</div>
+                        <div className="text-blue-100 text-xs mb-1">Creator: {submission.creator}</div>
+                        <div className="text-blue-100 text-xs mb-1">Director: {submission.director || 'TBD'}</div>
+                        <div className="text-emerald-300 text-sm font-bold mb-2">{formatBudgetInWords(submission.totalBudget)}</div>
 
                         {/* Completeness Bar */}
                         <div className="mb-2">
                           <div className="flex justify-between text-xs mb-1">
-                            <span className="text-gray-400">Completeness</span>
-                            <span className={submission.completeness >= 90 ? 'text-green-400' : 'text-amber-400'}>{submission.completeness}%</span>
+                            <span className="text-blue-200">Completeness</span>
+                            <span className={submission.completeness >= 90 ? 'text-green-300' : 'text-amber-300'}>{submission.completeness}%</span>
                           </div>
-                          <div className="h-1 bg-gray-700 rounded-full">
+                          <div className="h-1 bg-blue-800 rounded-full">
                             <div
-                              className={`h-full rounded-full ${submission.completeness >= 90 ? 'bg-green-500' : 'bg-amber-500'}`}
+                              className={`h-full rounded-full ${submission.completeness >= 90 ? 'bg-green-400' : 'bg-amber-400'}`}
                               style={{ width: `${submission.completeness}%` }}
                             />
                           </div>
                         </div>
 
                         {submission.warnings > 0 && (
-                          <div className="text-amber-400 text-xs">⚠️ {submission.warnings} Warnings</div>
+                          <div className="text-amber-300 text-xs">⚠️ {submission.warnings} Warnings</div>
                         )}
                         {submission.sopComments && submission.sopComments.length > 0 && (
-                          <div className="text-blue-400 text-xs">💬 {submission.sopComments.length} SOP Questions</div>
+                          <div className="text-blue-300 text-xs">💬 {submission.sopComments.length} SOP Questions</div>
                         )}
                       </div>
 
                       {/* Action Buttons */}
                       <div className="flex gap-2 mt-auto">
                         <button
-                          className="flex-1 py-2 bg-white text-black font-bold rounded text-xs hover:bg-gray-200 transition-colors"
+                          className="flex-1 py-2 bg-white text-blue-600 font-bold rounded-lg text-xs hover:bg-blue-50 transition-colors"
                           onClick={(e) => {
                             e.stopPropagation();
                             markAsViewed(submission.id);
@@ -4165,7 +3462,7 @@ END:VCARD`;
                             e.stopPropagation();
                             setShowStatusMenu(submission.id);
                           }}
-                          className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded text-xs transition-colors"
+                          className="px-3 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded-lg text-xs transition-colors"
                           title="Change Status"
                         >
                           🔄
@@ -4175,7 +3472,7 @@ END:VCARD`;
                             e.stopPropagation();
                             setShowDeleteConfirm(submission.id);
                           }}
-                          className="px-3 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs transition-colors"
+                          className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs transition-colors"
                           title="Delete"
                         >
                           🗑️
@@ -4190,22 +3487,22 @@ END:VCARD`;
             {filteredSubmissions.length === 0 && (
               <div className="text-center py-16">
                 <div className="text-6xl mb-4 opacity-50">📭</div>
-                <div className="text-xl font-bold text-gray-400">No projects found</div>
-                <div className="text-sm text-gray-600 mt-2">Try adjusting your filters</div>
+                <div className="text-xl font-bold text-gray-500">No projects found</div>
+                <div className="text-sm text-gray-400 mt-2">Try adjusting your filters</div>
               </div>
             )}
 
-          </div> {/* End of Netflix Dark Container */}
+            </div> {/* End of Overview Container */}
 
-          <style jsx>{`
-            .hide-scrollbar::-webkit-scrollbar {
-              display: none;
-            }
-            .hide-scrollbar {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-            }
-          `}</style>
+            <style jsx>{`
+              .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+              }
+              .hide-scrollbar {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+              }
+            `}</style>
             </>
           )}
 
@@ -4213,13 +3510,24 @@ END:VCARD`;
           {activeTab === 'submissions' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-lg">
-                <h2 className="text-3xl font-black text-gray-900 mb-4 flex items-center gap-3">
-                  <span className="text-4xl">📋</span>
-                  <span>All Submissions</span>
-                </h2>
-                <p className="text-gray-700 font-semibold text-lg">
-                  Manage and review all creator submissions in detail
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-3xl font-black text-gray-900 mb-2 flex items-center gap-3">
+                      <span className="text-4xl">📋</span>
+                      <span>All Projects</span>
+                    </h2>
+                    <p className="text-gray-700 font-semibold">
+                      Manage and review all projects ({submissions.length} total)
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowAddProjectModal(true)}
+                    className="px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                  >
+                    <span className="text-xl">➕</span>
+                    <span>Add Project</span>
+                  </button>
+                </div>
               </div>
 
               {/* Submissions Grid - Same as Overview */}
@@ -4443,6 +3751,24 @@ END:VCARD`;
                               </div>
                             )}
                           </div>
+                          {/* Delete Project Button */}
+                          <button
+                            onClick={() => {
+                              if (confirm(`Are you sure you want to delete "${submission.projectName}"?\n\nThis action cannot be undone.`)) {
+                                const updatedSubmissions = submissions.filter(s => s.id !== submission.id);
+                                setSubmissions(updatedSubmissions);
+                                // Also remove from localStorage
+                                const existingLocal = JSON.parse(localStorage.getItem('creator_submissions') || '[]');
+                                const updatedLocal = existingLocal.filter((s: any) => s.id !== submission.id);
+                                localStorage.setItem('creator_submissions', JSON.stringify(updatedLocal));
+                                alert('Project deleted successfully');
+                              }
+                            }}
+                            className="px-4 py-3 bg-red-100 hover:bg-red-200 text-red-700 font-black rounded-xl transition-all"
+                            title="Delete Project"
+                          >
+                            🗑️
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -5100,11 +4426,11 @@ END:VCARD`;
             </div>
           )}
 
-          {/* PROJECTS TAB - Light Pastel Theme like Excel */}
+          {/* PROJECTS TAB - Internal Tracking (Separate from Submissions) */}
           {activeTab === 'projects' && (() => {
             const filteredProjects = projectsCultureFilter === 'all'
-              ? submissions
-              : submissions.filter(s => s.culture === projectsCultureFilter);
+              ? internalProjects
+              : internalProjects.filter(s => s.culture === projectsCultureFilter);
 
             // Budget format
             const formatBudget = (amount: number) => {
@@ -5115,11 +4441,17 @@ END:VCARD`;
             };
 
             const updateProject = (projectId: string | number, field: string, value: string | number) => {
-              const updatedSubmissions = submissions.map(s =>
+              const updatedProjects = internalProjects.map(s =>
                 s.id === projectId ? { ...s, [field]: value } : s
               );
-              setSubmissions(updatedSubmissions);
-              localStorage.setItem('stage_submissions', JSON.stringify(updatedSubmissions));
+              setInternalProjects(updatedProjects);
+              localStorage.setItem('stage_internal_projects', JSON.stringify(updatedProjects));
+            };
+
+            const deleteInternalProject = (projectId: string | number) => {
+              const updatedProjects = internalProjects.filter(s => s.id !== projectId);
+              setInternalProjects(updatedProjects);
+              localStorage.setItem('stage_internal_projects', JSON.stringify(updatedProjects));
             };
 
             // Drag and Drop handlers
@@ -5141,12 +4473,12 @@ END:VCARD`;
               const [draggedProject] = newFilteredProjects.splice(draggedIndex, 1);
               newFilteredProjects.splice(targetIndex, 0, draggedProject);
 
-              // Update the full submissions array maintaining the new order
-              const otherProjects = submissions.filter(s => !filteredProjects.some(fp => fp.id === s.id));
-              const reorderedSubmissions = [...newFilteredProjects, ...otherProjects];
+              // Update the full internal projects array maintaining the new order
+              const otherProjects = internalProjects.filter(s => !filteredProjects.some(fp => fp.id === s.id));
+              const reorderedProjects = [...newFilteredProjects, ...otherProjects];
 
-              setSubmissions(reorderedSubmissions);
-              localStorage.setItem('stage_submissions', JSON.stringify(reorderedSubmissions));
+              setInternalProjects(reorderedProjects);
+              localStorage.setItem('stage_internal_projects', JSON.stringify(reorderedProjects));
             };
 
             const handleDragEnd = () => {
@@ -5171,8 +4503,8 @@ END:VCARD`;
             ];
 
             const allPOCs = [...['Mayank', 'Haidar', 'Sumit'], ...customPOCs];
-            const cultureOptions = ['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'];
-            const formatOptions = ['Feature Film', 'Mini Film', 'Long Series', 'Limited Series', 'Microdrama'];
+            const cultureOptions = [...['Haryanvi', 'Rajasthani', 'Bhojpuri', 'Gujarati'], ...customCultures];
+            const formatOptions = [...['Feature Film', 'Mini Film', 'Long Series', 'Limited Series', 'Microdrama'], ...customFormats];
 
             // Pastel status colors
             const statusColors: Record<string, string> = {
@@ -5212,11 +4544,11 @@ END:VCARD`;
 
             // Delete POC
             const deletePOC = (pocName: string) => {
-              const updatedSubmissions = submissions.map(s =>
+              const updatedProjects = internalProjects.map(s =>
                 s.productionPOC === pocName ? { ...s, productionPOC: '' } : s
               );
-              setSubmissions(updatedSubmissions);
-              localStorage.setItem('stage_submissions', JSON.stringify(updatedSubmissions));
+              setInternalProjects(updatedProjects);
+              localStorage.setItem('stage_internal_projects', JSON.stringify(updatedProjects));
               if (customPOCs.includes(pocName)) {
                 setCustomPOCs(customPOCs.filter(p => p !== pocName));
               }
@@ -5224,7 +4556,7 @@ END:VCARD`;
 
             // Export function
             const exportData = (format: 'excel' | 'pdf', filterType?: string, filterValue?: string) => {
-              let dataToExport = [...submissions];
+              let dataToExport = [...internalProjects];
 
               if (filterType && filterValue) {
                 dataToExport = dataToExport.filter(s => s[filterType] === filterValue);
@@ -5288,11 +4620,10 @@ END:VCARD`;
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <h1 className="text-2xl font-bold text-gray-800">Projects Tracker</h1>
-                    <p className="text-gray-500 text-sm">{filteredProjects.length} projects • Total: <span className="text-green-600 font-semibold">{formatBudget(totalBudget)}</span></p>
+                    <h1 className="text-2xl font-bold text-gray-800">Projects Tracker <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full ml-2">Internal</span></h1>
+                    <p className="text-gray-500 text-sm">{filteredProjects.length} projects • Total: <span className="text-green-600 font-semibold">{formatBudget(totalBudget)}</span> <span className="text-gray-400 text-xs ml-2">(Separate from Submissions)</span></p>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <button onClick={() => setShowAddPOCModal(true)} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700">+ Add POC</button>
                     <button onClick={() => exportData('excel')} className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">📥 Excel</button>
                     <button onClick={() => exportData('pdf')} className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium">📄 PDF</button>
 
@@ -5371,10 +4702,11 @@ END:VCARD`;
                       <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[140px]">Creator</th>
                       <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[100px]">Culture</th>
                       <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[120px]">Format</th>
-                      <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[120px]">POC</th>
+                      <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[140px]">POC (Prod/Content)</th>
                       <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[130px]">Shoot Start</th>
                       <th className="px-3 py-3 text-left text-gray-600 text-xs font-semibold uppercase min-w-[160px]">Status</th>
                       <th className="px-3 py-3 text-right text-gray-600 text-xs font-semibold uppercase min-w-[130px]">Budget</th>
+                      <th className="px-3 py-3 text-center text-gray-600 text-xs font-semibold uppercase w-16">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -5417,40 +4749,78 @@ END:VCARD`;
                             />
                           </td>
 
-                          {/* Culture - Colored Badge */}
+                          {/* Culture - Colored Badge with Add */}
                           <td className="px-3 py-2">
                             <select
                               value={project.culture || ''}
-                              onChange={(e) => updateProject(project.id, 'culture', e.target.value)}
+                              onChange={(e) => {
+                                if (e.target.value === '__add_new__') {
+                                  setShowAddCultureModal(true);
+                                } else {
+                                  updateProject(project.id, 'culture', e.target.value);
+                                }
+                              }}
                               className={`w-full px-2 py-1.5 text-xs font-semibold rounded-full cursor-pointer focus:outline-none ${cultureColors[project.culture] || 'bg-gray-100 text-gray-600'}`}
                             >
                               <option value="">Select</option>
                               {cultureOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              <option value="__add_new__">➕ Add New</option>
                             </select>
                           </td>
 
-                          {/* Format - Colored Badge */}
+                          {/* Format - Colored Badge with Add */}
                           <td className="px-3 py-2">
                             <select
                               value={project.format || ''}
-                              onChange={(e) => updateProject(project.id, 'format', e.target.value)}
+                              onChange={(e) => {
+                                if (e.target.value === '__add_new__') {
+                                  setShowAddFormatModal(true);
+                                } else {
+                                  updateProject(project.id, 'format', e.target.value);
+                                }
+                              }}
                               className={`w-full px-2 py-1.5 text-xs font-semibold rounded-full cursor-pointer focus:outline-none ${formatColors[project.format] || 'bg-gray-100 text-gray-600'}`}
                             >
                               <option value="">Select</option>
                               {formatOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                              <option value="__add_new__">➕ Add New</option>
                             </select>
                           </td>
 
-                          {/* POC */}
+                          {/* Production POC & Content POC */}
                           <td className="px-3 py-2">
-                            <select
-                              value={project.productionPOC || ''}
-                              onChange={(e) => updateProject(project.id, 'productionPOC', e.target.value)}
-                              className="w-full px-2 py-1.5 text-sm bg-white border border-gray-200 rounded-lg text-gray-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-200"
-                            >
-                              <option value="">Assign</option>
-                              {allPOCs.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                            </select>
+                            <div className="space-y-1">
+                              <select
+                                value={project.productionPOC || ''}
+                                onChange={(e) => {
+                                  if (e.target.value === '__add_new__') {
+                                    setShowAddPOCModal(true);
+                                  } else {
+                                    updateProject(project.id, 'productionPOC', e.target.value);
+                                  }
+                                }}
+                                className="w-full px-2 py-1 text-xs bg-blue-50 border border-blue-200 rounded-lg text-blue-700 cursor-pointer focus:outline-none"
+                              >
+                                <option value="">Prod POC</option>
+                                {allPOCs.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                <option value="__add_new__">➕ Add</option>
+                              </select>
+                              <select
+                                value={project.contentPOC || ''}
+                                onChange={(e) => {
+                                  if (e.target.value === '__add_new__') {
+                                    setShowAddPOCModal(true);
+                                  } else {
+                                    updateProject(project.id, 'contentPOC', e.target.value);
+                                  }
+                                }}
+                                className="w-full px-2 py-1 text-xs bg-pink-50 border border-pink-200 rounded-lg text-pink-700 cursor-pointer focus:outline-none"
+                              >
+                                <option value="">Content POC</option>
+                                {allPOCs.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                                <option value="__add_new__">➕ Add</option>
+                              </select>
+                            </div>
                           </td>
 
                           {/* Shoot Start Date Only */}
@@ -5588,10 +4958,58 @@ END:VCARD`;
                               );
                             })()}
                           </td>
+
+                          {/* Delete Action */}
+                          <td className="px-3 py-2 text-center">
+                            <button
+                              onClick={() => {
+                                if (confirm(`Delete "${project.projectName || 'this project'}"? This cannot be undone.`)) {
+                                  deleteInternalProject(project.id);
+                                }
+                              }}
+                              className="w-8 h-8 bg-red-100 hover:bg-red-500 rounded-lg flex items-center justify-center text-red-500 hover:text-white transition-all mx-auto"
+                              title="Delete Project"
+                            >
+                              🗑️
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
+                  {/* Add Project Row Button */}
+                  <div className="bg-green-50 border-t border-green-200">
+                    <button
+                      onClick={() => {
+                        const newProjectId = `internal-${Date.now()}`;
+                        const newProject = {
+                          id: newProjectId,
+                          projectName: '',
+                          creator: '',
+                          creatorName: '',
+                          culture: '',
+                          format: '',
+                          productionPOC: '',
+                          contentPOC: '',
+                          shootStartDate: '',
+                          status: 'loi_sent',
+                          totalBudget: 0,
+                          overcost: 0,
+                          insurance: 0,
+                          customBudget: 0,
+                          customBudgetLabel: '',
+                          createdAt: new Date().toISOString(),
+                        };
+                        const updatedProjects = [...internalProjects, newProject];
+                        setInternalProjects(updatedProjects);
+                        localStorage.setItem('stage_internal_projects', JSON.stringify(updatedProjects));
+                      }}
+                      className="w-full px-4 py-3 text-green-700 font-bold hover:bg-green-100 transition-all flex items-center justify-center gap-2"
+                    >
+                      <span className="text-xl">➕</span>
+                      <span>Add New Project Row</span>
+                    </button>
+                  </div>
                   {/* Footer */}
                   <div className="bg-gray-50 px-4 py-3 border-t border-gray-200 flex items-center justify-between">
                     <span className="text-gray-500 text-sm">{filteredProjects.length} projects • Hover on + for extras</span>
@@ -5605,44 +5023,54 @@ END:VCARD`;
                   </div>
                 </div>
 
-              {/* POC Tracker - Dark Theme */}
-              <div className="bg-slate-900 rounded-2xl border border-slate-700 p-6 mt-6">
+              {/* POC Tracker - Light Soothing Theme */}
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-white">Team Overview</h2>
-                    <p className="text-sm text-slate-400">POC assignments with culture & format breakdown</p>
+                    <h2 className="text-xl font-bold text-gray-800">Team Overview</h2>
+                    <p className="text-sm text-gray-500">POC assignments with culture & format breakdown</p>
                   </div>
-                  <button
-                    onClick={() => setShowAddPOCModal(true)}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-sm font-bold text-white transition-all"
-                  >
-                    + Add POC
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowAddPOCModal(true)}
+                      className="px-4 py-2 bg-blue-100 hover:bg-blue-200 rounded-xl text-sm font-bold text-blue-700 transition-all"
+                    >
+                      + Production POC
+                    </button>
+                    <button
+                      onClick={() => setShowAddPOCModal(true)}
+                      className="px-4 py-2 bg-pink-100 hover:bg-pink-200 rounded-xl text-sm font-bold text-pink-700 transition-all"
+                    >
+                      + Content POC
+                    </button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {allPOCs.map((poc, pocIndex) => {
-                    const pocProjects = submissions.filter(s => s.productionPOC === poc);
-                    const bgColors = ['bg-blue-500/20 border-blue-500/40', 'bg-purple-500/20 border-purple-500/40', 'bg-teal-500/20 border-teal-500/40', 'bg-amber-500/20 border-amber-500/40', 'bg-rose-500/20 border-rose-500/40'];
-                    const textColors = ['text-blue-400', 'text-purple-400', 'text-teal-400', 'text-amber-400', 'text-rose-400'];
+                    const pocProjects = internalProjects.filter(s => s.productionPOC === poc);
+                    const bgColors = ['bg-blue-50 border-blue-200', 'bg-purple-50 border-purple-200', 'bg-teal-50 border-teal-200', 'bg-amber-50 border-amber-200', 'bg-rose-50 border-rose-200'];
+                    const textColors = ['text-blue-600', 'text-purple-600', 'text-teal-600', 'text-amber-600', 'text-rose-600'];
+                    const avatarColors = ['bg-blue-100', 'bg-purple-100', 'bg-teal-100', 'bg-amber-100', 'bg-rose-100'];
                     const bgColor = bgColors[pocIndex % bgColors.length];
                     const textColor = textColors[pocIndex % textColors.length];
+                    const avatarColor = avatarColors[pocIndex % avatarColors.length];
                     const pocBudget = pocProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0);
 
                     return (
                       <div
                         key={poc}
                         onClick={() => setSelectedPOC(selectedPOC === poc ? null : poc)}
-                        className={`${bgColor} border rounded-xl p-4 cursor-pointer hover:shadow-lg transition-all ${selectedPOC === poc ? 'ring-2 ring-blue-400' : ''}`}
+                        className={`${bgColor} border-2 rounded-xl p-4 cursor-pointer hover:shadow-lg transition-all ${selectedPOC === poc ? 'ring-2 ring-blue-400' : ''}`}
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full ${textColor} bg-slate-800 flex items-center justify-center text-lg font-bold`}>
+                            <div className={`w-10 h-10 rounded-full ${avatarColor} ${textColor} flex items-center justify-center text-lg font-bold`}>
                               {poc.charAt(0)}
                             </div>
                             <div>
                               <h3 className={`font-bold ${textColor}`}>{poc}</h3>
-                              <p className="text-xs text-slate-500">Production POC</p>
+                              <p className="text-xs text-gray-500">Production POC</p>
                             </div>
                           </div>
                           <button
@@ -5652,26 +5080,26 @@ END:VCARD`;
                                 deletePOC(poc);
                               }
                             }}
-                            className="w-6 h-6 bg-red-500/20 hover:bg-red-500 rounded flex items-center justify-center text-red-400 hover:text-white transition-all text-sm"
+                            className="w-6 h-6 bg-red-100 hover:bg-red-500 rounded flex items-center justify-center text-red-500 hover:text-white transition-all text-sm"
                           >×</button>
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                          <div className="bg-white/80 rounded-lg p-2 text-center border border-gray-100">
                             <div className={`text-2xl font-bold ${textColor}`}>{pocProjects.length}</div>
-                            <div className="text-xs text-slate-500">Projects</div>
+                            <div className="text-xs text-gray-500">Projects</div>
                           </div>
-                          <div className="bg-slate-800/50 rounded-lg p-2 text-center">
-                            <div className="text-lg font-bold text-emerald-400">{formatBudget(pocBudget)}</div>
-                            <div className="text-xs text-slate-500">Budget</div>
+                          <div className="bg-white/80 rounded-lg p-2 text-center border border-gray-100">
+                            <div className="text-lg font-bold text-emerald-600">{formatBudget(pocBudget)}</div>
+                            <div className="text-xs text-gray-500">Budget</div>
                           </div>
                         </div>
 
-                        <div className="mt-3 pt-3 border-t border-slate-700 grid grid-cols-2 gap-1 text-xs">
-                          {cultureOptions.map(c => (
-                            <div key={c} className="flex justify-between px-2 py-1 bg-slate-800/50 rounded">
-                              <span className="text-slate-400">{c}</span>
-                              <span className="font-semibold text-white">{pocProjects.filter(p => p.culture === c).length}</span>
+                        <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-2 gap-1 text-xs">
+                          {cultureOptions.slice(0, 4).map(c => (
+                            <div key={c} className="flex justify-between px-2 py-1 bg-white/80 rounded border border-gray-100">
+                              <span className="text-gray-600">{c}</span>
+                              <span className="font-semibold text-gray-800">{pocProjects.filter(p => p.culture === c).length}</span>
                             </div>
                           ))}
                         </div>
@@ -5681,39 +5109,39 @@ END:VCARD`;
                 </div>
               </div>
 
-              {/* POC Detail Panel - Dark */}
+              {/* POC Detail Panel - Light Theme */}
               {selectedPOC && (() => {
-                const pocProjects = submissions.filter(s => s.productionPOC === selectedPOC);
+                const pocProjects = internalProjects.filter(s => s.productionPOC === selectedPOC);
                 const pocBudget = pocProjects.reduce((sum, p) => sum + (parseFloat(p.totalBudget) || 0), 0);
                 return (
-                  <div className="bg-slate-900 rounded-2xl border border-slate-700 p-6 mt-4">
+                  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-4">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h3 className="text-xl font-bold text-white">{selectedPOC}'s Projects</h3>
-                        <p className="text-sm text-slate-400">{pocProjects.length} projects • {formatBudget(pocBudget)} total</p>
+                        <h3 className="text-xl font-bold text-gray-800">{selectedPOC}&apos;s Projects</h3>
+                        <p className="text-sm text-gray-500">{pocProjects.length} projects • {formatBudget(pocBudget)} total</p>
                       </div>
-                      <button onClick={() => setSelectedPOC(null)} className="text-slate-500 hover:text-white text-2xl">×</button>
+                      <button onClick={() => setSelectedPOC(null)} className="text-gray-400 hover:text-gray-700 text-2xl">×</button>
                     </div>
 
                     {/* Matrix */}
-                    <div className="overflow-x-auto mb-4 bg-slate-800/50 rounded-xl p-4">
+                    <div className="overflow-x-auto mb-4 bg-gray-50 rounded-xl p-4 border border-gray-200">
                       <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b border-slate-700">
-                            <th className="text-left py-2 px-3 text-slate-400 font-medium">Culture</th>
-                            {formatOptions.map(f => <th key={f} className="text-center py-2 px-2 text-slate-400 font-medium text-xs">{f}</th>)}
-                            <th className="text-right py-2 px-3 text-slate-400 font-medium">Total</th>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-2 px-3 text-gray-600 font-medium">Culture</th>
+                            {formatOptions.map(f => <th key={f} className="text-center py-2 px-2 text-gray-600 font-medium text-xs">{f}</th>)}
+                            <th className="text-right py-2 px-3 text-gray-600 font-medium">Total</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {cultureOptions.map(c => (
-                            <tr key={c} className="border-b border-slate-800">
-                              <td className="py-2 px-3 font-medium text-white">{c}</td>
+                          {cultureOptions.slice(0, 4).map(c => (
+                            <tr key={c} className="border-b border-gray-100">
+                              <td className="py-2 px-3 font-medium text-gray-800">{c}</td>
                               {formatOptions.map(f => {
                                 const cnt = pocProjects.filter(p => p.culture === c && p.format === f).length;
-                                return <td key={f} className="text-center py-2 px-2">{cnt > 0 ? <span className="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full text-xs font-semibold">{cnt}</span> : <span className="text-slate-600">—</span>}</td>;
+                                return <td key={f} className="text-center py-2 px-2">{cnt > 0 ? <span className="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-xs font-semibold">{cnt}</span> : <span className="text-gray-300">—</span>}</td>;
                               })}
-                              <td className="text-right py-2 px-3 font-bold text-white">{pocProjects.filter(p => p.culture === c).length}</td>
+                              <td className="text-right py-2 px-3 font-bold text-gray-800">{pocProjects.filter(p => p.culture === c).length}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -5723,19 +5151,32 @@ END:VCARD`;
                     {/* List */}
                     <div className="space-y-2 max-h-60 overflow-y-auto">
                       {pocProjects.map((p, i) => (
-                        <div key={p.id} className="bg-slate-800/50 rounded-lg p-3 flex items-center justify-between">
+                        <div key={p.id} className="bg-gray-50 rounded-lg p-3 flex items-center justify-between border border-gray-200">
                           <div className="flex items-center gap-3">
-                            <span className="text-slate-500 font-medium">{i + 1}.</span>
+                            <span className="text-gray-500 font-medium">{i + 1}.</span>
                             <div>
-                              <div className="font-semibold text-white">{p.projectName || 'Untitled'}</div>
-                              <div className="text-xs text-slate-400">{p.culture} • {p.format}</div>
+                              <div className="font-semibold text-gray-800">{p.projectName || 'Untitled'}</div>
+                              <div className="text-xs text-gray-500">{p.culture} • {p.format}</div>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="text-emerald-400 font-semibold">{formatBudget(parseFloat(p.totalBudget) || 0)}</div>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[p.status] || 'bg-slate-700 text-slate-300'}`}>
-                              {statusOptions.find(o => o.value === p.status)?.label || p.status || 'N/A'}
-                            </span>
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <div className="text-emerald-600 font-semibold">{formatBudget(parseFloat(p.totalBudget) || 0)}</div>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[p.status] || 'bg-gray-200 text-gray-600'}`}>
+                                {statusOptions.find(o => o.value === p.status)?.label || p.status || 'N/A'}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => {
+                                if (confirm(`Delete "${p.projectName}"? This cannot be undone.`)) {
+                                  deleteInternalProject(p.id);
+                                }
+                              }}
+                              className="w-8 h-8 bg-red-100 hover:bg-red-500 rounded-lg flex items-center justify-center text-red-500 hover:text-white transition-all"
+                              title="Delete Project"
+                            >
+                              🗑️
+                            </button>
                           </div>
                         </div>
                       ))}
@@ -5744,23 +5185,23 @@ END:VCARD`;
                 );
               })()}
 
-              {/* Add POC Modal - Dark */}
+              {/* Add POC Modal - Light Theme */}
               {showAddPOCModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={() => setShowAddPOCModal(false)}>
-                  <div className="bg-slate-900 rounded-2xl shadow-xl border border-slate-700 p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
-                    <h3 className="text-xl font-bold text-white mb-4">Add Team Member</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={() => setShowAddPOCModal(false)}>
+                  <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+                    <h3 className="text-xl font-bold text-gray-800 mb-4">Add Team Member</h3>
                     <input
                       type="text"
                       value={newPOCName}
                       onChange={(e) => setNewPOCName(e.target.value)}
                       placeholder="Enter name..."
-                      className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4"
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4"
                       autoFocus
                     />
                     <div className="flex gap-3">
                       <button
                         onClick={() => setShowAddPOCModal(false)}
-                        className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium transition-colors"
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-colors"
                       >Cancel</button>
                       <button
                         onClick={() => {
@@ -5772,6 +5213,72 @@ END:VCARD`;
                         }}
                         className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-medium transition-colors"
                       >Add POC</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Add Culture Modal - Light Theme */}
+              {showAddCultureModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={() => setShowAddCultureModal(false)}>
+                  <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+                    <h3 className="text-xl font-bold text-gray-800 mb-4">Add New Culture</h3>
+                    <input
+                      type="text"
+                      value={newCultureName}
+                      onChange={(e) => setNewCultureName(e.target.value)}
+                      placeholder="Enter culture name..."
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 mb-4"
+                      autoFocus
+                    />
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setShowAddCultureModal(false)}
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-colors"
+                      >Cancel</button>
+                      <button
+                        onClick={() => {
+                          if (newCultureName.trim() && !cultureOptions.includes(newCultureName.trim())) {
+                            setCustomCultures([...customCultures, newCultureName.trim()]);
+                            setNewCultureName('');
+                            setShowAddCultureModal(false);
+                          }
+                        }}
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-medium transition-colors"
+                      >Add Culture</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Add Format Modal - Light Theme */}
+              {showAddFormatModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={() => setShowAddFormatModal(false)}>
+                  <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+                    <h3 className="text-xl font-bold text-gray-800 mb-4">Add New Format</h3>
+                    <input
+                      type="text"
+                      value={newFormatName}
+                      onChange={(e) => setNewFormatName(e.target.value)}
+                      placeholder="Enter format name..."
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-300 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 mb-4"
+                      autoFocus
+                    />
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setShowAddFormatModal(false)}
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-colors"
+                      >Cancel</button>
+                      <button
+                        onClick={() => {
+                          if (newFormatName.trim() && !formatOptions.includes(newFormatName.trim())) {
+                            setCustomFormats([...customFormats, newFormatName.trim()]);
+                            setNewFormatName('');
+                            setShowAddFormatModal(false);
+                          }
+                        }}
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-purple-500 hover:bg-purple-600 text-white font-medium transition-colors"
+                      >Add Format</button>
                     </div>
                   </div>
                 </div>
@@ -6236,8 +5743,10 @@ END:VCARD`;
                   {
                     name: 'SOP',
                     icon: '📋',
-                    color: 'bg-blue-500',
+                    color: 'bg-gradient-to-br from-blue-500 to-blue-700',
                     desc: 'Standard Operating Procedures',
+                    fullDesc: 'Complete production guidelines covering Pre-Production, Filming, Post-Production, Sound, Music, VFX and Delivery standards for STAGE OTT content',
+                    itemCount: sopSections.length,
                     isSopFull: true,
                     sopSections: sopSections,
                     content: {
@@ -6250,10 +5759,29 @@ END:VCARD`;
                     }
                   },
                   {
+                    name: 'Clap Board',
+                    icon: '🎬',
+                    color: 'bg-gradient-to-br from-slate-800 to-slate-900',
+                    desc: 'Film Slate Templates',
+                    fullDesc: 'Professional STAGE-approved clapperboard/slate formats for scene identification, take numbering, and sync reference in production',
+                    itemCount: 4,
+                    hasClapboardTemplate: true,
+                    content: {
+                      title: 'Clap Board / Film Slate',
+                      sections: [
+                        { heading: 'Standard Information', items: ['Production Title', 'Director Name', 'DOP/Cinematographer', 'Scene Number', 'Shot Number', 'Take Number', 'Date', 'Day/Night', 'INT/EXT'] },
+                        { heading: 'Technical Details', items: ['Camera: A/B/C', 'Roll Number', 'FPS: 25', 'Aspect Ratio', 'Sound: Sync/MOS', 'Timecode'] },
+                        { heading: 'STAGE Requirements', items: ['Use STAGE-approved clapboard design', 'Clearly visible in frame', 'Proper lighting on slate', 'Hold steady for 2 seconds', 'Clap clearly for audio sync'] },
+                      ]
+                    }
+                  },
+                  {
                     name: 'Invoice',
                     icon: '🧾',
-                    color: 'bg-green-500',
+                    color: 'bg-gradient-to-br from-green-500 to-emerald-700',
                     desc: 'Invoice Templates',
+                    fullDesc: 'GST-compliant invoice templates for production payments including tranch-wise billing, vendor invoices, and tax documentation',
+                    itemCount: 6,
                     hasInvoiceTemplate: true,
                     invoiceTemplate: {
                       companyName: '[YOUR PRODUCTION COMPANY NAME]',
@@ -6285,10 +5813,13 @@ END:VCARD`;
                   },
                   {
                     name: 'NOC',
-                    icon: '📄',
-                    color: 'bg-purple-500',
+                    icon: '📜',
+                    color: 'bg-gradient-to-br from-purple-500 to-indigo-700',
                     desc: 'No Objection Certificates',
+                    fullDesc: 'Legal NOC templates including Work-For-Hire, Location Permission, Talent Release, Music Rights, and Copyright Act 1957 compliant documents',
+                    itemCount: 12,
                     hasNocTemplate: true,
+                    hasLocationNoc: true,
                     content: {
                       title: 'NOC Requirements',
                       sections: [
@@ -6301,22 +5832,89 @@ END:VCARD`;
                   {
                     name: 'Budget',
                     icon: '💰',
-                    color: 'bg-yellow-500',
-                    desc: 'Budget Formats',
+                    color: 'bg-gradient-to-br from-amber-500 to-orange-600',
+                    desc: 'Budget Formats & OTT Guide',
+                    fullDesc: 'Complete budget guide with department-wise allocation for ₹40L regional film, OTT platform producer margins (Netflix, Amazon, Hoichoi, Zee5), and industry-standard cost structures',
+                    itemCount: 12,
+                    hasBudgetTemplate: true,
+                    hasOttBudgetGuide: true,
                     content: {
-                      title: 'Budget Format & Guidelines',
+                      title: 'OTT Budget & Producer Margin Guide',
                       sections: [
-                        { heading: 'Above The Line (15-20%)', items: ['Story/Script Rights', 'Director Fee', 'Producer Fee', 'Lead Cast Fees', 'Music Director'] },
-                        { heading: 'Below The Line (50-60%)', items: ['Crew Salaries', 'Equipment Rental', 'Location Fees', 'Set Construction', 'Costumes & Props', 'Transportation & Catering'] },
-                        { heading: 'Post & Others (20-30%)', items: ['Editing Suite', 'VFX/Graphics', 'Sound Design & Mix', 'Color Grading', 'Music Recording', 'Insurance', 'Contingency 10%'] },
+                        { heading: '₹40 LAKH REGIONAL FILM - Budget Allocation (with 10% Creator Margin)', items: [
+                          '📊 TOTAL BUDGET: ₹40,00,000 | Creator Margin: ₹4,00,000 (10%) | Working Budget: ₹36,00,000'
+                        ]},
+                        { heading: '1️⃣ ABOVE-THE-LINE (25-30%) = ₹9-10.8L', items: [
+                          'Director Fee: 8-10% (₹2.88-3.6L)',
+                          'Script/Story Rights: 3-5% (₹1.08-1.8L)',
+                          'Lead Cast (2-3 actors): 10-12% (₹3.6-4.32L)',
+                          'Music Director: 3-4% (₹1.08-1.44L)'
+                        ]},
+                        { heading: '2️⃣ PRODUCTION/BTL (40-45%) = ₹14.4-16.2L', items: [
+                          'Crew Salaries (DOP, AD, Sound, Art): 12-15% (₹4.32-5.4L)',
+                          'Camera & Equipment Rental: 8-10% (₹2.88-3.6L)',
+                          'Location & Set: 6-8% (₹2.16-2.88L)',
+                          'Art, Props & Costumes: 5-6% (₹1.8-2.16L)',
+                          'Transportation & Catering: 4-5% (₹1.44-1.8L)',
+                          'Makeup & Hair: 2-3% (₹0.72-1.08L)'
+                        ]},
+                        { heading: '3️⃣ POST-PRODUCTION (18-22%) = ₹6.48-7.92L', items: [
+                          'Editing: 4-5% (₹1.44-1.8L)',
+                          'Color Grading/DI: 3-4% (₹1.08-1.44L)',
+                          'Sound Design & Mix: 4-5% (₹1.44-1.8L)',
+                          'Background Music/Score: 3-4% (₹1.08-1.44L)',
+                          'VFX (if needed): 2-3% (₹0.72-1.08L)'
+                        ]},
+                        { heading: '4️⃣ CONTINGENCY & MISC (8-10%) = ₹2.88-3.6L', items: [
+                          'Contingency Fund: 5-7% (₹1.8-2.52L)',
+                          'Insurance & Permits: 1-2% (₹0.36-0.72L)',
+                          'Marketing Assets (Posters/Promos): 1-2% (₹0.36-0.72L)'
+                        ]},
+                        { heading: '🎬 OTT PLATFORM PRODUCER MARGINS', items: [
+                          '━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+                          '📺 NETFLIX INDIA: 10-15% margin (Cost-Plus model, ₹4-6L on ₹40L budget)',
+                          '📺 AMAZON PRIME VIDEO: 12-18% margin (Cost-Plus, ₹4.8-7.2L on ₹40L)',
+                          '📺 DISNEY+ HOTSTAR: 10-15% margin (Cost-Plus, ₹4-6L on ₹40L)',
+                          '📺 ZEE5: 10-12% margin (Cost-Plus, ₹4-4.8L on ₹40L)',
+                          '📺 SONY LIV: 10-12% margin (Cost-Plus, ₹4-4.8L on ₹40L)',
+                          '📺 HOICHOI (Regional): 8-12% margin (Cost-Plus, ₹3.2-4.8L on ₹40L)',
+                          '📺 AHA (Telugu): 8-10% margin (Cost-Plus, ₹3.2-4L on ₹40L)',
+                          '📺 SUN NXT: 8-10% margin (Regional, ₹3.2-4L on ₹40L)',
+                          '📺 MX PLAYER: 5-8% margin (Lower budgets, ₹2-3.2L on ₹40L)',
+                          '📺 STAGE OTT: 10% fixed margin (₹4L on ₹40L budget)'
+                        ]},
+                        { heading: '💼 COST-PLUS MODEL EXPLAINED', items: [
+                          'How it works: OTT pays Production Cost + Fixed Producer Margin %',
+                          'Example: ₹36L Production + 10% Margin = ₹40L Total Deal',
+                          'IP Rights: OTT owns all rights for agreed duration (typically 5-7 years)',
+                          'Regional languages get slightly lower margins (8-12%) vs Hindi (10-18%)',
+                          'First-time creators: 5-8% | Established: 10-15% | Star creators: 15-25%'
+                        ]},
+                        { heading: '⚠️ 2024-25 MARKET TRENDS', items: [
+                          'Producer margins have DECLINED from 15-20% (2020) to 8-12% (2024)',
+                          'OTT platforms preferring shorter exclusivity (1-2 years vs perpetual)',
+                          'Regional content getting more investment but tighter margins',
+                          'Backend/revenue share deals are rare for new creators',
+                          'Focus on proven IP and sequels over experimental content'
+                        ]},
+                        { heading: '✅ TIPS FOR MAXIMIZING MARGIN', items: [
+                          'Build track record with lower-margin projects first',
+                          'Negotiate multi-project deals for better rates',
+                          'Own music rights separately when possible',
+                          'Keep production costs lean to protect actual margin',
+                          'Consider co-production for shared risk & better terms'
+                        ]}
                       ]
                     }
                   },
                   {
                     name: 'Agreement',
                     icon: '📝',
-                    color: 'bg-red-500',
+                    color: 'bg-gradient-to-br from-red-500 to-rose-700',
                     desc: 'Contract Templates',
+                    fullDesc: 'Legal agreement templates for Creator contracts, Talent agreements, Vendor contracts, IP assignment, and confidentiality agreements',
+                    itemCount: 9,
+                    hasAgreementTemplate: true,
                     content: {
                       title: 'Agreement Guidelines',
                       sections: [
@@ -6327,45 +5925,37 @@ END:VCARD`;
                     }
                   },
                   {
-                    name: 'Call Sheet',
-                    icon: '📞',
-                    color: 'bg-teal-500',
-                    desc: 'Daily Call Sheets',
+                    name: 'DPR',
+                    icon: '📊',
+                    color: 'bg-gradient-to-br from-amber-500 to-orange-700',
+                    desc: 'Daily Production Report',
+                    fullDesc: 'Create, save and share Daily Production Reports with Google Sheets export, PDF download, and WhatsApp sharing',
+                    itemCount: savedDPRs.length > 0 ? savedDPRs.length : 7,
+                    hasDPRTemplate: true,
                     content: {
-                      title: 'Call Sheet Format',
+                      title: 'Daily Production Report',
                       sections: [
-                        { heading: 'Header Information', items: ['Production Title & Episode', 'Shoot Date & Day Count', 'Weather Forecast', 'Sunrise/Sunset Times', 'Emergency Contacts', 'Hospital/Police Station nearby'] },
-                        { heading: 'Schedule Details', items: ['Call times for each department', 'Scene numbers & descriptions', 'Cast required per scene', 'Location address with map', 'Parking instructions', 'Meal break timings'] },
-                        { heading: 'Requirements', items: ['Props list per scene', 'Costume requirements', 'Special equipment needed', 'Vehicles required', 'Extras count', 'Special notes/instructions'] },
+                        { heading: 'Production Details', items: ['Title', 'Date', 'Day #', 'Producer', 'Director', 'Location', 'First Shoot Date', 'Scheduled Finish'] },
+                        { heading: 'Timing Log', items: ['Crew Call', 'First Shot', 'Meal Break', 'Packup', 'Last Person Out'] },
+                        { heading: 'Scenes & Pages', items: ['Script Total', 'Shot Today', 'Total to Date', 'Remaining'] },
+                        { heading: 'Camera Setups', items: ['Previous', 'Today', 'Total', 'Remaining'] },
+                        { heading: 'Comments', items: ['Delays', 'Explanations', 'Solutions'] },
+                        { heading: 'Next Shoot', items: ['Date', 'Location', 'Call Time', 'Scenes'] },
+                        { heading: 'Signatures', items: ['Prepared By', 'Approved By'] }
                       ]
                     }
                   },
                   {
-                    name: 'Release Form',
-                    icon: '✍️',
-                    color: 'bg-pink-500',
-                    desc: 'Talent Release Forms',
-                    content: {
-                      title: 'Release Form Requirements',
-                      sections: [
-                        { heading: 'Talent Release', items: ['Full legal name & address', 'Role/Appearance description', 'Usage rights granted', 'Territory (Worldwide)', 'Duration (Perpetuity)', 'Platforms (All media)'] },
-                        { heading: 'Minor Release', items: ['Parent/Guardian consent', 'Minor\'s details', 'School permission if applicable', 'Working hours compliance', 'Chaperone requirements'] },
-                        { heading: 'Location Release', items: ['Property address', 'Owner details', 'Shoot dates & times', 'Areas permitted', 'Restrictions if any', 'Restoration requirements'] },
-                      ]
-                    }
-                  },
-                  {
-                    name: 'Other',
+                    name: 'Others',
                     icon: '📁',
-                    color: 'bg-gray-500',
-                    desc: 'Miscellaneous',
+                    color: 'bg-gradient-to-br from-slate-500 to-gray-700',
+                    desc: 'My Documents',
+                    fullDesc: 'Add, save and share your custom production documents - production reports, notes, checklists, and any other documents',
+                    itemCount: customDocuments.length,
+                    hasCustomDocs: true,
                     content: {
-                      title: 'Other Documents',
-                      sections: [
-                        { heading: 'Production Report', items: ['Daily progress summary', 'Scenes completed', 'Footage shot', 'Issues faced', 'Next day plan'] },
-                        { heading: 'Wrap Report', items: ['Total shoot days', 'Budget vs actual', 'Pending deliverables', 'Equipment return status', 'Final crew list'] },
-                        { heading: 'Handover Checklist', items: ['All masters delivered', 'Project files backup', 'Music cue sheet', 'Credits list', 'BTS content', 'Social media assets'] },
-                      ]
+                      title: 'My Documents',
+                      sections: []
                     }
                   },
                 ];
@@ -6374,29 +5964,85 @@ END:VCARD`;
 
                 return (
                   <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+                    {/* Premium Document Categories Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-8">
                       {docCategories.map(cat => {
                         const catDocs = productionDocs.filter(d => d.category === cat.name);
                         const isSelected = selectedDocCategory === cat.name;
+                        const totalItems = (cat as any).itemCount || catDocs.length || cat.content.sections.reduce((acc: number, s: any) => acc + s.items.length, 0);
                         return (
                           <div
                             key={cat.name}
                             onClick={() => setSelectedDocCategory(isSelected ? null : cat.name)}
-                            className={`bg-white rounded-xl border-2 p-4 hover:shadow-lg transition-all cursor-pointer ${isSelected ? 'border-blue-500 shadow-lg' : 'border-gray-200'}`}
+                            className={`group relative bg-white rounded-2xl border-2 overflow-hidden hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 ${isSelected ? 'border-blue-500 shadow-2xl ring-4 ring-blue-100' : 'border-gray-200 hover:border-gray-300'}`}
                           >
-                            <div className="flex items-center gap-3 mb-2">
-                              <div className={`w-10 h-10 ${cat.color} rounded-lg flex items-center justify-center text-white text-xl`}>
-                                {cat.icon}
+                            {/* Gradient Header */}
+                            <div className={`${cat.color} p-4 relative overflow-hidden`}>
+                              {/* Background Pattern */}
+                              <div className="absolute inset-0 opacity-10">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white rounded-full translate-y-1/2 -translate-x-1/2"></div>
                               </div>
-                              <div>
-                                <h3 className="font-bold text-gray-800">{cat.name}</h3>
-                                <p className="text-xs text-gray-500">{catDocs.length} files</p>
+
+                              <div className="relative flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-3xl shadow-lg border border-white/30">
+                                    {cat.icon}
+                                  </div>
+                                  <div>
+                                    <h3 className="font-black text-white text-lg tracking-wide">{cat.name}</h3>
+                                    <p className="text-white/80 text-xs font-medium">{cat.desc}</p>
+                                  </div>
+                                </div>
+                                <div className="flex flex-col items-end">
+                                  <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full border border-white/30">
+                                    <span className="text-white font-bold text-lg">{totalItems}</span>
+                                    <span className="text-white/80 text-xs ml-1">items</span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
-                            <p className="text-xs text-gray-400">{cat.desc}</p>
-                            <div className="mt-2 text-xs text-blue-500">
-                              {isSelected ? '▼ Click to close' : '▶ Click to view'}
+
+                            {/* Description Area */}
+                            <div className="p-4 bg-gradient-to-b from-gray-50 to-white">
+                              <p className="text-xs text-gray-600 leading-relaxed line-clamp-2 min-h-[32px]">
+                                {(cat as any).fullDesc || cat.desc}
+                              </p>
+
+                              {/* Action Footer */}
+                              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                                <div className="flex items-center gap-2">
+                                  {catDocs.length > 0 && (
+                                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                      {catDocs.length} uploaded
+                                    </span>
+                                  )}
+                                  {((cat as any).hasInvoiceTemplate || (cat as any).hasNocTemplate || (cat as any).hasClapboardTemplate || (cat as any).hasBudgetTemplate || (cat as any).hasCallSheetTemplate || (cat as any).hasLogSheetTemplate) && (
+                                    <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                                      Templates
+                                    </span>
+                                  )}
+                                </div>
+                                <div className={`flex items-center gap-1 text-sm font-bold transition-colors ${isSelected ? 'text-blue-600' : 'text-gray-400 group-hover:text-blue-500'}`}>
+                                  {isSelected ? (
+                                    <>
+                                      <span>Close</span>
+                                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" /></svg>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span>View</span>
+                                      <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
                             </div>
+
+                            {/* Selected Indicator */}
+                            {isSelected && (
+                              <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500"></div>
+                            )}
                           </div>
                         );
                       })}
@@ -6869,7 +6515,7 @@ _Please fill your details and send back._`;
                                   </div>
 
                                   <p className="text-xs text-gray-500 mt-4 text-center">
-                                    💡 Creator ko Excel/Google Sheets bhejo - wo edit karke wapas bhej sakte hain
+                                    💡 Share Excel/Google Sheets with Creator - They can edit and send back
                                   </p>
                                 </div>
 
@@ -7049,179 +6695,487 @@ _Please fill your details and send back._`;
                             </div>
                           )}
 
-                          {/* NOC Template Section */}
+                          {/* Clapboard / Film Slate Template Section */}
+                          {(selectedCat as any).hasClapboardTemplate && (
+                            <div className="mb-8">
+                              {/* Clapboard Header */}
+                              <div className="bg-gradient-to-br from-slate-900 via-gray-800 to-slate-900 border-2 border-amber-500/50 rounded-2xl p-6 mb-6 shadow-2xl">
+                                <div className="flex items-center justify-between mb-4">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg border-2 border-white/20">
+                                      <span className="text-4xl">🎬</span>
+                                    </div>
+                                    <div>
+                                      <h3 className="text-2xl font-black text-white">STAGE Film Slate / Clapboard</h3>
+                                      <p className="text-amber-400 text-sm font-medium">Professional Production Standard</p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      const clapboardHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>STAGE Film Slate / Clapboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0f0f0f; min-height: 100vh; padding: 40px; display: flex; justify-content: center; align-items: center; }
+    .slate-container { width: 700px; background: #1a1a1a; border-radius: 20px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+    .clapper-top { background: repeating-linear-gradient(45deg, #fbbf24, #fbbf24 30px, #0f0f0f 30px, #0f0f0f 60px); height: 80px; position: relative; border-bottom: 4px solid #fbbf24; }
+    .clapper-top::after { content: 'STAGE OTT'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: 900; color: white; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000; letter-spacing: 3px; }
+    .slate-body { padding: 30px; }
+    .production-title { text-align: center; padding: 20px; background: linear-gradient(135deg, #fbbf24, #f59e0b); border-radius: 12px; margin-bottom: 25px; }
+    .production-title h1 { font-size: 32px; font-weight: 900; color: #0f0f0f; letter-spacing: 2px; }
+    .production-title p { font-size: 14px; color: #44403c; font-weight: 600; margin-top: 5px; }
+    .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+    .info-box { background: #262626; border: 2px solid #fbbf24; border-radius: 10px; padding: 15px; text-align: center; }
+    .info-box .label { font-size: 10px; color: #fbbf24; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+    .info-box .value { font-family: 'Roboto Mono', monospace; font-size: 28px; color: white; font-weight: 700; min-height: 40px; border-bottom: 2px dashed #444; padding-bottom: 5px; }
+    .info-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
+    .crew-section { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .crew-box { background: #1f1f1f; border: 1px solid #333; border-radius: 8px; padding: 12px; }
+    .crew-box .role { font-size: 10px; color: #fbbf24; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .crew-box .name { font-size: 16px; color: white; font-weight: 600; border-bottom: 1px dashed #444; padding-bottom: 5px; min-height: 24px; }
+    .tech-bar { display: flex; justify-content: space-between; background: #0f0f0f; padding: 15px 20px; border-radius: 10px; margin-top: 20px; }
+    .tech-item { text-align: center; }
+    .tech-item .t-label { font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+    .tech-item .t-value { font-size: 14px; color: #fbbf24; font-weight: 700; margin-top: 3px; }
+    .slate-footer { background: #fbbf24; padding: 12px; text-align: center; }
+    .slate-footer p { font-size: 11px; color: #0f0f0f; font-weight: 700; letter-spacing: 1px; }
+    @media print { body { padding: 0; background: white; } .slate-container { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="slate-container">
+    <div class="clapper-top"></div>
+    <div class="slate-body">
+      <div class="production-title">
+        <h1>[PRODUCTION TITLE]</h1>
+        <p>STAGE OTT Original • [Language] • [Format]</p>
+      </div>
+      <div class="info-grid">
+        <div class="info-box">
+          <div class="label">Scene</div>
+          <div class="value">___</div>
+        </div>
+        <div class="info-box">
+          <div class="label">Shot</div>
+          <div class="value">___</div>
+        </div>
+        <div class="info-box">
+          <div class="label">Take</div>
+          <div class="value">___</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-box">
+          <div class="label">Roll / Card</div>
+          <div class="value">___</div>
+        </div>
+        <div class="info-box">
+          <div class="label">Date</div>
+          <div class="value">__/__/2026</div>
+        </div>
+      </div>
+      <div class="crew-section">
+        <div class="crew-box">
+          <div class="role">Director</div>
+          <div class="name">[DIRECTOR NAME]</div>
+        </div>
+        <div class="crew-box">
+          <div class="role">DOP / Cinematographer</div>
+          <div class="name">[DOP NAME]</div>
+        </div>
+        <div class="crew-box">
+          <div class="role">Camera</div>
+          <div class="name">A / B / C</div>
+        </div>
+        <div class="crew-box">
+          <div class="role">Sound</div>
+          <div class="name">SYNC / MOS</div>
+        </div>
+      </div>
+      <div class="tech-bar">
+        <div class="tech-item">
+          <div class="t-label">FPS</div>
+          <div class="t-value">25</div>
+        </div>
+        <div class="tech-item">
+          <div class="t-label">Shutter</div>
+          <div class="t-value">1/50</div>
+        </div>
+        <div class="tech-item">
+          <div class="t-label">ISO</div>
+          <div class="t-value">___</div>
+        </div>
+        <div class="tech-item">
+          <div class="t-label">Lens</div>
+          <div class="t-value">___mm</div>
+        </div>
+        <div class="tech-item">
+          <div class="t-label">Filter</div>
+          <div class="t-value">___</div>
+        </div>
+        <div class="tech-item">
+          <div class="t-label">INT/EXT</div>
+          <div class="t-value">___</div>
+        </div>
+        <div class="tech-item">
+          <div class="t-label">DAY/NIGHT</div>
+          <div class="t-value">___</div>
+        </div>
+      </div>
+    </div>
+    <div class="slate-footer">
+      <p>STAGE OTT PRODUCTION • OFFICIAL CLAPBOARD • USE FOR ALL SHOTS</p>
+    </div>
+  </div>
+</body>
+</html>`;
+                                      const printWindow = window.open('', '_blank');
+                                      if (printWindow) {
+                                        printWindow.document.write(clapboardHtml);
+                                        printWindow.document.close();
+                                        printWindow.print();
+                                      }
+                                    }}
+                                    className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black rounded-lg text-sm font-bold flex items-center gap-2"
+                                  >
+                                    🖨️ Print Clapboard
+                                  </button>
+                                </div>
+                                <p className="text-gray-300 text-sm leading-relaxed">
+                                  STAGE-approved film slate format with all essential fields - Scene, Shot, Take, Roll, Director, DOP, and technical settings.
+                                  Required for every shot in production for proper organization and sync reference.
+                                </p>
+                              </div>
+
+                              {/* Clapboard Preview */}
+                              <div className="rounded-2xl shadow-2xl overflow-hidden border-2 border-amber-500/30 bg-gradient-to-b from-gray-900 to-black">
+                                {/* Clapper Top Bar */}
+                                <div className="h-16 bg-repeating-linear-gradient relative" style={{background: 'repeating-linear-gradient(45deg, #fbbf24, #fbbf24 20px, #000 20px, #000 40px)'}}>
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="text-white font-black text-xl tracking-widest drop-shadow-lg" style={{textShadow: '2px 2px 0 #000'}}>STAGE OTT</span>
+                                  </div>
+                                </div>
+
+                                {/* Slate Body */}
+                                <div className="p-6">
+                                  {/* Production Title */}
+                                  <div className="bg-gradient-to-r from-amber-400 to-amber-500 rounded-xl p-4 mb-5 text-center">
+                                    <h2 className="text-2xl font-black text-black tracking-wide">[PRODUCTION TITLE]</h2>
+                                    <p className="text-amber-900 text-sm font-semibold">STAGE Original • [Language]</p>
+                                  </div>
+
+                                  {/* Scene/Shot/Take Grid */}
+                                  <div className="grid grid-cols-3 gap-4 mb-5">
+                                    {[
+                                      { label: 'SCENE', value: '___' },
+                                      { label: 'SHOT', value: '___' },
+                                      { label: 'TAKE', value: '___' },
+                                    ].map(item => (
+                                      <div key={item.label} className="bg-gray-800 border-2 border-amber-500 rounded-xl p-4 text-center">
+                                        <p className="text-amber-400 text-xs font-bold tracking-widest mb-2">{item.label}</p>
+                                        <p className="text-white text-3xl font-mono font-bold border-b-2 border-dashed border-gray-600 pb-2">{item.value}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+
+                                  {/* Roll & Date */}
+                                  <div className="grid grid-cols-2 gap-4 mb-5">
+                                    <div className="bg-gray-800 border border-amber-500/50 rounded-xl p-3 text-center">
+                                      <p className="text-amber-400 text-xs font-bold tracking-wider mb-1">ROLL / CARD</p>
+                                      <p className="text-white text-xl font-mono font-bold">___</p>
+                                    </div>
+                                    <div className="bg-gray-800 border border-amber-500/50 rounded-xl p-3 text-center">
+                                      <p className="text-amber-400 text-xs font-bold tracking-wider mb-1">DATE</p>
+                                      <p className="text-white text-xl font-mono font-bold">__/__/2026</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Crew Info */}
+                                  <div className="grid grid-cols-2 gap-3 mb-5">
+                                    {[
+                                      { role: 'DIRECTOR', name: '[Director Name]' },
+                                      { role: 'DOP', name: '[Cinematographer]' },
+                                      { role: 'CAMERA', name: 'A / B / C' },
+                                      { role: 'SOUND', name: 'SYNC / MOS' },
+                                    ].map(crew => (
+                                      <div key={crew.role} className="bg-gray-900 border border-gray-700 rounded-lg p-3">
+                                        <p className="text-amber-500 text-xs font-bold tracking-wider">{crew.role}</p>
+                                        <p className="text-white text-sm font-semibold border-b border-dashed border-gray-600 pb-1 mt-1">{crew.name}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+
+                                  {/* Technical Bar */}
+                                  <div className="bg-black rounded-xl p-4 flex justify-between">
+                                    {[
+                                      { label: 'FPS', value: '25' },
+                                      { label: 'SHUTTER', value: '1/50' },
+                                      { label: 'ISO', value: '___' },
+                                      { label: 'LENS', value: '___mm' },
+                                      { label: 'INT/EXT', value: '___' },
+                                      { label: 'DAY/NIT', value: '___' },
+                                    ].map(tech => (
+                                      <div key={tech.label} className="text-center">
+                                        <p className="text-gray-500 text-xs font-medium">{tech.label}</p>
+                                        <p className="text-amber-400 text-sm font-bold mt-1">{tech.value}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Footer */}
+                                <div className="bg-amber-500 py-3 text-center">
+                                  <p className="text-black text-xs font-bold tracking-wider">STAGE OTT PRODUCTION • OFFICIAL CLAPBOARD</p>
+                                </div>
+                              </div>
+
+                              <h4 className="font-bold text-gray-800 mb-4 mt-6">Clapboard Guidelines</h4>
+                            </div>
+                          )}
+
+                          {/* NOC Template Section - Comprehensive Department-wise */}
                           {(selectedCat as any).hasNocTemplate && (
                             <div className="mb-8">
                               {/* NOC Header */}
-                              <div className="bg-gradient-to-br from-purple-900 via-indigo-900 to-purple-800 border-2 border-purple-500/50 rounded-2xl p-6 mb-6 shadow-2xl">
-                                <div className="flex items-center justify-between mb-6">
+                              <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 border-2 border-purple-500/50 rounded-2xl p-6 mb-6 shadow-2xl">
+                                <div className="flex items-center justify-between mb-4">
                                   <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
-                                      <span className="text-3xl">📜</span>
+                                    <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg border-2 border-white/20">
+                                      <span className="text-4xl">📜</span>
                                     </div>
                                     <div>
-                                      <h3 className="text-2xl font-black text-white">STAGE NOC Templates</h3>
-                                      <p className="text-purple-300 text-sm font-medium">No Objection Certificate Formats</p>
+                                      <h3 className="text-2xl font-black text-white">STAGE Work-For-Hire NOC</h3>
+                                      <p className="text-purple-300 text-sm font-medium">Copyright Act 1957 Compliant • IP Rights Assignment</p>
                                     </div>
                                   </div>
-                                  <div className="flex gap-2">
+                                </div>
+                                <p className="text-purple-200 text-sm leading-relaxed">
+                                  Standard OTT industry NOC format for all departments - Director, Writer, Music Composer, Actors, and more.
+                                  Includes Work-for-Hire declaration, IP Rights Assignment, Moral Rights Waiver as per Copyright Act 1957.
+                                </p>
+                              </div>
+
+                              {/* Department Selection */}
+                              <div className="bg-white border-2 border-purple-200 rounded-xl p-5 mb-6">
+                                <h4 className="font-bold text-purple-800 mb-4 flex items-center gap-2">
+                                  🎬 Select Department / Role for NOC
+                                </h4>
+                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                                  {[
+                                    { id: 'director', label: 'Director', icon: '🎬', color: 'from-red-500 to-red-600' },
+                                    { id: 'writer', label: 'Writer', icon: '✍️', color: 'from-blue-500 to-blue-600' },
+                                    { id: 'composer', label: 'Music Composer', icon: '🎵', color: 'from-purple-500 to-purple-600' },
+                                    { id: 'lyricist', label: 'Lyricist', icon: '📝', color: 'from-pink-500 to-pink-600' },
+                                    { id: 'dop', label: 'DOP/Cinematographer', icon: '📷', color: 'from-amber-500 to-amber-600' },
+                                    { id: 'editor', label: 'Editor', icon: '🎞️', color: 'from-green-500 to-green-600' },
+                                    { id: 'sound', label: 'Sound Designer', icon: '🔊', color: 'from-cyan-500 to-cyan-600' },
+                                    { id: 'actor', label: 'Actor/Talent', icon: '🎭', color: 'from-rose-500 to-rose-600' },
+                                    { id: 'vfx', label: 'VFX Artist', icon: '✨', color: 'from-violet-500 to-violet-600' },
+                                    { id: 'production', label: 'Production House', icon: '🏢', color: 'from-slate-600 to-slate-700' },
+                                    { id: 'location', label: 'Location NOC', icon: '📍', color: 'from-emerald-500 to-teal-600' },
+                                    { id: 'music', label: 'Music Rights', icon: '🎼', color: 'from-indigo-500 to-blue-600' },
+                                  ].map(dept => (
                                     <button
+                                      key={dept.id}
                                       onClick={() => {
                                         const nocHtml = `
 <!DOCTYPE html>
 <html>
 <head>
-  <title>No Objection Certificate - STAGE Production</title>
+  <title>NOC - ${dept.label} - STAGE OTT</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #581c87 0%, #312e81 100%); min-height: 100vh; padding: 40px; }
-    .noc-container { max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
-    .header { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%); padding: 30px 40px; text-align: center; }
-    .logo { width: 70px; height: 70px; background: rgba(255,255,255,0.2); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 35px; margin: 0 auto 15px; backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.3); }
-    .title { color: white; font-size: 32px; font-weight: 900; letter-spacing: 2px; }
-    .subtitle { color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 5px; }
-    .ref-strip { background: #0f172a; padding: 15px 40px; display: flex; justify-content: space-between; }
-    .ref-item { text-align: center; }
-    .ref-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-    .ref-value { font-size: 14px; font-weight: 700; color: white; margin-top: 3px; }
-    .content { padding: 40px; }
-    .date-section { text-align: right; margin-bottom: 30px; }
-    .date-section p { font-size: 14px; color: #475569; }
-    .to-section { margin-bottom: 30px; }
-    .to-label { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-    .to-content { font-size: 15px; color: #0f172a; line-height: 1.8; }
-    .subject { background: linear-gradient(135deg, #f3e8ff, #e9d5ff); padding: 20px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid #7c3aed; }
-    .subject-label { font-size: 11px; font-weight: 700; color: #7c3aed; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-    .subject-text { font-size: 16px; font-weight: 700; color: #0f172a; }
-    .body-text { font-size: 14px; color: #334155; line-height: 2; text-align: justify; margin-bottom: 30px; }
+    body { font-family: 'Inter', Arial, sans-serif; background: #f1f5f9; padding: 30px; }
+    .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%); padding: 30px; text-align: center; }
+    .logo-row { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 15px; }
+    .logo { width: 60px; height: 60px; background: rgba(255,255,255,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+    .header h1 { color: white; font-size: 26px; font-weight: 900; letter-spacing: 1px; }
+    .header .subtitle { color: #c4b5fd; font-size: 13px; margin-top: 5px; }
+    .badge { display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 10px; }
+    .meta-strip { background: #0f172a; padding: 12px 30px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .meta-item { text-align: center; flex: 1; min-width: 120px; }
+    .meta-label { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+    .meta-value { font-size: 13px; font-weight: 700; color: white; margin-top: 2px; }
+    .content { padding: 30px; }
+    .section { margin-bottom: 25px; }
+    .section-title { font-size: 12px; font-weight: 800; color: #6366f1; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+    .party-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+    .party-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
+    .party-box.contributor { border-left: 4px solid #6366f1; }
+    .party-box.company { border-left: 4px solid #10b981; }
+    .party-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .party-name { font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+    .party-role { font-size: 12px; color: #6366f1; font-weight: 600; margin-bottom: 8px; }
+    .party-details { font-size: 12px; color: #475569; line-height: 1.6; }
+    .clause { margin-bottom: 20px; }
+    .clause-num { display: inline-block; background: #6366f1; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; font-weight: 700; margin-right: 10px; }
+    .clause-title { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    .clause-text { font-size: 12px; color: #334155; line-height: 1.8; text-align: justify; padding-left: 34px; }
     .highlight { background: #fef3c7; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
-    .details-box { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 25px; margin-bottom: 30px; }
-    .details-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
-    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .detail-item { display: flex; }
-    .detail-label { font-size: 13px; color: #64748b; min-width: 140px; }
-    .detail-value { font-size: 13px; font-weight: 600; color: #0f172a; }
-    .terms { margin-bottom: 30px; }
-    .terms-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 15px; }
-    .terms-list { list-style: none; }
-    .terms-list li { font-size: 13px; color: #475569; padding: 8px 0; border-bottom: 1px solid #e2e8f0; display: flex; align-items: flex-start; gap: 10px; }
-    .terms-list li:last-child { border-bottom: none; }
-    .check-icon { color: #10b981; font-size: 16px; }
-    .signature-section { display: flex; justify-content: space-between; margin-top: 50px; padding-top: 30px; border-top: 2px solid #e2e8f0; }
-    .sign-box { text-align: center; width: 200px; }
-    .sign-line { border-bottom: 2px solid #0f172a; margin-bottom: 10px; height: 60px; }
-    .sign-label { font-size: 12px; font-weight: 700; color: #0f172a; }
-    .sign-sublabel { font-size: 11px; color: #64748b; margin-top: 3px; }
-    .footer { background: #0f172a; padding: 15px; text-align: center; }
-    .footer p { color: #64748b; font-size: 11px; }
-    @media print { body { background: white; padding: 0; } .noc-container { box-shadow: none; } }
+    .amount-box { background: linear-gradient(135deg, #ecfdf5, #d1fae5); border: 2px solid #10b981; border-radius: 12px; padding: 20px; margin: 20px 0; }
+    .amount-label { font-size: 11px; font-weight: 700; color: #047857; text-transform: uppercase; letter-spacing: 1px; }
+    .amount-value { font-size: 28px; font-weight: 900; color: #059669; margin-top: 5px; }
+    .amount-note { font-size: 11px; color: #047857; margin-top: 8px; }
+    .rights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+    .right-item { background: #f1f5f9; padding: 10px; border-radius: 8px; text-align: center; font-size: 11px; color: #475569; }
+    .right-item strong { display: block; color: #0f172a; margin-bottom: 3px; }
+    .signature-section { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 40px; padding-top: 30px; border-top: 2px solid #e2e8f0; }
+    .sign-box { text-align: center; }
+    .sign-line { height: 80px; border-bottom: 2px solid #1e293b; margin-bottom: 10px; }
+    .sign-name { font-size: 14px; font-weight: 800; color: #0f172a; }
+    .sign-role { font-size: 11px; color: #64748b; margin-top: 3px; }
+    .acceptance { background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin-top: 25px; text-align: center; }
+    .acceptance p { font-size: 13px; color: #92400e; font-weight: 600; }
+    .footer { background: #0f172a; padding: 15px 30px; text-align: center; }
+    .footer p { color: #64748b; font-size: 10px; }
+    @media print { body { background: white; padding: 10px; } .container { box-shadow: none; } }
   </style>
 </head>
 <body>
-  <div class="noc-container">
+  <div class="container">
     <div class="header">
-      <div class="logo">📜</div>
-      <div class="title">NO OBJECTION CERTIFICATE</div>
-      <div class="subtitle">For Film / Content Production</div>
+      <div class="logo-row">
+        <div class="logo">🎬</div>
+        <div class="logo">${dept.icon}</div>
+      </div>
+      <h1>NO OBJECTION CERTIFICATE</h1>
+      <div class="subtitle">Work-For-Hire Agreement • ${dept.label}</div>
+      <div class="badge">Copyright Act 1957 Compliant • IP Rights Assignment</div>
     </div>
 
-    <div class="ref-strip">
-      <div class="ref-item">
-        <div class="ref-label">Reference No.</div>
-        <div class="ref-value">STAGE/NOC/____/25-26</div>
-      </div>
-      <div class="ref-item">
-        <div class="ref-label">NOC Type</div>
-        <div class="ref-value">[Location / Talent / Music]</div>
-      </div>
-      <div class="ref-item">
-        <div class="ref-label">Valid Until</div>
-        <div class="ref-value">__/__/2026</div>
-      </div>
+    <div class="meta-strip">
+      <div class="meta-item"><div class="meta-label">Reference No.</div><div class="meta-value">STAGE/NOC/${dept.id.toUpperCase()}/____/25-26</div></div>
+      <div class="meta-item"><div class="meta-label">Department</div><div class="meta-value">${dept.label}</div></div>
+      <div class="meta-item"><div class="meta-label">Date</div><div class="meta-value">__/__/2026</div></div>
+      <div class="meta-item"><div class="meta-label">Project Code</div><div class="meta-value">STAGE-____</div></div>
     </div>
 
     <div class="content">
-      <div class="date-section">
-        <p><strong>Date:</strong> __/__/2026</p>
-        <p><strong>Place:</strong> ___________</p>
-      </div>
-
-      <div class="to-section">
-        <div class="to-label">To Whomsoever It May Concern</div>
-      </div>
-
-      <div class="subject">
-        <div class="subject-label">Subject</div>
-        <div class="subject-text">No Objection Certificate for "[PROJECT TITLE]" - [Regional Language] Film/Series Production</div>
-      </div>
-
-      <div class="body-text">
-        This is to certify that <span class="highlight">[ISSUING PARTY NAME]</span>, having address at <span class="highlight">[COMPLETE ADDRESS]</span>, hereby grants No Objection Certificate (NOC) to <span class="highlight">STAGE Technologies Private Limited</span> and its authorized production partner <span class="highlight">[PRODUCTION COMPANY NAME]</span> for the purpose mentioned below.
-      </div>
-
-      <div class="details-box">
-        <div class="details-title">📋 Production Details</div>
-        <div class="details-grid">
-          <div class="detail-item">
-            <span class="detail-label">Project Title:</span>
-            <span class="detail-value">[PROJECT NAME]</span>
+      <div class="party-grid">
+        <div class="party-box contributor">
+          <div class="party-label">Contributor / Service Provider</div>
+          <div class="party-name">[CONTRIBUTOR NAME]</div>
+          <div class="party-role">${dept.label}</div>
+          <div class="party-details">
+            Address: [Complete Address]<br>
+            PAN: [PAN Number]<br>
+            Contact: [Phone / Email]
           </div>
-          <div class="detail-item">
-            <span class="detail-label">Language:</span>
-            <span class="detail-value">[REGIONAL LANGUAGE]</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Production House:</span>
-            <span class="detail-value">[COMPANY NAME]</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Director:</span>
-            <span class="detail-value">[DIRECTOR NAME]</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Shoot Dates:</span>
-            <span class="detail-value">__/__/2026 to __/__/2026</span>
-          </div>
-          <div class="detail-item">
-            <span class="detail-label">Location/Purpose:</span>
-            <span class="detail-value">[SPECIFY LOCATION/PURPOSE]</span>
+        </div>
+        <div class="party-box company">
+          <div class="party-label">Production Company</div>
+          <div class="party-name">STAGE Technologies Private Limited</div>
+          <div class="party-role">OTT Platform & Producer</div>
+          <div class="party-details">
+            2nd Floor, Kundan Mansion,<br>
+            Asaf Ali Road, New Delhi - 110002<br>
+            GSTIN: 07AAICC1279L1ZC
           </div>
         </div>
       </div>
 
-      <div class="terms">
-        <div class="terms-title">✅ Terms & Conditions</div>
-        <ul class="terms-list">
-          <li><span class="check-icon">✓</span> This NOC is valid only for the project and dates mentioned above</li>
-          <li><span class="check-icon">✓</span> The production team shall follow all safety and security guidelines</li>
-          <li><span class="check-icon">✓</span> Any damage caused during production shall be borne by the production house</li>
-          <li><span class="check-icon">✓</span> This NOC is non-transferable and cannot be used for any other purpose</li>
-          <li><span class="check-icon">✓</span> The issuing party reserves the right to revoke this NOC if terms are violated</li>
-        </ul>
+      <div class="section">
+        <div class="section-title">📋 Project Details</div>
+        <div class="party-box" style="border-left: 4px solid #f59e0b;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px;">
+            <div><strong>Project Title:</strong> [PROJECT NAME]</div>
+            <div><strong>Language:</strong> [REGIONAL LANGUAGE]</div>
+            <div><strong>Format:</strong> [Film / Web Series / Microdrama]</div>
+            <div><strong>Episodes:</strong> [Number if applicable]</div>
+            <div><strong>Director:</strong> [Director Name]</div>
+            <div><strong>Producer:</strong> [Production House]</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">📜 Work-For-Hire Declaration</div>
+        <div class="clause">
+          <span class="clause-num">1</span>
+          <span class="clause-title">Engagement & Services</span>
+          <p class="clause-text">The Contributor hereby certifies and agrees to provide services as <span class="highlight">${dept.label}</span> for the Project titled <span class="highlight">[PROJECT NAME]</span> produced by M/s STAGE Technologies Private Limited ("Company"). The Contributor shall provide all services customarily provided in connection with the role of ${dept.label}, including creation of all materials, ideas, concepts, and works in whatever stage of completion ("Works").</p>
+        </div>
+
+        <div class="clause">
+          <span class="clause-num">2</span>
+          <span class="clause-title">Compensation / Fees</span>
+          <div class="amount-box">
+            <div class="amount-label">All-Inclusive Fees (INR)</div>
+            <div class="amount-value">₹ ____________/-</div>
+            <div class="amount-note">Inclusive of direct taxes • Exclusive of GST • Subject to TDS as applicable</div>
+          </div>
+          <p class="clause-text">Subject to Contributor's compliance with this Agreement and Company's receipt of this NOC, and any tax documents required, Company shall pay the above all-inclusive fees covering all costs for rendering Services and assignment of all rights.</p>
+        </div>
+
+        <div class="clause">
+          <span class="clause-num">3</span>
+          <span class="clause-title">Work Made for Hire (Copyright Act, 1957)</span>
+          <p class="clause-text">Contributor certifies that all results and proceeds of Contributor's Services, including without limitation the Works, will be deemed specially ordered or commissioned by Company for inclusion in audio-visual works, and as such, constitute a <span class="highlight">"work made for hire"</span> under the Copyright Act, 1957 and all copyright laws throughout the universe. Company is deemed the author and first owner thereof. The Works will be Company's sole and exclusive property, <span class="highlight">in perpetuity, throughout the universe</span>, in all media now known or hereafter devised, together with all rights including copyrights, copyright renewals, ancillary rights and neighbouring rights.</p>
+        </div>
+
+        <div class="clause">
+          <span class="clause-num">4</span>
+          <span class="clause-title">IP Rights Assignment</span>
+          <p class="clause-text">If for any reason any of the Works are not recognized as "work made for hire," Contributor hereby irrevocably assigns and transfers to Company all intellectual property rights, including copyrights, renewed terms of copyright, ancillary rights and neighbouring rights in and to any of the Works, in all modes, media and formats now known or hereafter devised. Contributor acknowledges that Company will have the sole and exclusive right to administer the Works including publishing, communicating to public, synchronizing, reproducing, and exploiting in any manner whatsoever.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">🎯 Exploitation Rights</div>
+        <div class="rights-grid">
+          <div class="right-item"><strong>🎬 Theatrical</strong>Cinema Release</div>
+          <div class="right-item"><strong>📺 Television</strong>Cable, Satellite, DTH</div>
+          <div class="right-item"><strong>📱 OTT/Digital</strong>Streaming Platforms</div>
+          <div class="right-item"><strong>📀 Home Video</strong>DVD, Blu-ray</div>
+          <div class="right-item"><strong>🌐 Internet</strong>Web, Social Media</div>
+          <div class="right-item"><strong>✈️ In-Flight</strong>Airlines, Hotels</div>
+          <div class="right-item"><strong>🎮 Gaming</strong>Interactive Media</div>
+          <div class="right-item"><strong>🛍️ Merchandise</strong>Products, Toys</div>
+          <div class="right-item"><strong>🔄 Remakes</strong>Adaptations, Sequels</div>
+        </div>
+        <p class="clause-text" style="padding-left: 0;">Company and its assignees shall have perpetual rights throughout the universe to exploit the Works in all current and future media including theatrical, OTT, television, internet, mobile, VR/AR, and any new technologies hereafter devised. Company may edit, dub, subtitle, remake, revise or combine the Works with other works as deemed appropriate.</p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">⚖️ Moral Rights Waiver & Data Protection</div>
+        <div class="clause">
+          <span class="clause-num">5</span>
+          <span class="clause-title">Moral Rights Waiver</span>
+          <p class="clause-text">Contributor agrees to waive any and all moral rights relating to the Works, including rights of identification of authorship, rights of approval, restriction or limitation on use, and subsequent modifications including all "New Exploitation Rights" as may be recognized in future under law or equity.</p>
+        </div>
+        <div class="clause">
+          <span class="clause-num">6</span>
+          <span class="clause-title">Confidentiality & Data Protection</span>
+          <p class="clause-text">Contributor shall maintain strict confidentiality of all project information. Any security breach must be reported to Company within 1 hour of discovery. Contributor is fully liable for security breach caused by own acts or omissions.</p>
+        </div>
       </div>
 
       <div class="signature-section">
         <div class="sign-box">
           <div class="sign-line"></div>
-          <div class="sign-label">Issuing Authority</div>
-          <div class="sign-sublabel">[Name & Designation]</div>
+          <div class="sign-name">[CONTRIBUTOR NAME]</div>
+          <div class="sign-role">${dept.label} / Contributor</div>
         </div>
         <div class="sign-box">
           <div class="sign-line"></div>
-          <div class="sign-label">Official Stamp/Seal</div>
-          <div class="sign-sublabel">[Organization]</div>
+          <div class="sign-name">For STAGE Technologies Pvt Ltd</div>
+          <div class="sign-role">Authorized Signatory</div>
         </div>
-        <div class="sign-box">
-          <div class="sign-line"></div>
-          <div class="sign-label">Witness</div>
-          <div class="sign-sublabel">[Name & Contact]</div>
-        </div>
+      </div>
+
+      <div class="acceptance">
+        <p>📧 The Contributor is requested to mail this back with <strong>"I ACCEPT"</strong> within 24 hours of receipt.</p>
       </div>
     </div>
 
     <div class="footer">
-      <p>🎬 STAGE OTT Platform • Regional Content Production • This is a computer generated NOC template</p>
+      <p>🎬 STAGE OTT Platform • Regional Content Production • Work-For-Hire NOC • Copyright Act 1957 Compliant</p>
     </div>
   </div>
 </body>
@@ -7233,291 +7187,2963 @@ _Please fill your details and send back._`;
                                           printWindow.print();
                                         }
                                       }}
-                                      className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-bold flex items-center gap-2 border border-white/20"
+                                      className={`flex flex-col items-center gap-2 p-3 bg-gradient-to-br ${dept.color} rounded-xl text-white hover:scale-105 transition-all shadow-lg`}
                                     >
-                                      🖨️ Print PDF
+                                      <span className="text-2xl">{dept.icon}</span>
+                                      <span className="text-xs font-bold text-center leading-tight">{dept.label}</span>
                                     </button>
-                                  </div>
+                                  ))}
                                 </div>
+                                <p className="text-xs text-gray-500 mt-4 text-center">
+                                  Click on any department to generate & print professional Work-For-Hire NOC
+                                </p>
+                              </div>
 
-                                {/* Download Options */}
-                                <div className="bg-white border-2 border-purple-300 rounded-xl p-5 mb-4">
-                                  <h4 className="font-bold text-purple-800 mb-4 flex items-center gap-2 text-lg">
-                                    📥 Download Editable NOC Template
-                                  </h4>
-                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    {/* Google Sheets */}
-                                    <button
-                                      onClick={() => {
-                                        const sheetsUrl = 'https://docs.google.com/spreadsheets/create';
-                                        window.open(sheetsUrl, '_blank');
-                                        const csvData = `NO OBJECTION CERTIFICATE - STAGE PRODUCTION
+                              {/* Download Options */}
+                              <div className="bg-white border-2 border-purple-300 rounded-xl p-5 mb-6">
+                                <h4 className="font-bold text-purple-800 mb-4 flex items-center gap-2 text-lg">
+                                  📥 Download Master NOC Template (All Departments)
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                  {/* Google Sheets */}
+                                  <button
+                                    onClick={() => {
+                                      const sheetsUrl = 'https://docs.google.com/spreadsheets/create';
+                                      window.open(sheetsUrl, '_blank');
+                                      const csvData = `STAGE OTT - WORK-FOR-HIRE NOC TEMPLATE
+Copyright Act 1957 Compliant | IP Rights Assignment
 
-Reference No.:,STAGE/NOC/____/25-26
-NOC Type:,[Location / Talent / Music]
-Date:,__/__/2026
-Valid Until:,__/__/2026
+REFERENCE NUMBER:,STAGE/NOC/[DEPT]/____/25-26
+DATE:,__/__/2026
+PROJECT CODE:,STAGE-____
 
-TO WHOMSOEVER IT MAY CONCERN
+CONTRIBUTOR DETAILS:
+Name:,[FULL NAME]
+Role/Department:,[Director/Writer/Composer/Actor/etc.]
+Address:,[Complete Address]
+PAN:,[PAN Number]
+Contact:,[Phone / Email]
+Bank Account:,[Account Details for Payment]
 
-SUBJECT:,"No Objection Certificate for [PROJECT TITLE] - [Regional Language] Production"
-
-ISSUING PARTY DETAILS:
-Name:,[ISSUING PARTY NAME]
-Address:,[COMPLETE ADDRESS]
-Contact:,[PHONE NUMBER]
-
-PRODUCTION DETAILS:
-Project Title:,[PROJECT NAME]
+PROJECT DETAILS:
+Title:,[PROJECT NAME]
 Language:,[REGIONAL LANGUAGE]
-Production House:,[COMPANY NAME]
-Director:,[DIRECTOR NAME]
-Shoot Dates:,"__/__/2026 to __/__/2026"
-Location/Purpose:,[SPECIFY LOCATION/PURPOSE]
+Format:,[Film / Web Series / Microdrama]
+Episodes:,[Number if applicable]
+Director:,[Director Name]
+Producer:,[Production House Name]
 
-CERTIFICATE TEXT:
-"This is to certify that the above-mentioned issuing party has no objection to STAGE Technologies Private Limited and its authorized production partner for the specified purpose."
+COMPANY DETAILS:
+Name:,STAGE Technologies Private Limited
+Address:,"2nd Floor, Kundan Mansion, Asaf Ali Road, New Delhi - 110002"
+GSTIN:,07AAICC1279L1ZC
 
-TERMS & CONDITIONS:
-1.,"This NOC is valid only for the project and dates mentioned above"
-2.,"The production team shall follow all safety guidelines"
-3.,"Any damage during production shall be borne by the production house"
-4.,"This NOC is non-transferable"
+COMPENSATION:
+All-Inclusive Fees (INR):,₹ ____________/-
+Payment Terms:,[Advance / Milestone based]
+Note:,"Inclusive of direct taxes, Exclusive of GST, Subject to TDS"
+
+WORK-FOR-HIRE DECLARATION:
+"The Contributor certifies that all Works created shall be deemed 'work made for hire' under Copyright Act 1957. Company is the author and first owner. Works are Company's exclusive property in perpetuity throughout the universe in all media."
+
+IP RIGHTS ASSIGNED:
+1.,Copyright & Copyright Renewals
+2.,Ancillary Rights & Neighbouring Rights
+3.,Theatrical, OTT, Television, Internet Rights
+4.,Remake, Sequel, Adaptation Rights
+5.,Merchandising & Licensing Rights
+6.,All Future/New Exploitation Rights
+
+MORAL RIGHTS WAIVER:
+"Contributor waives all moral rights including identification of authorship and approval rights."
 
 SIGNATURES:
-Issuing Authority:,____________________
-Designation:,[DESIGNATION]
-Stamp/Seal:,
-Witness Name:,____________________
-Witness Contact:,[PHONE]`;
-                                        navigator.clipboard.writeText(csvData);
-                                        alert('Google Sheets opened! NOC data copied - paste it (Ctrl+V)');
-                                      }}
-                                      className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-400 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
-                                    >
-                                      <div className="w-14 h-14 bg-purple-500 rounded-xl flex items-center justify-center">
-                                        <span className="text-3xl">📊</span>
-                                      </div>
-                                      <div className="text-center">
-                                        <p className="font-bold text-purple-800">Google Sheets</p>
-                                        <p className="text-xs text-purple-600">Open & Edit Online</p>
-                                      </div>
-                                    </button>
+Contributor:,____________________
+Date:,__/__/2026
+For STAGE Technologies:,____________________
+Date:,__/__/2026
 
-                                    {/* Excel Download */}
-                                    <button
-                                      onClick={() => {
-                                        const csvContent = `"NO OBJECTION CERTIFICATE"
+ACCEPTANCE:
+"Mail back with 'I ACCEPT' within 24 hours of receipt"`;
+                                      navigator.clipboard.writeText(csvData);
+                                      alert('Google Sheets opened! NOC data copied - paste it (Ctrl+V)');
+                                    }}
+                                    className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-400 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
+                                  >
+                                    <div className="w-14 h-14 bg-purple-500 rounded-xl flex items-center justify-center">
+                                      <span className="text-3xl">📊</span>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="font-bold text-purple-800">Google Sheets</p>
+                                      <p className="text-xs text-purple-600">Open & Edit Online</p>
+                                    </div>
+                                  </button>
 
-"Reference No.:","STAGE/NOC/____/25-26"
-"NOC Type:","[Location / Talent / Music]"
+                                  {/* Excel Download */}
+                                  <button
+                                    onClick={() => {
+                                      const csvContent = `"STAGE OTT - WORK-FOR-HIRE NOC"
+"Copyright Act 1957 Compliant"
+
+"Reference:","STAGE/NOC/[DEPT]/____/25-26"
 "Date:","__/__/2026"
-"Valid Until:","__/__/2026"
 
-"TO WHOMSOEVER IT MAY CONCERN"
+"CONTRIBUTOR:"
+"Name:","[FULL NAME]"
+"Role:","[Department/Role]"
+"Address:","[Complete Address]"
+"PAN:","[PAN]"
+"Contact:","[Phone/Email]"
 
-"SUBJECT:","No Objection Certificate for [PROJECT TITLE]"
+"PROJECT:"
+"Title:","[PROJECT NAME]"
+"Language:","[REGIONAL]"
+"Format:","[Film/Series]"
 
-"ISSUING PARTY:"
-"Name:","[ISSUING PARTY NAME]"
-"Address:","[COMPLETE ADDRESS]"
-"Contact:","[PHONE NUMBER]"
+"COMPANY:"
+"STAGE Technologies Private Limited"
+"New Delhi - 110002"
+"GSTIN: 07AAICC1279L1ZC"
 
-"PRODUCTION DETAILS:"
-"Project Title:","[PROJECT NAME]"
-"Language:","[REGIONAL LANGUAGE]"
-"Production House:","[COMPANY NAME]"
-"Director:","[DIRECTOR NAME]"
-"Shoot Dates:","__/__/2026 to __/__/2026"
-"Purpose:","[SPECIFY PURPOSE]"
+"FEES:"
+"Amount:","₹ ____________/-"
+"Terms:","Inclusive of taxes, Subject to TDS"
 
-"CERTIFICATE:"
-"This is to certify that the issuing party has no objection to the production activities mentioned above."
-
-"TERMS:"
-"1.","Valid only for mentioned project and dates"
-"2.","Follow all safety guidelines"
-"3.","Damage liability on production house"
-"4.","Non-transferable"
+"DECLARATION:"
+"All Works are 'work made for hire' under Copyright Act 1957. Company owns all IP rights in perpetuity."
 
 "SIGNATURES:"
-"Issuing Authority:","____________________"
-"Stamp/Seal:","[OFFICIAL SEAL]"
-"Witness:","____________________"`;
+"Contributor:","____________________"
+"Company:","____________________"
 
-                                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                                        const url = URL.createObjectURL(blob);
-                                        const link = document.createElement('a');
-                                        link.href = url;
-                                        link.download = 'STAGE_NOC_Template.csv';
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
-                                        URL.revokeObjectURL(url);
-                                        alert('NOC Excel file downloaded!');
-                                      }}
-                                      className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-indigo-400 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
-                                    >
-                                      <div className="w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center">
-                                        <span className="text-3xl">📗</span>
-                                      </div>
-                                      <div className="text-center">
-                                        <p className="font-bold text-indigo-800">Download Excel</p>
-                                        <p className="text-xs text-indigo-600">Edit in MS Excel</p>
-                                      </div>
-                                    </button>
+"Reply with 'I ACCEPT' within 24 hours"`;
+                                      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                                      const url = URL.createObjectURL(blob);
+                                      const link = document.createElement('a');
+                                      link.href = url;
+                                      link.download = 'STAGE_WorkForHire_NOC.csv';
+                                      document.body.appendChild(link);
+                                      link.click();
+                                      document.body.removeChild(link);
+                                      URL.revokeObjectURL(url);
+                                      alert('NOC Excel downloaded!');
+                                    }}
+                                    className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-indigo-400 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
+                                  >
+                                    <div className="w-14 h-14 bg-indigo-600 rounded-xl flex items-center justify-center">
+                                      <span className="text-3xl">📗</span>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="font-bold text-indigo-800">Download Excel</p>
+                                      <p className="text-xs text-indigo-600">Edit in MS Excel</p>
+                                    </div>
+                                  </button>
 
-                                    {/* WhatsApp Share */}
-                                    <button
-                                      onClick={() => {
-                                        const message = `*NO OBJECTION CERTIFICATE*
-*STAGE OTT Production*
+                                  {/* WhatsApp */}
+                                  <button
+                                    onClick={() => {
+                                      const message = `*STAGE OTT - WORK-FOR-HIRE NOC*
+📜 _Copyright Act 1957 Compliant_
 
-📜 *Reference:* STAGE/NOC/____/25-26
-📅 *Date:* __/__/2026
-⏳ *Valid Until:* __/__/2026
+*Ref:* STAGE/NOC/____/25-26
+*Date:* __/__/2026
 
-*TO WHOMSOEVER IT MAY CONCERN*
+*CONTRIBUTOR:*
+Name: [YOUR NAME]
+Role: [Director/Writer/Composer/etc.]
+PAN: [PAN NUMBER]
 
-*Subject:* NOC for "[PROJECT TITLE]" - [Regional] Production
+*PROJECT:*
+🎬 Title: [PROJECT NAME]
+🗣️ Language: [REGIONAL]
+📺 Format: [Film/Series]
 
-*ISSUING PARTY:*
-Name: [ISSUING PARTY NAME]
-Address: [COMPLETE ADDRESS]
-Contact: [PHONE]
+*COMPANY:*
+STAGE Technologies Pvt Ltd
+New Delhi - 110002
 
-*PRODUCTION DETAILS:*
-🎬 Project: [PROJECT NAME]
-🗣️ Language: [REGIONAL LANGUAGE]
-🎥 Production: [COMPANY NAME]
-🎭 Director: [DIRECTOR NAME]
-📅 Dates: __/__/2026 to __/__/2026
-📍 Purpose: [SPECIFY]
+*FEES:* ₹ ____________/-
+_(Inclusive of taxes, Subject to TDS)_
 
-*CERTIFICATE:*
-This is to certify that the issuing party has no objection to the above production activities.
+*DECLARATION:*
+All Works are "work made for hire" under Copyright Act 1957. Company owns all IP rights in perpetuity throughout universe.
+
+*RIGHTS ASSIGNED:*
+✅ Copyright & Renewals
+✅ OTT, TV, Theatrical Rights
+✅ Remake/Sequel Rights
+✅ All Future Rights
+
+*MORAL RIGHTS:* Waived
 
 *SIGNATURES REQUIRED:*
-✍️ Issuing Authority
-🔖 Official Stamp/Seal
-👁️ Witness
+✍️ Contributor
+✍️ Company
 
-_Fill details and share back_`;
-                                        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-                                        window.open(whatsappUrl, '_blank');
-                                      }}
-                                      className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-500 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
-                                    >
-                                      <div className="w-14 h-14 bg-green-600 rounded-xl flex items-center justify-center">
-                                        <span className="text-3xl">💬</span>
-                                      </div>
-                                      <div className="text-center">
-                                        <p className="font-bold text-green-800">WhatsApp</p>
-                                        <p className="text-xs text-green-600">Share via WhatsApp</p>
-                                      </div>
-                                    </button>
-                                  </div>
-                                  <p className="text-xs text-gray-500 mt-4 text-center">
-                                    💡 Location owner ya authority ko template bhejo - wo fill karke sign kar sakte hain
-                                  </p>
+📧 _Reply with "I ACCEPT" within 24 hours_
+
+🎬 STAGE OTT Platform`;
+                                      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                                      window.open(whatsappUrl, '_blank');
+                                    }}
+                                    className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-500 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
+                                  >
+                                    <div className="w-14 h-14 bg-green-600 rounded-xl flex items-center justify-center">
+                                      <span className="text-3xl">💬</span>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="font-bold text-green-800">WhatsApp</p>
+                                      <p className="text-xs text-green-600">Share via WhatsApp</p>
+                                    </div>
+                                  </button>
                                 </div>
                               </div>
 
-                              {/* NOC Preview Card */}
+                              {/* Location NOC - Premium Template */}
+                              <div className="bg-gradient-to-br from-emerald-900 via-teal-900 to-cyan-900 border-2 border-emerald-500/50 rounded-2xl p-6 mb-6 shadow-2xl">
+                                <div className="flex items-center justify-between mb-4">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg border-2 border-white/20">
+                                      <span className="text-4xl">📍</span>
+                                    </div>
+                                    <div>
+                                      <h3 className="text-2xl font-black text-white">Location Permission NOC</h3>
+                                      <p className="text-emerald-400 text-sm font-medium">Property Owner / Authority Consent</p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      const locationNocHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Location NOC - STAGE OTT Production</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', Arial, sans-serif; background: #f1f5f9; padding: 30px; }
+    .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%); padding: 30px; text-align: center; position: relative; overflow: hidden; }
+    .header::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%); }
+    .logo-row { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 15px; position: relative; }
+    .logo { width: 60px; height: 60px; background: rgba(255,255,255,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 30px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
+    .header h1 { color: white; font-size: 26px; font-weight: 900; letter-spacing: 1px; position: relative; }
+    .header .subtitle { color: #a7f3d0; font-size: 13px; margin-top: 5px; }
+    .badge { display: inline-block; background: rgba(255,255,255,0.2); color: white; padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 600; margin-top: 10px; border: 1px solid rgba(255,255,255,0.3); }
+    .meta-strip { background: #0f172a; padding: 15px 30px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .meta-item { text-align: center; flex: 1; min-width: 150px; }
+    .meta-label { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; }
+    .meta-value { font-size: 14px; font-weight: 700; color: white; margin-top: 3px; }
+    .content { padding: 35px; }
+    .to-section { margin-bottom: 25px; }
+    .to-label { font-size: 14px; font-weight: 700; color: #047857; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #d1fae5; padding-bottom: 8px; display: inline-block; }
+    .subject-box { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 4px solid #047857; padding: 20px; border-radius: 0 12px 12px 0; margin: 20px 0; }
+    .subject-label { font-size: 10px; font-weight: 700; color: #047857; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+    .subject-text { font-size: 16px; font-weight: 700; color: #064e3b; }
+    .body-text { font-size: 14px; color: #334155; line-height: 1.8; margin: 25px 0; }
+    .highlight { background: #fef3c7; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+    .section { margin-bottom: 30px; }
+    .section-title { font-size: 12px; font-weight: 800; color: #047857; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #d1fae5; display: flex; align-items: center; gap: 8px; }
+    .details-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .detail-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 15px; }
+    .detail-label { font-size: 10px; color: #059669; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .detail-value { font-size: 14px; color: #064e3b; font-weight: 600; border-bottom: 1px dashed #86efac; padding-bottom: 5px; min-height: 22px; }
+    .terms-box { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 25px; }
+    .terms-list { list-style: none; }
+    .terms-list li { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; font-size: 13px; color: #475569; line-height: 1.6; }
+    .check-icon { width: 22px; height: 22px; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; margin-top: 2px; }
+    .restrictions { background: #fef2f2; border: 2px solid #fecaca; border-radius: 12px; padding: 20px; margin-top: 20px; }
+    .restrictions-title { color: #dc2626; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    .restrictions-list { list-style: none; }
+    .restrictions-list li { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #991b1b; margin-bottom: 8px; }
+    .warning-icon { color: #dc2626; font-weight: bold; }
+    .signature-section { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-top: 40px; padding-top: 30px; border-top: 2px solid #e2e8f0; }
+    .sign-box { text-align: center; }
+    .sign-line { height: 60px; border-bottom: 2px solid #0f172a; margin-bottom: 10px; }
+    .sign-label { font-size: 13px; font-weight: 700; color: #0f172a; }
+    .sign-sublabel { font-size: 11px; color: #64748b; margin-top: 3px; }
+    .footer { background: linear-gradient(135deg, #064e3b, #047857); padding: 15px; text-align: center; }
+    .footer p { color: #a7f3d0; font-size: 11px; font-weight: 500; letter-spacing: 0.5px; }
+    @media print { body { padding: 0; background: white; } .container { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo-row">
+        <div class="logo">🎬</div>
+        <div class="logo">📍</div>
+      </div>
+      <h1>LOCATION PERMISSION NOC</h1>
+      <p class="subtitle">No Objection Certificate for Film/Content Production</p>
+      <div class="badge">STAGE OTT Platform • Regional Content Production</div>
+    </div>
+
+    <div class="meta-strip">
+      <div class="meta-item">
+        <div class="meta-label">Reference Number</div>
+        <div class="meta-value">STAGE/LOC/____/25-26</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Issue Date</div>
+        <div class="meta-value">__/__/2026</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Valid From</div>
+        <div class="meta-value">__/__/2026</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-label">Valid Until</div>
+        <div class="meta-value">__/__/2026</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="to-section">
+        <div class="to-label">To Whomsoever It May Concern</div>
+      </div>
+
+      <div class="subject-box">
+        <div class="subject-label">Subject</div>
+        <div class="subject-text">No Objection Certificate for Location Usage - "[PROJECT TITLE]" Production</div>
+      </div>
+
+      <p class="body-text">
+        This is to certify that I/We, <span class="highlight">[PROPERTY OWNER NAME]</span>, being the lawful owner/authorized representative of the property located at <span class="highlight">[COMPLETE PROPERTY ADDRESS]</span>, hereby grant permission and No Objection Certificate to <span class="highlight">STAGE Technologies Private Limited</span> and its authorized production partner <span class="highlight">[PRODUCTION COMPANY NAME]</span> for the purpose of filming/shooting activities as detailed below.
+      </p>
+
+      <div class="section">
+        <div class="section-title">📍 Location Details</div>
+        <div class="details-grid">
+          <div class="detail-box">
+            <div class="detail-label">Property Name/Type</div>
+            <div class="detail-value">[e.g., Residence/Office/Farm/Heritage Site]</div>
+          </div>
+          <div class="detail-box">
+            <div class="detail-label">Complete Address</div>
+            <div class="detail-value">[Full Address with Pin Code]</div>
+          </div>
+          <div class="detail-box">
+            <div class="detail-label">Areas Permitted</div>
+            <div class="detail-value">[e.g., All areas / Specific rooms / Exterior only]</div>
+          </div>
+          <div class="detail-box">
+            <div class="detail-label">Contact Person On-Site</div>
+            <div class="detail-value">[Name & Phone Number]</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">🎬 Production Details</div>
+        <div class="details-grid">
+          <div class="detail-box">
+            <div class="detail-label">Project Title</div>
+            <div class="detail-value">[PROJECT NAME]</div>
+          </div>
+          <div class="detail-box">
+            <div class="detail-label">Language</div>
+            <div class="detail-value">[REGIONAL LANGUAGE]</div>
+          </div>
+          <div class="detail-box">
+            <div class="detail-label">Production House</div>
+            <div class="detail-value">[COMPANY NAME]</div>
+          </div>
+          <div class="detail-box">
+            <div class="detail-label">Director</div>
+            <div class="detail-value">[DIRECTOR NAME]</div>
+          </div>
+          <div class="detail-box">
+            <div class="detail-label">Shoot Dates</div>
+            <div class="detail-value">__/__/2026 to __/__/2026</div>
+          </div>
+          <div class="detail-box">
+            <div class="detail-label">Shoot Timings</div>
+            <div class="detail-value">[e.g., 6 AM to 10 PM]</div>
+          </div>
+          <div class="detail-box">
+            <div class="detail-label">Crew Size (Approx)</div>
+            <div class="detail-value">[Number of people]</div>
+          </div>
+          <div class="detail-box">
+            <div class="detail-label">Vehicles Expected</div>
+            <div class="detail-value">[Number of vehicles]</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">✅ Terms & Conditions</div>
+        <div class="terms-box">
+          <ul class="terms-list">
+            <li><span class="check-icon">✓</span> The production team shall maintain cleanliness and restore the property to its original condition after shoot completion</li>
+            <li><span class="check-icon">✓</span> Any damage caused to the property during production shall be borne by the production house</li>
+            <li><span class="check-icon">✓</span> The production team shall follow all safety protocols and not endanger any residents/visitors</li>
+            <li><span class="check-icon">✓</span> Electrical connections and equipment usage shall be done with proper safety measures</li>
+            <li><span class="check-icon">✓</span> The property owner's privacy and daily activities shall be respected as much as possible</li>
+            <li><span class="check-icon">✓</span> The production team shall have adequate insurance coverage for the shoot</li>
+            <li><span class="check-icon">✓</span> This NOC is valid only for the project, dates, and timings mentioned above</li>
+            <li><span class="check-icon">✓</span> The property owner reserves the right to revoke this NOC if terms are violated</li>
+          </ul>
+        </div>
+
+        <div class="restrictions">
+          <div class="restrictions-title">⚠️ Restrictions (if any)</div>
+          <ul class="restrictions-list">
+            <li><span class="warning-icon">•</span> [Specify any restricted areas / No access zones]</li>
+            <li><span class="warning-icon">•</span> [Specify any restricted timings / Quiet hours]</li>
+            <li><span class="warning-icon">•</span> [Specify any other conditions / Special requirements]</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="signature-section">
+        <div class="sign-box">
+          <div class="sign-line"></div>
+          <div class="sign-label">Property Owner/Authorized Rep</div>
+          <div class="sign-sublabel">[Name, Signature & Date]</div>
+        </div>
+        <div class="sign-box">
+          <div class="sign-line"></div>
+          <div class="sign-label">Production Representative</div>
+          <div class="sign-sublabel">[Name, Signature & Date]</div>
+        </div>
+        <div class="sign-box">
+          <div class="sign-line"></div>
+          <div class="sign-label">Witness</div>
+          <div class="sign-sublabel">[Name, Contact & Signature]</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>🎬 STAGE OTT Platform • Regional Content Production • Location Permission NOC</p>
+    </div>
+  </div>
+</body>
+</html>`;
+                                      const printWindow = window.open('', '_blank');
+                                      if (printWindow) {
+                                        printWindow.document.write(locationNocHtml);
+                                        printWindow.document.close();
+                                        printWindow.print();
+                                      }
+                                    }}
+                                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg text-sm font-bold flex items-center gap-2"
+                                  >
+                                    🖨️ Print Location NOC
+                                  </button>
+                                </div>
+                                <p className="text-emerald-200 text-sm leading-relaxed">
+                                  Standard OTT industry Location NOC format for obtaining permission from property owners, local authorities,
+                                  and government bodies for shoot locations. Includes terms, restrictions, and liability clauses.
+                                </p>
+                              </div>
+
+                              {/* Work-For-Hire NOC Preview Card */}
                               <div className="rounded-2xl shadow-2xl overflow-hidden border-2 border-purple-500/30">
                                 {/* Header */}
-                                <div className="bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 p-6 text-center">
-                                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mx-auto mb-4 border border-white/30">
-                                    <span className="text-4xl">📜</span>
+                                <div className="bg-gradient-to-r from-slate-900 via-purple-900 to-indigo-900 p-6 text-center">
+                                  <div className="flex justify-center gap-4 mb-4">
+                                    <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                                      <span className="text-3xl">🎬</span>
+                                    </div>
+                                    <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                                      <span className="text-3xl">📜</span>
+                                    </div>
                                   </div>
-                                  <h3 className="text-2xl font-black text-white tracking-wider">NO OBJECTION CERTIFICATE</h3>
-                                  <p className="text-purple-200 text-sm mt-1">For Film / Content Production</p>
+                                  <h3 className="text-2xl font-black text-white tracking-wide">NO OBJECTION CERTIFICATE</h3>
+                                  <p className="text-purple-300 text-sm mt-1">Work-For-Hire Agreement • [Department]</p>
+                                  <div className="inline-block bg-white/15 backdrop-blur-sm px-4 py-1.5 rounded-full text-white text-xs font-bold mt-3 border border-white/20">
+                                    Copyright Act 1957 Compliant • IP Rights Assignment
+                                  </div>
                                 </div>
 
-                                {/* Reference Strip */}
-                                <div className="bg-slate-900 px-5 py-4 grid grid-cols-3 gap-4">
+                                {/* Meta Strip */}
+                                <div className="bg-slate-900 px-5 py-3 grid grid-cols-4 gap-4">
                                   <div className="text-center">
-                                    <p className="text-slate-400 text-xs uppercase tracking-wider">Reference No.</p>
-                                    <p className="text-white font-bold mt-1">STAGE/NOC/____/25-26</p>
+                                    <p className="text-slate-500 text-xs uppercase tracking-wider">Reference</p>
+                                    <p className="text-white font-bold text-sm mt-0.5">STAGE/NOC/___/25-26</p>
                                   </div>
                                   <div className="text-center">
-                                    <p className="text-slate-400 text-xs uppercase tracking-wider">NOC Type</p>
-                                    <p className="text-white font-bold mt-1">[Location/Talent/Music]</p>
+                                    <p className="text-slate-500 text-xs uppercase tracking-wider">Department</p>
+                                    <p className="text-white font-bold text-sm mt-0.5">[Role/Dept]</p>
                                   </div>
                                   <div className="text-center">
-                                    <p className="text-slate-400 text-xs uppercase tracking-wider">Valid Until</p>
-                                    <p className="text-white font-bold mt-1">__/__/2026</p>
+                                    <p className="text-slate-500 text-xs uppercase tracking-wider">Date</p>
+                                    <p className="text-white font-bold text-sm mt-0.5">__/__/2026</p>
+                                  </div>
+                                  <div className="text-center">
+                                    <p className="text-slate-500 text-xs uppercase tracking-wider">Project</p>
+                                    <p className="text-white font-bold text-sm mt-0.5">STAGE-____</p>
                                   </div>
                                 </div>
 
                                 {/* Content */}
                                 <div className="p-6 bg-white">
-                                  <div className="text-right mb-4">
-                                    <p className="text-sm text-slate-600"><span className="font-bold">Date:</span> __/__/2026</p>
-                                  </div>
-
-                                  <p className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">To Whomsoever It May Concern</p>
-
-                                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-xl border-l-4 border-purple-500 mb-6">
-                                    <p className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-1">Subject</p>
-                                    <p className="font-bold text-slate-900">No Objection Certificate for "[PROJECT TITLE]" - [Regional Language] Production</p>
-                                  </div>
-
-                                  <p className="text-sm text-slate-700 leading-relaxed mb-6">
-                                    This is to certify that <span className="bg-amber-100 px-1 rounded font-semibold">[ISSUING PARTY NAME]</span>, hereby grants No Objection Certificate to <span className="bg-amber-100 px-1 rounded font-semibold">STAGE Technologies Pvt Ltd</span> and its production partner <span className="bg-amber-100 px-1 rounded font-semibold">[PRODUCTION COMPANY]</span> for the purpose mentioned below.
-                                  </p>
-
-                                  {/* Details Box */}
-                                  <div className="bg-slate-50 border-2 border-slate-200 rounded-xl p-5 mb-6">
-                                    <p className="font-bold text-sm text-slate-900 mb-4 uppercase tracking-wider">📋 Production Details</p>
-                                    <div className="grid grid-cols-2 gap-3 text-sm">
-                                      <div><span className="text-slate-500">Project:</span> <span className="font-bold text-slate-900">[PROJECT NAME]</span></div>
-                                      <div><span className="text-slate-500">Language:</span> <span className="font-bold text-slate-900">[REGIONAL]</span></div>
-                                      <div><span className="text-slate-500">Production:</span> <span className="font-bold text-slate-900">[COMPANY]</span></div>
-                                      <div><span className="text-slate-500">Director:</span> <span className="font-bold text-slate-900">[NAME]</span></div>
-                                      <div><span className="text-slate-500">Dates:</span> <span className="font-bold text-slate-900">__/__/2026 to __/__/2026</span></div>
-                                      <div><span className="text-slate-500">Purpose:</span> <span className="font-bold text-slate-900">[SPECIFY]</span></div>
+                                  {/* Parties */}
+                                  <div className="grid grid-cols-2 gap-4 mb-6">
+                                    <div className="bg-slate-50 p-4 rounded-xl border-l-4 border-purple-500">
+                                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Contributor</p>
+                                      <p className="font-bold text-slate-900">[CONTRIBUTOR NAME]</p>
+                                      <p className="text-sm text-purple-600 font-medium">[Department/Role]</p>
+                                      <p className="text-xs text-slate-500 mt-2">PAN: [PAN] | Contact: [Phone]</p>
+                                    </div>
+                                    <div className="bg-slate-50 p-4 rounded-xl border-l-4 border-emerald-500">
+                                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Company</p>
+                                      <p className="font-bold text-slate-900">STAGE Technologies Pvt Ltd</p>
+                                      <p className="text-sm text-emerald-600 font-medium">OTT Platform & Producer</p>
+                                      <p className="text-xs text-slate-500 mt-2">GSTIN: 07AAICC1279L1ZC</p>
                                     </div>
                                   </div>
 
-                                  {/* Terms */}
+                                  {/* Project */}
+                                  <div className="bg-amber-50 p-4 rounded-xl border-l-4 border-amber-500 mb-6">
+                                    <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-2">📋 Project Details</p>
+                                    <div className="grid grid-cols-3 gap-3 text-sm">
+                                      <div><span className="text-slate-500">Title:</span> <span className="font-bold">[PROJECT]</span></div>
+                                      <div><span className="text-slate-500">Language:</span> <span className="font-bold">[REGIONAL]</span></div>
+                                      <div><span className="text-slate-500">Format:</span> <span className="font-bold">[Film/Series]</span></div>
+                                    </div>
+                                  </div>
+
+                                  {/* Compensation */}
+                                  <div className="bg-gradient-to-r from-emerald-50 to-green-50 p-5 rounded-xl border-2 border-emerald-400 mb-6">
+                                    <p className="text-xs font-bold text-emerald-700 uppercase tracking-wider">💰 Compensation / Fees</p>
+                                    <p className="text-3xl font-black text-emerald-600 mt-2">₹ ____________/-</p>
+                                    <p className="text-xs text-emerald-600 mt-2">Inclusive of direct taxes • Exclusive of GST • Subject to TDS</p>
+                                  </div>
+
+                                  {/* Key Clauses */}
+                                  <div className="space-y-4 mb-6">
+                                    <div className="flex gap-3">
+                                      <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">1</span>
+                                      <div>
+                                        <p className="font-bold text-slate-900 text-sm">Work Made for Hire</p>
+                                        <p className="text-xs text-slate-600 mt-1">All Works constitute "work made for hire" under Copyright Act 1957. Company is the author and first owner.</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-3">
+                                      <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">2</span>
+                                      <div>
+                                        <p className="font-bold text-slate-900 text-sm">IP Rights Assignment</p>
+                                        <p className="text-xs text-slate-600 mt-1">All copyrights, ancillary rights, neighbouring rights assigned to Company in perpetuity, throughout universe.</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex gap-3">
+                                      <span className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">3</span>
+                                      <div>
+                                        <p className="font-bold text-slate-900 text-sm">Moral Rights Waiver</p>
+                                        <p className="text-xs text-slate-600 mt-1">Contributor waives all moral rights including identification of authorship and approval rights.</p>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Exploitation Rights */}
                                   <div className="mb-6">
-                                    <p className="font-bold text-sm text-slate-900 mb-3">✅ Terms & Conditions</p>
-                                    <div className="space-y-2 text-sm text-slate-600">
-                                      <p className="flex items-center gap-2"><span className="text-green-500">✓</span> Valid only for mentioned project and dates</p>
-                                      <p className="flex items-center gap-2"><span className="text-green-500">✓</span> Production team shall follow all safety guidelines</p>
-                                      <p className="flex items-center gap-2"><span className="text-green-500">✓</span> Any damage shall be borne by production house</p>
-                                      <p className="flex items-center gap-2"><span className="text-green-500">✓</span> This NOC is non-transferable</p>
+                                    <p className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">🎯 Exploitation Rights Granted</p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {['Theatrical', 'OTT/Digital', 'Television', 'Internet', 'Home Video', 'Remakes', 'Merchandise', 'All Future Media'].map(right => (
+                                        <span key={right} className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-medium">✓ {right}</span>
+                                      ))}
                                     </div>
                                   </div>
 
                                   {/* Signatures */}
-                                  <div className="grid grid-cols-3 gap-4 pt-6 border-t-2 border-slate-200">
+                                  <div className="grid grid-cols-2 gap-6 pt-6 border-t-2 border-slate-200">
                                     <div className="text-center">
                                       <div className="h-16 border-b-2 border-slate-400 mb-2"></div>
-                                      <p className="text-sm font-bold text-slate-900">Issuing Authority</p>
-                                      <p className="text-xs text-slate-500">[Name & Designation]</p>
+                                      <p className="text-sm font-bold text-slate-900">[Contributor Name]</p>
+                                      <p className="text-xs text-slate-500">Contributor / [Role]</p>
                                     </div>
                                     <div className="text-center">
                                       <div className="h-16 border-b-2 border-slate-400 mb-2"></div>
-                                      <p className="text-sm font-bold text-slate-900">Official Stamp</p>
-                                      <p className="text-xs text-slate-500">[Seal]</p>
+                                      <p className="text-sm font-bold text-slate-900">For STAGE Technologies</p>
+                                      <p className="text-xs text-slate-500">Authorized Signatory</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Acceptance Note */}
+                                  <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 mt-6 text-center">
+                                    <p className="text-sm text-amber-800 font-bold">📧 Mail back with "I ACCEPT" within 24 hours of receipt</p>
+                                  </div>
+                                </div>
+
+                                {/* Footer */}
+                                <div className="bg-slate-900 py-3 px-5 text-center">
+                                  <p className="text-slate-400 text-xs">🎬 STAGE OTT Platform • Work-For-Hire NOC • Copyright Act 1957 Compliant</p>
+                                </div>
+                              </div>
+
+                              <h4 className="font-bold text-gray-800 mb-4 mt-6">NOC Guidelines</h4>
+                            </div>
+                          )}
+
+                          {/* Content Creation Agreement Template */}
+                          {(selectedCat as any).hasAgreementTemplate && (
+                            <div className="mb-8">
+                              {/* Agreement Header */}
+                              <div className="bg-gradient-to-br from-slate-900 via-red-900 to-rose-900 border-2 border-red-500/50 rounded-2xl p-6 mb-6 shadow-2xl">
+                                <div className="flex items-center justify-between mb-4">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg border-2 border-white/20">
+                                      <span className="text-4xl">📝</span>
+                                    </div>
+                                    <div>
+                                      <h3 className="text-2xl font-black text-white">Content Creation Agreement</h3>
+                                      <p className="text-red-300 text-sm font-medium">OTT Production Contract • 17 Clauses • 9 Annexures</p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      const agreementHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Content Creation Agreement - STAGE OTT</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Times New Roman', Georgia, serif; background: white; padding: 20px; line-height: 1.6; font-size: 12pt; }
+    .page { max-width: 210mm; margin: 0 auto; background: white; padding: 25mm 20mm; }
+    h1 { text-align: center; font-size: 16pt; font-weight: bold; text-decoration: underline; margin-bottom: 20px; }
+    h2 { font-size: 12pt; font-weight: bold; margin: 20px 0 10px 0; }
+    h3 { font-size: 12pt; font-weight: bold; text-decoration: underline; margin: 15px 0 10px 0; }
+    p { text-align: justify; margin-bottom: 10px; }
+    .center { text-align: center; }
+    .bold { font-weight: bold; }
+    .underline { text-decoration: underline; }
+    .indent { margin-left: 30px; }
+    .clause { margin-bottom: 15px; }
+    .clause-title { font-weight: bold; text-decoration: underline; }
+    .sub-clause { margin-left: 20px; margin-bottom: 8px; }
+    .sub-sub-clause { margin-left: 40px; margin-bottom: 6px; }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 11pt; }
+    table, th, td { border: 1px solid black; }
+    th, td { padding: 8px; text-align: left; }
+    th { background: #f0f0f0; font-weight: bold; }
+    .signature-section { margin-top: 40px; }
+    .signature-grid { display: flex; justify-content: space-between; margin-top: 30px; }
+    .signature-box { width: 45%; text-align: center; }
+    .signature-line { border-bottom: 1px solid black; height: 60px; margin-bottom: 5px; }
+    .annexure { page-break-before: always; margin-top: 30px; }
+    .annexure-title { text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 20px; }
+    @media print { body { padding: 0; } .page { padding: 15mm; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>CONTENT CREATION AGREEMENT</h1>
+
+    <p>This Content Creation Agreement ("<b>Agreement</b>") is executed at Delhi on the <span class="highlight">[DATE]</span> [hereinafter referred to as Effective Date].</p>
+
+    <p class="center bold">BY AND BETWEEN:</p>
+
+    <p><b>STAGE Technologies Private Limited</b>, a Company incorporated under the Indian Companies Act and having its office at Room No. 203, Second Floor, 2-A/3, Kundan Mansion, Asaf Ali Road, Delhi - 110002, represented by its Director, Mr. Parveen Singhal (hereinafter referred to as the "<b>Company</b>") (which expression shall, unless contrary to the context or meaning thereof, be deemed to mean and include its successors in interest and permitted assigns) of the <b>ONE PART</b>;</p>
+
+    <p class="center bold">AND</p>
+
+    <p><b>[CREATOR/PRODUCTION HOUSE NAME]</b>, a [Proprietorship/Partnership/Company], having its office at [COMPLETE ADDRESS], represented by its [Proprietor/Partner/Director] [REPRESENTATIVE NAME], PAN - [PAN NUMBER] (GST - [GST NUMBER]) (hereinafter referred to as "<b>Creator</b>", which expression shall unless repugnant to the context or meaning thereof, be deemed to mean and include its successors and assigns) on the <b>SECOND PART</b>.</p>
+
+    <p>Company and Creator shall hereinafter jointly be referred to as the "<b>Parties</b>" and severally as the "<b>Party</b>."</p>
+
+    <h2>WHEREAS:</h2>
+    <p class="indent">1. Company and Creator both are engaged in the business of production and distribution of films.</p>
+    <p class="indent">2. Company has engaged Creator to create content in the form of a Film solely for Company's exploitation.</p>
+    <p class="indent">3. Based on the representations made by the Creator, Company hereby commissions the Creator for providing service for making the Film at the instance of Company and the Creator has agreed to create, compose, film, produce, edit, post-produce and deliver the Audio Visual Content or scenes forming a part of the Film for Company on the terms and conditions appearing hereinafter. It is clarified that Company shall be the author and the first and exclusive owner of the copyright in the Film, for the entire Territory and in perpetuity. Company, as first and exclusive owner, shall have the sole and exclusive right to exercise all rights of Company over the Film in accordance with Section 14 (d) of the Copyright Act, 1957 ("<b>Act</b>") or any other equivalent provision thereof (as amended from time to time).</p>
+
+    <p class="center bold">NOW THIS AGREEMENT WITNESSETH FOLLOWS:</p>
+
+    <h2>1. DEFINITIONS:</h2>
+    <p class="sub-clause"><b>1.1. "Cash Flow Schedule"</b> means the cash flow schedule for payment of amounts towards the Content Creation Budget which shall be paid by Company to Creator in accordance with the Annexure 1 herein.</p>
+    <p class="sub-clause"><b>1.2. "Creative Elements"</b> shall refer to the exclusive right to decide on all aspects relating to the Film including but not limited to, all the decisions regarding the genre, theme, concept, story, script, Contributors, role and the nature of the performance of Contributors, characters, shoot venue, background settings, light effects, lay-out etc.</p>
+    <p class="sub-clause"><b>1.3. "Contributors"</b> means any third party who is providing goods or access or rights or creative contributions or services in connection with the Film, and includes the lead artists of the Film, heads of department, writer(s), music director/composer(s), lyricist(s), singers, all other authors of Underlying Works, director of photography, art director, production designer, director of action, choreographers, other technicians et al, all as approved by Company.</p>
+    <p class="sub-clause"><b>1.4. "Delivery Date"</b> means the date on which Creator shall furnish first positive print of the Film along with the censor certificate (if applicable), and other Delivery Materials hereto shall be complete and ready for delivery on or before <span class="highlight">[DELIVERY DATE]</span> with a grace period of a week immediately before the first release date of the Film whichever date is earlier to Company as required by Company.</p>
+    <p class="sub-clause"><b>1.5. "Delivery Materials"</b> shall mean and include without limitation to the items, materials, more particularly specified in Annexure 2 of the Agreement which shall be developed by Creator and furnished to Company.</p>
+    <p class="sub-clause"><b>1.6. "Delivery Schedule"</b> shall mean the dates of delivery of the Film as mentioned in detail in Annexure 6 attached hereto.</p>
+    <p class="sub-clause"><b>1.7. "Film Materials"</b> shall mean and include the Film, contributors agreements (with authors of all the underlying works including the works of authors of Literary, Dramatic, Artistic or Musical Works of the Audio Visual Content forming a part of the Film, performances of the Performers, all consents, waivers or releases from all talent and all persons or entities who have rendered services to Creator in connection with the Audio Visual Content to the extent permissible by law), Publicity Materials, any tape, Telecast Masters, any portion, negative, rushes or format thereof packaging sets, costumes, jewelry and all other elements/properties (tangible, intangible, movable and immovable, as the case may be) in relation to the Film including without limitation the image, face, name, signature, voice and photographs of each performer or artist whether used in conjunction with the Film or for any merchandising opportunities in relation to the Film.</p>
+    <p class="sub-clause"><b>1.8. "First Copy"</b> shall mean the Film in a form ready for final exploitation in all aspects on all modes, medias, platforms known now or hereinafter known along with a certification from the Central Board of Film Certification ("<b>CBFC</b>"), if applicable, as per the terms of this Agreement.</p>
+    <p class="sub-clause"><b>1.9. "Intellectual Property"</b> includes patents, trademarks, service marks, trade names, registered designs, copyrights, rights of privacy and publicity; and other forms of intellectual or industrial property, know how, confidential or secret processes, trade secrets, any other protected rights or assets, and any licenses and permission in connection therewith, in each and any part of the world and whether or not registered or registerable and for the full period thereof, and all extensions and renewals thereof, and all applications for registration in connection with the foregoing any and all rights in the Film, content, concept, story, screenplay, script, music, lyrics, negatives, positives and all other materials in respect of the Film, or in the prints of the Film, or Publicity Materials or other paraphernalia of the Film, or any other Intellectual Property arising out of or associated with the Film.</p>
+    <p class="sub-clause"><b>1.10. "Content Creation Budget"</b> shall mean all expenses incurred on the Film commencing from development till completion of the censored first copy, including without limitation to the cost of Film production, Creator fees, fees paid to the lead actor, director, cast and crew, rights acquisition expenses, development expenses, post production costs, finance costs, legal expenses, writers fees, line producer, cost of equipment, insurance, stamp duties, contingency fees, any and all taxes, administrative costs in relation to managing the production of the Film, cost of positive raw stock, laboratory, insurance, goods and service tax (GST) (to the extent set-off not available) or any other applicable taxes, duties or dues as applicable in accordance with the applicable laws, payable in relation to any agreements executed for the purpose of production of the Film, and shall be subject to applicable withholding taxes and such production budget shall mutually agree between the Parties which shall be funded by Company more particularly specified in Annexure 3.</p>
+    <p class="sub-clause"><b>1.11. "Content Creation Schedule"</b> shall mean and include the schedule during which there shall be pre-production, production and postproduction activities conducted by Creator as mentioned in Annexure 4.</p>
+    <p class="sub-clause"><b>1.12. "Publicity Materials"</b> shall mean any biographical notes, press releases, audio and/or audio visual material or photographs relating to the Film and/or any or all artwork and packaging materials relating to the Film inclusive of transparencies, still photos, posters, synopsis etc.</p>
+    <p class="sub-clause"><b>1.13. "Content Creation Services"</b> shall mean the production services as set out in this Agreement undertaken by the Creator under commission and/or under the directions of the Company, to produce and deliver the Audio Visual Content of the Film in conformity with the terms and conditions of this Agreement.</p>
+    <p class="sub-clause"><b>1.14. "Revenues"</b> shall mean and include all the gross revenues, incomes, monies realized by the Creator from the exploitation and/or sale of any rights including without limitation to theatrical, satellite/television broadcasting rights, digital rights, music rights, etc of the Film on all platforms, medias and modes known now or hereinafter known in universal perpetuity, also includes monies realized by Creator in the form of production and/or location incentive, tax set offs or rebates etc.</p>
+    <p class="sub-clause"><b>1.15. "Technical Specifications"</b> shall mean such technical specifications in respect of the Film/Film Materials as may be required or specified by Company in Annexure 7 of this Agreement.</p>
+    <p class="sub-clause"><b>1.16. "Term"</b> shall commence from the execution of this Agreement and continue till perpetuity.</p>
+    <p class="sub-clause"><b>1.17. "Territory"</b> shall mean the entire world.</p>
+
+    <h2>2. Engagement:</h2>
+    <p class="sub-clause"><b>2.1.</b> Company hereby appoints Creator who shall be conducting all the production activities of the Film till the delivery of the First Copy of the Film and such appointment is duly accepted by Creator wherein Creator shall render all services customarily rendered by a production house in the film industry on an exclusive basis and as required by Company on the terms and conditions mentioned in this Agreement and instructions provided by Company from time to time, in connection with the Film.</p>
+    <p class="sub-clause"><b>2.2.</b> Creator agrees to work to the satisfaction of the Company with regard to every element of Content Creation Services including but not limited to Publicity Materials, Music Cue Sheets.</p>
+    <p class="sub-clause"><b>2.3.</b> The Company retains the right to review progress of the Film at any stage and necessitate any change with all financial and other consequences of such change being subject to the decision of the Company.</p>
+    <p class="sub-clause"><b>2.4.</b> Company shall have the right to ask for cancellation or reduction of the parts or entirety of the Film undelivered/completed according to the satisfaction of the Company and payment to Creator shall stand proportionately reduced.</p>
+
+    <h2>3. Content Creation Services:</h2>
+    <p class="sub-clause"><b>3.1.</b> Creator shall, on an independent basis, provide production services in connection with production of the Film in accordance with the Content Creation Budget, Delivery Schedule and Content Creation Schedule so as to produce, complete and deliver to Company the Film in including, without limitation, all of the services listed on Annexure 5 attached hereto and incorporated herein by reference, in accordance with the provisions of this Agreement, subject to sole discretion and approval of Company (all such services required of Creator hereunder collectively referred to herein as the "Services"). Company shall fund the expenses incurred by Creator in accordance with the Cash Flow Annexure 1.</p>
+    <p class="sub-clause"><b>3.2.</b> The Parties agree that the Content Creation Budget for the Film shall be mutually decided between the Parties. However, the Company will have the final approval on the Content Creation Budget of the Film and shall be annexed as Annexure 3.</p>
+    <p class="sub-clause"><b>3.3.</b> Parties agree and confirm that the Film shall be directed by <span class="highlight">[DIRECTOR NAME]</span> and written by <span class="highlight">[WRITER NAME]</span> wherein the writer shall have the sole creative control over script, screenplay, and dialogues of the Film. The creative control over the final cut including edit, post production activities, etc. in the Film shall stand vested with Company. Creator hereby agrees to render all assistance as may be required by Company to comply with such formalities and requirements for producing the Film. Further the Parties agree such script shall be registered with any/all relevant authorized/governing bodies in the name of Creator in India.</p>
+    <p class="sub-clause"><b>3.4.</b> The Parties hereto agree that Creator is authorised to engage and enter into production related agreements with the director, Writer, lead star cast, head of the departments, music composers ("<b>Above-the-Line Talents</b>") wherein Company shall be a confirming party to such Above-the-Line Talents Agreements. Creator shall enter into all below-the-line production related agreements and arrangements for secondary cast, supporting cast, technicians, service providers ("<b>Content Creation Agreements</b>"). Creator shall ensure that no party(ies) to the Content Creation Agreements or any of their associates or nominees shall acquire any right or interest in respect of revenues and all royalty(ies) to third parties under the Content Creation Agreements, if any applicable royalties are payable by the copyright board or societies then such talent shall directly collect the same from the respective copyright societies/bodies without any recourse to Company and/or Creator.</p>
+    <p class="sub-clause"><b>3.5.</b> Creator shall ensure that under Content Creation Agreements Creator shall have the right to use the names, sobriquet, autograph, likeness, photographs, portrait, caricatures, voice silhouette of all persons appearing in and contributing to the Film, including that of and all other products in the Film with any merchandising, or music publishing endeavours in connection with the Film including the script and music thereof, and all revenues generated there from shall be to the account of the Film.</p>
+    <p class="sub-clause"><b>3.6.</b> Creator shall seek all approvals under the applicable laws, laws of various states, animal welfare board and/or any other trade body, seek all applicable licenses, permits and approvals (if any) from the relevant governmental authorities or bodies in relation to export and/or import of any materials related to the Film, and shall pay the applicable import and/or export duties, if any, to the relevant authorities, for the purpose of delivery of any of the Delivery Material(s). In the event any portion of the pre-production, production or post-production of the Film is carried out in any other jurisdiction other than India, Creator shall ensure that all appropriate statutory and regulatory approvals have been obtained in connection with the Film.</p>
+    <p class="sub-clause"><b>3.7.</b> Creator shall create "making of" documentary of a minimum duration of 30 minutes, containing full length interviews with all the lead cast and crew about their contribution to the Film, "behind the scenes" motion film documentaries, all additional music recorded, all picture outtakes of humorous or interesting nature - including stunts/visual effects and 'bloopers', all advertising/publicity materials including trailers, and any other unique materials reasonably available that could assist in the marketing of the Film.</p>
+    <p class="sub-clause"><b>3.8.</b> It is specifically agreed between the Parties that the Creator shall not change the essential elements of the Film without the prior written approval of the Company.</p>
+    <p class="sub-clause"><b>3.9.</b> Creator shall keep Company informed at all times regarding the status of the Services and the production of the Film and shall furnish the copies of the Content Creation Agreement within a period of 15 days from the execution of the same and also provide all such additional information to Creator in a timely manner. Creator shall further provide daily call sheets to Company during the shooting days and Creator shall prepare and furnish detailed cost statements during the shooting and non-shooting days with respect to the monies expended by it in relation to the Film and the status report on the progress of the Film on a regular basis. Company is entitled to review all the reports and status reports before the money to be paid as per the agreed Cash Flow Schedule. Creator will also furnish a complete statement of production account for the Film, within 15 days of the First theatrical release of the Film. Creator shall, after completing the Film as set out hereinabove, obtain the necessary Indian Censor Board certificates in Company's name (If applicable). Creator shall assist and cooperate with Company as required to obtain such censor certificates and Parties hereto agree that the Film shall be U/A or U (if applicable).</p>
+    <p class="sub-clause"><b>3.10.</b> In accordance with the Content Creation Schedule and monies received by Creator from Company in accordance with the Content Creation Budget, Creator agrees to deliver the Deliverables to Company free of all liens, claims, charges, limitations, restrictions and encumbrances of any kind, fully cut, edited, scored and ready for exploitation in all respects, and in compliance with the terms and conditions hereof. Creator acknowledges that time is of the essence.</p>
+    <p class="sub-clause"><b>3.11.</b> Creator in mutual consultation with the Company shall prepare the Content Creation Budget for the Film a month before the commencement of the principal photography of the Film. Creator shall not deviate materially from the Content Creation Budget whilst rendering their Services; it being understood that Creator shall be solely responsible for any costs or overages associated with the Budget unless the overages is specially approved in writing by Company.</p>
+    <p class="sub-clause"><b>3.12.</b> Company at any time may inspect and/or cause to be inspected the production of the Film and the performance of the Services, and Company may make objections thereto, which Creator agrees to promptly correct.</p>
+
+    <h2>4. Contributors and their Agreements:</h2>
+    <p class="sub-clause"><b>4.1.</b> Unless the Parties agree otherwise in writing, Creator shall enter into agreements/written arrangements with the Contributors of the Film and ensure complete assignment of all Intellectual Property Rights in and to the results and proceeds of the Works in favour of Company to effectuate Clause 8.</p>
+    <p class="sub-clause"><b>4.2.</b> Creator takes responsibility for engaging Contributors and associated necessities while Company retains the right to engage Contributors in any Company events without restriction. All agreements entered into by Creator with respect to the Film shall conform to Company's customary policies and requirements notified to the Creator and agreements executed with Contributors must be provided to Company prior to the commencement of principal photography shooting.</p>
+    <p class="sub-clause"><b>4.3.</b> The Creator further confirms that all such Contributor's agreements shall specifically provide that:</p>
+    <p class="sub-sub-clause"><b>4.3.1.</b> the Film has been commissioned by Company and is being produced by the Creator at instance of Company (generally referred as "work-for-hire") as per the Copyright Act 1957 (including its amendments thereto) and that all intellectual property rights and other ownership rights of the Film shall belongs to Company;</p>
+    <p class="sub-sub-clause"><b>4.3.2.</b> The Creator shall obtain/has obtained from all Contributors engaged by the Creator a waiver to the effect that all their rights present and future in the Film under Section 57 of the Copyright Act, 1957 (including its amendments thereto) exclusively in favour of Company.</p>
+
+    <h2>5. Review Process:</h2>
+    <p>Company shall be entitled to observe the taping of the Film. Creator shall prepare and deliver to Company, or to the persons so designated by Company, detailed production reports on monthly basis which reflect the progress of the production of the Film. Creator shall promptly notify Company of any occurrence that materially delays or interferes with the production of the Film. Company shall keep the Creator advised as to all phases of the production of the Film and to whom Creator shall make available, all books, records and other information and data relating to the Film and the production thereof including without limitation shoot schedules, shoot status, story/screenplay/dialogue deliverable timelines, periodic budget v/s actual reports, bank statements, et al. Whilst Company will often not ask for delivery of any Contributors agreements, Company reserves the right (not to be exercised unreasonably) to request delivery of any Contributor agreements for its review and/or approval at any time, and the Creator agrees to produce such agreement for this purpose in a timely fashion prior to execution of such agreement.</p>
+
+    <h2>6. Content Creation Services Fee (if applicable):</h2>
+    <p class="sub-clause"><b>6.1.</b> In full consideration for the Services rendered by the Company for the Film. Company shall pay Creator the "Content Creation Services Fee" of <b>INR <span class="highlight">[AMOUNT]</span>/-</b> plus applicable taxes/GST subject to withholding under Income Tax Act 1961 ("<b>Fees</b>").</p>
+    <p class="sub-clause"><b>6.2.</b> All the payments should be made within 45 days of receipt of invoice or as mutually agreed.</p>
+    <p class="sub-clause"><b>6.3.</b> Notwithstanding anything contained hereinabove, any stamp duty payable on this Agreement shall be borne and paid by Creator and Company equally. If the entire stamp duty is paid by Company, then Company shall have the right to deduct 50% of the amount of stamp duty from the Fee payable by Company to Creator under this Agreement.</p>
+    <p class="sub-clause"><b>6.4.</b> In the event that Company is prevented from or unable to exploit the Film as a result of any act or other failure of Creator then, in addition to any other rights and remedies available to Company, Company may withhold all or part of the Fee specified in this agreement or adjust the same against any other payment payable by Company to the Creator in respect of another agreement executed or to be executed between the Creator and Company. If Company has already paid Creator all or part of the Fee, Creator will refund such Fee (or portions already paid) to Company or to a party of Company's direction within thirty (30) days of Company's request for such refund.</p>
+    <p class="sub-clause"><b>6.5.</b> In the event Company determines that the Film (or any part thereof) is of an unacceptable standard or quality, or not in conformity with the Delivery Specifications/Technical Specifications, or that the Creator has breached any of its obligations placed under this Agreement (including any material breach, in the sole view of Company, involving breach of this agreement and Delivery Schedule (as per Delivery Specifications) or any other obligation placed on the Creator), Company may rescind this Agreement after serving a notice in writing (including by way of email notice) upon Creator; provided that the Creator had failed to rectify the said breach within a period not exceeding seven (7) days from the date of receipt of such notice of breach. Notwithstanding anything contained anywhere under this Agreement, Company reserves the right to terminate this Agreement at any time without assigning any reasons by serving a prior written notice (emails permitted) of thirty days to the Creator. The Creator acknowledges that upon this Agreement being terminated by Company in accordance with the foregoing, Company shall have the unfettered right to appoint any other Creator to produce the Film.</p>
+    <p class="sub-clause"><b>6.6.</b> Creator warrants delivering the Film as per this agreement. However, in case the Creator fails to deliver the Film within the timelines as stated in Annexure 6, then Company shall be entitled to levy a penalty of <b>18 percent (18%) per annum</b> calculated for each day of delay.</p>
+    <p class="sub-clause"><b>6.7.</b> Company shall not reimburse any purchase made by the Creator without the prior consent and approval of Company (whether or not included in the budget).</p>
+    <p class="sub-clause"><b>6.8.</b> Company shall not take responsibility for Creator's liabilities and collision insurance or any deductibles on any vehicle used in conjunction with Creator's services performed for the Film.</p>
+
+    <h2>7. Intellectual Property Rights:</h2>
+    <p class="sub-clause"><b>7.1.</b> Parties agree and confirm that Intellectual Property Rights and all elements and components thereof and relating thereto, and the results and proceeds of all services rendered in connection therewith in whatever stage of creation or completion; it being understood that all such elements, components, services and results and proceeds thereof are "<b>work(s)-made-for-hire</b>" for Company unless specifically agreed otherwise.</p>
+    <p class="sub-clause"><b>7.2.</b> Creator shall ensure that any person or entity providing services hereunder in connection with the Content Creation Agreements and who may claim any copyright, moral rights or other rights related to the Film shall execute such assignments or waivers as may be required to fully and irrevocably vest all such rights in Company and/or Creator.</p>
+    <p class="sub-clause"><b>7.3.</b> Without limiting the generality of the foregoing, Company shall have the sole and exclusive right in perpetuity throughout the Territory to distribute, exhibit, sell, use, license, advertise, exploit and otherwise turn to account the Film and all rights therein in any and all media, whether now known or hereafter devised, <b>including but not limited to NFT, Crypto, Blockchain, Metaverse, web3</b> or other such forms (existent or new) and in such manner and to the extent, if at all, as Company may determine in its sole and absolute discretion whether this Agreement expires in its normal course or is terminated in whole or in part for any reason whatsoever.</p>
+    <p class="sub-clause"><b>7.4.</b> Without prejudice to the aforesaid, Creator hereby unconditionally and irrevocably assigns in favour of Company, for the entire Territory and in perpetuity the copyright in the Film, Film Materials and all its Underlying Works and Company shall be considered as Company of such Underlying Works and shall have the sole and exclusive rights to exercise all rights in such Underlying Works in accordance with Section 14 and 38A (as the case maybe) of the Copyright Act 1957 or any other equivalent provisions thereof (as amended from time to time) that Creator agrees and acknowledges and makes all necessary declarations confirming the aforesaid. Such assignment shall operate for all the modes, medium and formats of exploitation in respect of the Film including the Modes, Medium and Formats as detailed in Annexure 8 and Creator hereby expressly acknowledges the sufficiency of the Fee towards the assignment of the rights of the Film on all such Modes, Mediums and Formats.</p>
+    <p class="sub-clause"><b>7.5.</b> Creator hereby agrees and acknowledges that in accordance with proviso 3 to <b>Section 18(1)</b> of the Copyright Act, 1957 (including amendments thereto), Company shall be deemed to be the assignee for the Underlying Works with respect to the right to share royalties on an equal basis with the author of the respective Underlying Works.</p>
+    <p class="sub-clause"><b>7.6.</b> In the event the aforesaid assignment is by operation of law deemed not to be applicable to any medium or mode of exploitation of the Film due to the reason that, such medium or mode of exploitation did not exist or was not in commercial use at the time when the assignment was made, Creator hereby exclusively licenses the right to exploit the copyright in the Underlying Works through all such Modes, Medium and Formats to Company in perpetuity throughout the world. Further, Company shall solely have the exclusive first and last option to procure assignment of the rights to exploit the Underlying Works through all such modes, mediums and formats on such Modes, Medium and/or Formats coming into existence of commercial use (as the case maybe).</p>
+    <p class="sub-clause"><b>7.7.</b> Company shall be the owner of the Concept and the title of the Film, in perpetuity, throughout the world. Creator hereby undertakes that all such changes/tweaking carried out in the script including the final full script shall solely belong to Company and Company shall be the first and exclusive owner of the copyright in such script of the Film, in perpetuity, throughout the world. Creator hereby agrees to indemnify and keep indemnified Company from any and all claims in respect of any aspect of the Film including but not limited to title, Concept, script, third party copyright, trade mark, trade name, right of privacy or publicity, property rights or of any other claims, as well as claims from any person(s) engaged and/or associated in any manner for the Film.</p>
+    <p class="sub-clause"><b>7.8.</b> Company may, at its discretion and in its favour, register the Film' Concept, script, title and/or any underlying works, before any appropriate authorities/society and/or cancel/amend/renew/alter the aforesaid as it deems fit. Creator hereby agrees and undertakes that it shall neither before nor after the execution of this Agreement do or cause/attempt to do any act which shall affect the rights of Company in the Film, in any manner whatsoever. This Clause 7.8 shall survive the termination/expiry of this Agreement and shall bind both Parties, unless agreed in writing to the contrary and signed by the authorized signatories of both Parties. No act or omission on part of Company shall constitute or be construed as a waiver.</p>
+    <p class="sub-clause"><b>7.9.</b> Creator shall ensure complete assignment of all copyright in all artists and dramatic works and performances and photographs created under the Contributors agreement in favour of Company. Creator shall provide a copy of such agreements with Contributors as and when called upon by Company. Any breach of the foregoing shall be considered as material breach by Creator and Company shall be entitled to all remedies/rights available under law and/or as per this Agreement. Further, Creator agrees to indemnify and keep Company indemnified from any claims, losses and costs arising from or resulting from such breach.</p>
+    <p class="sub-clause"><b>7.10.</b> Creator hereby undertakes to do any and all acts and execute any and all documents, in such manner and at such locations as may be required by Company in its sole discretion in order to secure, protect, perfect or enforce any of the rights of Company pursuant to this Agreement. In the event, Creator fails to do so within thirty (30) days of receipt of a request from Company to do or perform an act or execute a document, Company shall be entitled to exercise the same in place of Creator as the lawful appointed attorney and Creator undertakes to affirm, ratify and be bound by such exercise of the right by Company under the provisions of this Clause 7.10.</p>
+    <p class="sub-clause"><b>7.11.</b> Creator agrees and acknowledges that all the Creative Decision Rights in relation to the Film shall, at all times vest exclusively with the Company.</p>
+    <p class="sub-clause"><b>7.12.</b> It is agreed by the Parties that the provisions of <b>Section 19(4) and 19A</b> of the Copyright Act, 1957 (including amendments thereto) shall have no application or effect on the terms of this Agreement. Creator hereby acknowledges and undertakes that the assignment of copyright in the Film as granted herein is not and will not be contrary to the terms and conditions of the rights already assigned to a copyright society in which Creator is a member.</p>
+
+    <h2>8. Termination/Suspension of Services:</h2>
+    <p>Company shall be entitled to terminate this Agreement upon the occurrence of any of the following events:</p>
+    <p class="sub-clause"><b>8.1.</b> If Creator breaches any of his obligations, representations, warranties under this Agreement and does not remedy that breach within 15 days after receiving notice of such breach from Company.</p>
+    <p class="sub-clause"><b>8.2.</b> The continuation of an event or a combination of events of force majeure for more than 7 consecutive days.</p>
+    <p class="sub-clause"><b>8.3.</b> The production of the Film being cancelled, abandoned or indefinitely postponed for any reason whatsoever.</p>
+    <p class="sub-clause"><b>8.4.</b> However, the termination in clauses shall be without prejudice to the other remedies available to Company in law.</p>
+
+    <h2>9. Post Termination:</h2>
+    <p class="sub-clause"><b>9.1.</b> The Parties shall be released from all further obligations under this Agreement;</p>
+    <p class="sub-clause"><b>9.2.</b> Upon such termination of this Agreement, Company shall take over the Film from Creator and acquire all rights in the Film and complete the same in the manner deem fit.</p>
+    <p class="sub-clause"><b>9.3.</b> Notwithstanding the termination of this Agreement, the provisions of this Agreement, the nature of which should reasonably require the survival thereof, shall survive the termination of this Agreement.</p>
+    <p class="sub-clause"><b>9.4.</b> In the event of this Agreement being terminated before its stipulated time period, due to reasons mentioned in Clause 9 above, then Creator will be liable to forthwith refund the Fee (but not later than 30 days from the date of termination) already paid by Company and any unpaid Fee shall stand forfeited by Company. In case of any delay in refunding the Fee the Creator will also be liable to pay interest @ <b>18% per annum</b> from the end of aforesaid period of thirty (30) days of termination of the Agreement till the date of refund by the Creator. Notwithstanding, other rights/remedies available to Company under law and/or as per this Agreement, Company shall also have the right to claim damages from the Creator.</p>
+    <p class="sub-clause"><b>9.5.</b> Furthermore, during the notice period, if instructed by Company, Creator undertakes to deliver the Audio-Visual Content to Company's satisfaction and complete the Film. However, if Creator fails to deliver the Film to the satisfaction of Company within the notice period, Company has the right to withhold the payment of the Film already delivered by Creator to Company.</p>
+    <p class="sub-clause"><b>9.6.</b> In the event of termination of this Agreement, notwithstanding anything else contained in the Agreement, Creator shall immediately notate in favour of Company such agreements with Contributors and Company shall be deemed to have all the rights of the Creator as agreed under such agreements with Contributors including but not limited right to specific performance by such Contributors. Further, if the Creator has failed to perform its obligations under such agreements with Contributors/participants/artists including failure to make payments of consideration and Company is required to make good such obligation, Company shall have right to withhold any payments due and payable to the Creator as per this Agreement till the date of termination and if so deemed fit by Company utilize such outstanding payments in clearing any outstanding due to the Creator towards the Contributors. The Creator agrees to indemnify and keep Company indemnified from any claims, losses and costs arising from or resulting from such breach.</p>
+
+    <h2>10. Creator's Representations and Warranties:</h2>
+    <p class="sub-clause"><b>10.1.</b> Creator is free to enter into this Agreement and grant the rights herein granted.</p>
+    <p class="sub-clause"><b>10.2.</b> Creator has neither made nor will make any commitment nor has done or will do any act in conflict with this Agreement or Company's rights hereunder.</p>
+    <p class="sub-clause"><b>10.3.</b> Creator has and will maintain all the necessary personnel, facilities, equipment and resources necessary to meet the performance standards set forth in this Agreement and is not subject to any obligation or disability which will or might hinder Creator's performance hereunder.</p>
+    <p class="sub-clause"><b>10.4.</b> Film shall be produced in accordance with all applicable laws (including, without limitation, all applicable statutes, ordinances, rules, regulations and requirements of all governmental agencies and regulatory bodies).</p>
+    <p class="sub-clause"><b>10.5.</b> All material furnished by Creator hereunder is and shall be wholly original with Creator and will not violate or infringe upon any rights of any kind or nature whatsoever of any person or other entity.</p>
+    <p class="sub-clause"><b>10.6.</b> Creator shall not incur any liability on behalf of Company and not pledge Company's credit.</p>
+    <p class="sub-clause"><b>10.7.</b> Parties shall not divulge or disclose any information of any nature or kind relating to the development or production of the Film, or to the general affairs of other Party coming within their knowledge by reason of the rendering of the services hereunder, or otherwise howsoever.</p>
+    <p class="sub-clause"><b>10.8.</b> Parties agree to keep confidential any information about the Film and Film related materials (including, but not limited to, scripts). At Company's request, Creator shall return to Company all materials received from or on behalf of Company related to the Film and copies thereof (including electronic copies).</p>
+    <p class="sub-clause"><b>10.9.</b> Neither the Creator nor Creator's crew, or his agent(s) or any other person acting of on behalf of the foregoing has offered, paid, promised to pay or authorized the payment of any money or anything of value to any government authority or any political party for the purpose of influencing any act or decision of such government authority or political party in relation to the writing and rendering services hereunder to any person, in each case where such payment, offer or promise is prohibited under any applicable law to which such entity is subject or engaged in any activity that would in any manner result in violation of any applicable <b>anti-bribery or anti-corruption laws</b>.</p>
+    <p class="sub-clause"><b>10.10.</b> Both the Parties shall not authorize or permit screenings or previews of the Film or any cut of the Film without prior written approval of other Party.</p>
+    <p class="sub-clause"><b>10.11.</b> Creator and each Contributor involved shall provide an executed Certificate of Authorship in the format provided in Annexure 9 to the Company.</p>
+    <p class="sub-clause"><b>10.12.</b> Creator shall secure and maintain, at its sole cost and expense as part of the Content Creation Budget, in connection with the Services and production of the Film, all customary and necessary insurance policies, including, without limitation, comprehensive general liability insurance and such policies shall list Company as additional insured (the "<b>Insurance</b>").</p>
+    <p class="sub-clause"><b>10.13.</b> Both the Parties shall keep confidential all matters relating to the Film (including, without limitation, the script, the plot, or any elements thereof, any set design, props or effects, or activities of the cast and crew) and business or production activities, and shall not furnish or authorize the dissemination of any information or publicity of any form relating to the Film, (or its operations or personnel); provided that incidental non-derogatory references to either Party's engagement hereunder shall not be deemed a breach of this provision.</p>
+    <p class="sub-clause"><b>10.14.</b> The terms of this Clause shall survive the expiration or termination of this Agreement.</p>
+    <p class="sub-clause"><b>10.15.</b> There is no litigation or any other restraining development, legal or otherwise in and against the production of the Film, its constituents and the Creator, pending or threatened against, which may, in any manner, encumber or create impediments in carrying out the provisions of this Agreement and in smooth and uninterrupted enjoyment of the rights by Company and/or its legal assignees.</p>
+    <p class="sub-clause"><b>10.16.</b> No Violation of Third-Party Rights:</p>
+    <p class="sub-sub-clause"><b>10.16.1.</b> Neither the Film and/or the Film Materials nor any part thereof will infringe upon the statutory rights, common law rights, intellectual property rights including copyrights in literary, dramatic, musical or motion picture rights, patent rights or the trademark or trade names of any person, firm, corporation, association or entity whatsoever.</p>
+    <p class="sub-sub-clause"><b>10.16.2.</b> Neither the Film nor any part thereof nor any of said dramatic, literary, musical and other material, whether contained therein or synchronized therewith, will violate the statutory rights of, or the right of privacy, or constitute a libel or slander against any person, firm, corporation, association or entity whatsoever, or violate any other rights not herein specifically enumerated.</p>
+    <p class="sub-sub-clause"><b>10.16.3.</b> No part of the Film shall be defamatory or amount to contempt of court or breach of contract, or breach of any provision of statute, nor hurt the sentiments of religious groups.</p>
+    <p class="sub-clause"><b>10.17.</b> By virtue of this Agreement no right, title or interest in or to the Film or any other rights will vest in the Creator. Consequently, the Creator does not have right to grant or assign (and should not grant or assign to) or create in favour of any person, corporation, association or other entity, any right, title or interest in or to the Film or any other rights of Company. The Creator cannot and will not create any liens, claims, charges, encumbrances, restrictions in favour of any third party, including financiers in respect of the Film or any part thereof. Nor will the Creator enter into agreements, commitments or arrangements obligations whatsoever with any person, firm, corporation that may in any way interfere with, impair, abrogate or adversely or otherwise affect any of the rights of Company.</p>
+    <p class="sub-clause"><b>10.18.</b> Except Consideration to Creator, there are not now and will not be any payments of any kind required to be made by Company with respect to, or as a result of, exploiting the Film.</p>
+    <p class="sub-clause"><b>10.19.</b> Each of the representations and warranties hereunder shall continue in full force and effect throughout the term of Company's rights hereunder, notwithstanding any delivery by Creator or acceptance or approval by Company of the Film or any items and documents of any kind and notwithstanding any expiration or termination of this Agreement.</p>
+    <p class="sub-clause"><b>10.20.</b> Company shall not be liable for any unfulfilled obligations and liabilities of Creator towards any person whatsoever, or the appropriate Government in relation to the said Film and its constituents and Creator declares that it shall alone be liable for the statutory and otherwise compliances with regard to the overall production of the said Film. Further the Creator shall ensure and shall be liable for the compliance of all laws including but not limited to labour laws, codes, guidelines statutes, orders/judgments of courts and other statutory authorities and hold Company indemnified against any claims, costs, penalties, losses arising from a violation by the Creator with respect to the production of the Film.</p>
+    <p class="sub-clause"><b>10.21.</b> Creator shall, at its own cost, obtain all of the rights, permissions and licenses from relevant copyright collection societies, performing rights society and/or any other societies as required from time to time for the use of any on-ground music included in any on-ground event in relation to the Film, to enable Company to exploit the Film, worldwide and in perpetuity.</p>
+
+    <h2>11. Insurance:</h2>
+    <p>Creator shall take out a comprehensive insurance, including without any limitation, with respect to the equipment used in the production of the Film, artists of the Film, sets/studio and wardrobe to be used in the Film, and accident and personal liability compensation insurance or such other applicable insurance which provides coverage within applicable legal limits for the benefit of all individuals hired by Creator including the employees of the Creator. Creator shall be responsible for providing reasonable health and safety measures for all the persons working in connection with the Film in order to ensure that the safety and security of all the persons in the sets is not prejudiced in any manner. Creator shall indemnify Company against all claims, actions and liability which may be asserted by or on behalf of any such person or on behalf of any party by reason of accident, injury, death or property damage resulting from any negligence or fault on the part of Creator or its employees. Unless otherwise agreed by Company, the policy of insurance shall have <b>Company as the "co-payee"</b> and the amount of such insurance cover shall be agreed with Company before Creator takes out such a policy.</p>
+
+    <h2>12. Indemnification:</h2>
+    <p>The Party in breach/default (Defaulting Party) shall, at its own expense, indemnify, save, and hold harmless the non-defaulting party and its successors, licensees, assigns, agents, representatives, and affiliates from and against any and all claims, demands, causes of action, obligations, liability, loss, damage, costs, and expenses (including reasonable attorneys' fees), incurred or sustained by reason of or arising out of any breach of any of the warranties, representations, obligations, or agreements herein made by such Defaulting Party.</p>
+
+    <h2>13. Name and Likeness:</h2>
+    <p>Company shall have the right to use Creator's name, likeness and/or biography in connection with the production, distribution, exhibition, advertising, promotion and other exploitation of the Picture and promotional "Making of" film, if any, and all subsidiary and ancillary rights therein, including without limitation, publications, marketing and advertising of the Picture and/or the promotional "Making Of" film, provided, however, any merchandising and commercial tie-ups shall require the express written permission of the Creator.</p>
+
+    <h2>14. Credit:</h2>
+    <p>Provided Creator fully performs all of its obligations hereunder and is not in breach or default hereof, Company shall accord credit to Creator on screen. Company inadvertent failure, or any failure by any third party, to accord credit as set forth herein shall not be deemed a breach of this Agreement by Company. The size, type and placement of such credit shall be at Company's sole discretion.</p>
+
+    <h2>15. Confidentiality:</h2>
+    <p>Neither Parties shall disclose to any third party any confidential business of future plans of Company related to the film at any time acquired and no reference is to be made regarding the terms of this entire agreement in any advertising publicity or promotional material without prior written consent of the parties.</p>
+
+    <h2>16. Making of Films:</h2>
+    <p>Subject to Creator's availability and reasonable approval rights, Creator agrees to cooperate with Company in the creation of promotional "Making of" film subject to Creator's services in connection with the principal photography of the Picture. Additionally, Creator agrees that Company may use portions of the Picture and "behind the scenes" shots in said promotional "making of" films and may exploit said promotional "Making Of" films in any and all media whatsoever (whether now known or hereafter devised) without the payment of any compensation whatsoever to any crew member.</p>
+
+    <h2>17. MISCELLANEOUS:</h2>
+    <p class="sub-clause"><b>17.1. Governing Law:</b> The parties agree that this Agreement shall be construed and enforced in accordance with, and the rights of parties shall be governed by the laws of India, without giving effect to the conflict of law provisions thereof. The courts at Delhi shall have exclusive jurisdiction to entertain any suit, dispute, litigation or legal proceedings in respect of or under this Agreement.</p>
+    <p class="sub-clause"><b>17.2. Arbitration:</b> Any and all claims and disputes arising under this Agreement shall be settled through Arbitration. The Arbitration proceedings shall be conducted in accordance with the rules of the <b>Indian Arbitration and Conciliation Act, 1996</b> by a single arbitrator. Unless otherwise agreed, the seat of the arbitration shall be Delhi and the arbitration proceedings shall be conducted in the English language.</p>
+    <p class="sub-clause"><b>17.3. Assignment:</b> This Agreement is non-assignable by the Creator subject to prior approval of the Company. This Agreement may be freely assigned and licensed by Company in whole or in part to any party and in such event; this Agreement shall remain binding upon Creator and insure to the benefit of any such assignee or licensee.</p>
+    <p class="sub-clause"><b>17.4. Amendment and Waiver:</b> No supplement, modification, amendment, or cancellation of this Agreement shall be binding unless executed in writing by the parties hereto. No waiver of any of the provisions of this Agreement shall be deemed or shall constitute a waiver of any other provision hereof (whether or not similar) nor shall such waiver constitute a continuing waiver.</p>
+    <p class="sub-clause"><b>17.5. Relationship:</b> Creator agrees that Company has retained Creator solely for the purposes and to the extent set forth in this Agreement, and Creator shall not be entitled to share in any of the benefits to which Company may derive from the commercial exploitation of the Creator's services rendered in connection with the Film and hereunder (including all original ideas in connection therewith). The Creator shall not be construed to be a Creator or agent of Company.</p>
+    <p class="sub-clause"><b>17.6. Force Majeure:</b> If by any reason of an event of force majeure, as that term is commonly understood in the Film industry (including, without limitation, fire, flood, labor strike, acts of god, or disfigurement, death or disability of principal cast or crew of the Picture), the production or completion of the Film is materially hampered, interrupted or interfered with, then Company shall have the option to suspend this Agreement for a period of a month. Should the event of force majeure extend beyond said period of a month then Creator shall have the option to terminate this Agreement with the consent of Company.</p>
+    <p class="sub-clause"><b>17.7. Further Assurance:</b> The Creator hereby undertakes to do any and all acts and execute any and all documents in such manner and at such locations as may be required by Company in its sole discretion in order to secure, protect, perfect or enforce any of the rights of Company pursuant to this Agreement. In the event the Creator fails to do so within 15 days of receipt of a request from Company to do or perform an act or execute a document, Company shall be entitled to exercise the same in place of the Creator as the lawful appointed attorney and the Creator undertakes to affirm, ratify and be bound by such exercise of the right by Company under the provisions of this clause.</p>
+    <p class="sub-clause"><b>17.8. Severability:</b> In the event any provision or part of this Agreement is found to be invalid or unenforceable, only that particular provision or part so found, and not the entire Agreement, will be inoperative.</p>
+    <p class="sub-clause"><b>17.9. Limited Resource:</b> As an overriding provision of this Agreement (to the extent permitted by law), Creator irrevocably acknowledge and accept that, notwithstanding anything to the contrary in this Agreement, the full extent of Company's liability in respect of any breach of this Agreement shall be limited to the extent of the Content Creation Services Fee payable to Company under this Agreement.</p>
+    <p class="sub-clause"><b>17.10. Entire Agreement:</b> This Agreement (including the documents referred to herein) constitutes the entire agreement among the parties and supersedes any prior understandings, agreements, or representations by or among the parties, written or oral, to the extent they related in any way to the subject matter hereof.</p>
+
+    <p style="margin-top: 30px;">By signing in the spaces provided below, Company and Creator accept and agree to all of the terms and conditions hereof.</p>
+
+    <p class="center bold" style="margin-top: 20px;">IN WITNESS WHEREOF, the parties to this Agreement execute this Agreement as of the day and year first set forth above</p>
+
+    <div class="signature-section">
+      <div class="signature-grid">
+        <div class="signature-box">
+          <p><b>Agreed and Accepted By within named "Creator"</b></p>
+          <div class="signature-line"></div>
+          <p><b>[CREATOR REPRESENTATIVE NAME]</b></p>
+          <p>Authorized Signatory</p>
+        </div>
+        <div class="signature-box">
+          <p><b>Agreed and Accepted by within named "Company"</b></p>
+          <div class="signature-line"></div>
+          <p><b>Parveen Singhal</b></p>
+          <p>Authorized Signatory</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANNEXURES -->
+    <div class="annexure">
+      <h3 class="annexure-title">Annexure 1 - Cash Flow Schedule</h3>
+      <ul>
+        <li><b>25%:</b> Upon signing of the agreement.</li>
+        <li><b>25%:</b> Following the successful completion and approval of the offline edit.</li>
+        <li><b>40%:</b> After final Technical Check (TC), Quality Check (QC), and approval of all project deliverables.</li>
+      </ul>
+      <p>The final <b>10%</b> is due 60 days after the project's final delivery, subject to the receipt of a duly approved invoice. This payment is contingent on STAGE receiving the raw assets and project delivery on hard drives.</p>
+      <p>Payment will be processed within 15-20 days of receiving the approved invoice. The invoice can be raised after the agreement is finalized and payment is strictly contingent upon the successful completion and approval of the corresponding milestone.</p>
+    </div>
+
+    <div class="annexure">
+      <h3 class="annexure-title">Annexure 2 - Delivery Materials</h3>
+      <ol>
+        <li>All Episodes in the total duration - <span class="highlight">[DURATION]</span> minutes</li>
+        <li>Teaser and Trailer</li>
+        <li>Posters 3 designs with single artist individual poster</li>
+        <li>Coming soon, Streaming now poster</li>
+        <li>NOC of cast and crew</li>
+        <li>All Raw Data of the Project (You have to purchase the hard disk in your sanctioned budget and upload raw data in it after the final delivery and send it to us)</li>
+        <li>Promotion appeal videos by Artists</li>
+      </ol>
+      <h4>MARKETING ASSETS DELIVERY</h4>
+      <ol>
+        <li>One Teaser around 1 Minute</li>
+        <li>One Trailer around 2:30 minutes</li>
+        <li>One Main Poster</li>
+        <li>Behind the shoot Footage and Edit</li>
+        <li>Lead and primary Character Promo Shoot (All Lead & Primary Character) 30+ sec</li>
+      </ol>
+      <h4>TALENT NOC AND OTHER TERMS CONDITION</h4>
+      <ol>
+        <li>Creator, Lead/Primary cast, Departmental HOD has to sign NOC form and Creator has to submit us Scan + Hard Copy</li>
+        <li>Everyone in the team, especially Lead Cast & Creator/Director has to take part in offline and online Promotion + marketing and have to post/promote teaser, trailer, poster over his social media.</li>
+        <li>If Applicable, The Creator/Writer/Director and lead +primary+secondary cast is committed for season 2 also with 10-20% increase in remuneration within 3-5 months post release.</li>
+        <li>All the Data is required in hard-disk (Purchased by Creator). Once all the data is uploaded in the harddisks, please arrange a video call with stage authority to check and confirm the data.</li>
+      </ol>
+    </div>
+
+    <div class="annexure">
+      <h3 class="annexure-title">Annexure 3 - Detailed Content Creation Budget</h3>
+      <table>
+        <tr><th colspan="2">PROJECT DETAILS</th></tr>
+        <tr><td>Content Name/Title</td><td><span class="highlight">[PROJECT TITLE]</span></td></tr>
+        <tr><td>Format</td><td><span class="highlight">[FEATURE FILM / WEB SERIES / MICRODRAMA]</span></td></tr>
+        <tr><td>Creator Name</td><td><span class="highlight">[CREATOR NAME]</span></td></tr>
+        <tr><td>Duration</td><td><span class="highlight">[DURATION]</span></td></tr>
+        <tr><td>Shooting Days</td><td><span class="highlight">[NUMBER OF DAYS]</span></td></tr>
+        <tr><td>Production Company</td><td><span class="highlight">[PRODUCTION COMPANY]</span></td></tr>
+      </table>
+      <table>
+        <tr><th>S.NO</th><th>PARTICULARS</th><th>PACKAGE/TOTAL</th></tr>
+        <tr><td colspan="3"><b>PRE PRODUCTION & SCRIPT DEVELOPMENT</b></td></tr>
+        <tr><td>1</td><td>Concept and Idea</td><td></td></tr>
+        <tr><td>2</td><td>Story</td><td></td></tr>
+        <tr><td>3</td><td>Screenplay</td><td></td></tr>
+        <tr><td>4</td><td>Dialogues</td><td></td></tr>
+        <tr><td>5</td><td>Lyricist</td><td></td></tr>
+        <tr><td>6</td><td>Singers</td><td></td></tr>
+        <tr><td>7</td><td>Title Track Composition</td><td></td></tr>
+        <tr><td>8</td><td>Music Director/Composer (Songs)</td><td></td></tr>
+        <tr><td>9</td><td>Artist Workshop & Look Test</td><td></td></tr>
+        <tr><td>10</td><td>Location Recce/Scouting</td><td></td></tr>
+        <tr><td colspan="3"><b>PRODUCTION</b></td></tr>
+        <tr><td>1</td><td>Cast/Artists (15% of Production Cost) + Juniors</td><td></td></tr>
+        <tr><td>2</td><td>Crew (Proper Bifurcation)</td><td></td></tr>
+        <tr><td>3</td><td>Locations/Studio</td><td></td></tr>
+        <tr><td>4</td><td>Shooting Equipments (Proper Bifurcations)</td><td></td></tr>
+        <tr><td colspan="3"><b>PRODUCTION MATERIAL</b></td></tr>
+        <tr><td>1</td><td>Set Design & Set Construction</td><td></td></tr>
+        <tr><td>2</td><td>Properties on Rent/Purchase</td><td></td></tr>
+        <tr><td>3</td><td>Art Requirements</td><td></td></tr>
+        <tr><td>4</td><td>Costume on Rent/Purchase (including inners)</td><td></td></tr>
+        <tr><td>5</td><td>Jewellary & Accessories</td><td></td></tr>
+        <tr><td>6</td><td>Makeup and Hair Material</td><td></td></tr>
+        <tr><td>7</td><td>Boarding Travel Lodging/Travel and Stay</td><td></td></tr>
+        <tr><td>8</td><td>Transportation (Equipments)</td><td></td></tr>
+        <tr><td>9</td><td>Production Vehicles (Artist/Crew)</td><td></td></tr>
+        <tr><td>10</td><td>Food</td><td></td></tr>
+        <tr><td>11</td><td>Vanity Vans</td><td></td></tr>
+        <tr><td>12</td><td>Others</td><td></td></tr>
+        <tr><td colspan="3"><b>POST PRODUCTION</b></td></tr>
+        <tr><td>1</td><td>Editor</td><td></td></tr>
+        <tr><td>2</td><td>Edit Studio</td><td></td></tr>
+        <tr><td>3</td><td>Dubbing Studio</td><td></td></tr>
+        <tr><td>4</td><td>DI & Color Grading</td><td></td></tr>
+        <tr><td>5</td><td>VFX & CGI</td><td></td></tr>
+        <tr><td>6</td><td>Sound Mixing/Designing</td><td></td></tr>
+        <tr><td>7</td><td>Background Music</td><td></td></tr>
+        <tr><td>8</td><td>Foley Sound</td><td></td></tr>
+        <tr><td colspan="3"><b>OTHER</b></td></tr>
+        <tr><td>1</td><td>Total Production Cost</td><td></td></tr>
+        <tr><td>2</td><td>Creator's Margin (10% of Total Production Cost)</td><td></td></tr>
+        <tr><td colspan="2"><b>TOTAL PROJECT COST</b></td><td><b>₹ [AMOUNT]/-</b></td></tr>
+      </table>
+    </div>
+
+    <div class="annexure">
+      <h3 class="annexure-title">Annexure 4 - Content Creation Schedule</h3>
+      <ol>
+        <li>Script: (Submission Date) <span class="highlight">[DATE]</span></li>
+        <li>Detailed Screenplay with Dialogues: (Submission Date) <span class="highlight">[DATE]</span></li>
+        <li>Pre-production: <span class="highlight">[START DATE]</span> TO <span class="highlight">[END DATE]</span></li>
+        <li>Shoot: (Number of Days) <span class="highlight">[X]</span> DAYS (<span class="highlight">[START DATE]</span> TO <span class="highlight">[END DATE]</span>)</li>
+        <li>First Cut for STAGE QC: (Estimated Date) <span class="highlight">[DATE]</span></li>
+        <li>DI AND MUSIC: <span class="highlight">[DATE]</span></li>
+        <li>Post-production: (Start Date - End Date) <span class="highlight">[START DATE]</span> TO <span class="highlight">[END DATE]</span></li>
+        <li>Final Cut for QC: (Date) AFTER FEEDBACK MAXIMUM 6 DAYS - <span class="highlight">[DATE]</span></li>
+        <li>Final Project Delivery: (Date) <span class="highlight">[DATE]</span></li>
+      </ol>
+    </div>
+
+    <div class="annexure">
+      <h3 class="annexure-title">Annexure 5 - Detailed List of Service</h3>
+      <ol>
+        <li>Engagement of Contributors to the Film</li>
+        <li>Filming</li>
+        <li>Music Composition and Background Score</li>
+        <li>Editing</li>
+        <li>Pre-Production work</li>
+        <li>Post-Production work
+          <ul>
+            <li>Post Production</li>
+            <li>Creation of Production and promotion plan</li>
+            <li>Planning of editing and sound</li>
+            <li>Selection of music and final mix</li>
+            <li>Contact to Digital Print Company and approval of the final print</li>
+            <li>Post release editing</li>
+          </ul>
+        </li>
+        <li>Promotion
+          <ul>
+            <li>Creation of promotional concept</li>
+            <li>Creation of final title</li>
+            <li>Planning of stills, poster and trailer</li>
+          </ul>
+        </li>
+      </ol>
+    </div>
+
+    <div class="annexure">
+      <h3 class="annexure-title">Annexure 6 - Delivery Schedule</h3>
+      <ol>
+        <li>First Cut for STAGE QC: (Estimated Date) <span class="highlight">[DATE]</span></li>
+        <li>DI AND MUSIC: <span class="highlight">[DATE]</span></li>
+        <li>Post-production: (Start Date - End Date) <span class="highlight">[START DATE]</span> TO <span class="highlight">[END DATE]</span></li>
+        <li>Final Cut for QC: (Date) AFTER FEEDBACK MAXIMUM 6 DAYS - <span class="highlight">[DATE]</span></li>
+        <li>Final Project Delivery: (Date) <span class="highlight">[DATE]</span></li>
+      </ol>
+    </div>
+
+    <div class="annexure">
+      <h3 class="annexure-title">Annexure 7 - Technical Specifications</h3>
+      <ol>
+        <li>Cinema Camera Model Name: <span class="highlight">[CAMERA MODEL]</span></li>
+        <li>Camera Setup type (One Cam Or MultiCam): <span class="highlight">[SETUP TYPE]</span></li>
+        <li>Lens types: <span class="highlight">[LENS TYPES]</span></li>
+        <li>Lights details: <span class="highlight">[LIGHTS DETAILS]</span></li>
+        <li>Cinematic Tools and Equipment: <span class="highlight">[TOOLS LIST]</span></li>
+        <li>Drone (Model Name): <span class="highlight">[DRONE MODEL]</span></li>
+        <li>Sound Equipment: <span class="highlight">[SOUND EQUIPMENT]</span></li>
+      </ol>
+    </div>
+
+    <div class="annexure">
+      <h3 class="annexure-title">Annexure 8 - Modes, Medium and Formats</h3>
+      <p>"Modes, Media and Formats" of exploitation of the Film and Works shall include but shall not be limited to the following in the Territory and in perpetuity:</p>
+      <ul>
+        <li>To use and incorporate the Works in all or any format(s).</li>
+        <li>Distributing/exploiting/exhibition of the Works (whether digital or analog) via any and all format or medium.</li>
+        <li>To produce, distribute and exploit prequels, sequels, versions, time-quels, remakes, games, characters, cartoons, adaptations, mobisodes, webisodes, audio summaries, dialogue bites, plays, dramatic works, books & novels, television series, spin off series, films, repurpose and other adaptations including but not limited to events etc.</li>
+        <li>Using any digital television broadcast standards.</li>
+        <li>All modes, media and formats of exploitation: (i) in existence now in Territory, (ii) in existence now in Territory but not in commercial use on the date of execution hereof, and (iii) as may be invented, developed, or discovered in future.</li>
+        <li>To the extent any form of medium and/or mode of exploitation of the assigned rights, not in existence on the date of this Agreement or not in commercial use and not specifically mentioned in this Agreement ('Future Mediums'), is not held valid by operation of law, the Creator hereby grants an exclusive license, including the right to grant sub-licenses, in relation to such Future Mediums of exploitation of the Materials to the Producer according to the terms of this Agreement.</li>
+      </ul>
+    </div>
+
+    <div class="annexure">
+      <h3 class="annexure-title">Annexure 9 - CERTIFICATE OF AUTHORSHIP</h3>
+      <p>For <b>INR <span class="highlight">[AMOUNT]</span>/-</b> and other good and valuable consideration, the receipt and sufficiency of which is hereby acknowledged, the undersigned hereby certifies that the undersigned will render the Producer or has rendered service forming part of the motion picture currently entitled "<span class="highlight">[PROJECT TITLE]</span>" (the "Picture"), at the request of <span class="highlight">[CREATOR/PRODUCTION HOUSE]</span> ("VENDOR") pursuant to a contract of service between Vendor and the undersigned dated as of <span class="highlight">[DATE]</span> (the "Agreement") (All other results and proceeds of the undersigned's services hereunder and under the Agreement are hereinafter referred to as the "Work").</p>
+      <p>The undersigned hereby acknowledges that the Work has been specially ordered or commissioned by VENDOR for use as part of a contribution to a collective work or as part of the Picture or other audio-visual work, that the Work constitutes and shall constitute a <b>work-made-for-hire</b> as defined in the Indian Copyright Act of 1957, as amended, that Stage Technologies Private Limited ("Company") to whom the VENDOR has assigned the work on a First Copy Basis is and shall be the author of said work-made-for-hire and the owner of all rights in and to the Work, including, without limitation, the copyright therein and thereto throughout the universe for the initial term and any and all extensions and renewals thereof, and that Company has and shall have the right to make such changes therein and such uses thereof as it may deem necessary or desirable including but not limited, to the right to include the Work in the Picture in all media now and hereafter devised and on phonorecords and trailers, advertisements, promotions and co-promotions with respect thereto.</p>
+      <p>To the extent that the Work is not deemed a work-made-for-hire, and to the extent that Company is not deemed to be the author thereof in any territory of the universe, the undersigned hereby irrevocably assigns the Work to Company (including the entire copyright therein and any extensions and/or renewals thereof), and grants to Company all rights therein, throughout the universe in perpetuity.</p>
+      <p>The undersigned hereby acknowledges that the compensation paid hereunder and under the Agreement includes adequate and equitable remuneration for the assigned rights and constitutes a complete buy-out of all assigned Rights. Company's rights with respect to the Work may be freely assigned and licensed.</p>
+      <p>The undersigned agrees to execute any documents consistent herewith and do any other acts consistent with this Certificate which may reasonably be required by Company or its assignees or licensees to further evidence or effectuate Company's rights. Upon the undersigned's failure to do so after ten (10) days of Company's written request, the undersigned hereby appoints Company as the undersigned's attorney-in-fact for such purposes, with full power of substitution and delegation.</p>
+      <p>The undersigned affirms and acknowledges that the undersigned has been advised and counselled with respect to the negotiation and execution of this document by an attorney of the undersigned's own choice or acknowledges waiver of such advice and counsel. This Certificate shall be governed by the laws of India and courts in Delhi shall have exclusive jurisdiction.</p>
+      <p class="center" style="margin-top: 30px;"><b>IN WITNESS WHEREOF</b>, the undersigned has signed this Certificate as of <span class="highlight">[DATE]</span></p>
+      <div class="signature-grid" style="margin-top: 40px;">
+        <div class="signature-box">
+          <p>Signature:</p>
+          <div class="signature-line"></div>
+          <p>Name: <span class="highlight">[CONTRIBUTOR NAME]</span></p>
+        </div>
+        <div class="signature-box">
+          <p>AGREED AND ACCEPTED:</p>
+          <p><b>STAGE Technologies Private Limited</b></p>
+          <div class="signature-line"></div>
+          <p>By: Mr. Parveen Singhal</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 50px; text-align: center; color: #666; font-size: 10pt; border-top: 1px solid #ccc; padding-top: 20px;">
+      <p>🎬 STAGE Technologies Private Limited • Content Creation Agreement Template</p>
+      <p>This is a template document. Fill in all highlighted [PLACEHOLDER] fields before use.</p>
+      <p>Confidential & Legally Binding when executed.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+                                      const printWindow = window.open('', '_blank');
+                                      if (printWindow) {
+                                        printWindow.document.write(agreementHtml);
+                                        printWindow.document.close();
+                                        printWindow.print();
+                                      }
+                                    }}
+                                    className="px-6 py-3 bg-white hover:bg-red-50 text-red-700 font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                                  >
+                                    <span className="text-xl">📄</span>
+                                    <span>View Full Agreement (27 Pages)</span>
+                                  </button>
+                                </div>
+                                <p className="text-red-200 text-sm leading-relaxed">
+                                  Complete STAGE Content Creation Agreement - Exact replica of official contract with all 17 clauses (Definitions 1.1-1.17, Engagement, Content Creation Services 3.1-3.12, Contributors 4.1-4.3, Review Process, Fees 6.1-6.8, IP Rights 7.1-7.12, Termination 8.1-8.4, Post Termination 9.1-9.6, Warranties 10.1-10.21, Insurance, Indemnification, Name & Likeness, Credit, Confidentiality, Making of Films, Miscellaneous 17.1-17.10) + 9 Annexures (Cash Flow, Delivery Materials, Budget, Schedule, Services, Delivery Schedule, Technical Specs, Modes/Formats, Certificate of Authorship). Send to creators for review before signing.
+                                </p>
+                              </div>
+
+                              {/* Download Options */}
+                              <div className="bg-white border-2 border-red-300 rounded-xl p-5 mb-6">
+                                <h4 className="font-bold text-red-800 mb-4 flex items-center gap-2 text-lg">
+                                  📥 Download Agreement Template
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                  {/* Google Docs */}
+                                  <button
+                                    onClick={() => {
+                                      const docsUrl = 'https://docs.google.com/document/create';
+                                      window.open(docsUrl, '_blank');
+                                      const textData = `CONTENT CREATION AGREEMENT
+
+This Content Creation Agreement ("Agreement") is executed at Delhi on [DATE].
+
+BY AND BETWEEN:
+
+STAGE Technologies Private Limited, a Company incorporated under the Indian Companies Act and having its office at Room No. 203, Second Floor, 2-A/3, Kundan Mansion, Asaf Ali Road, Delhi - 110002, represented by its Director, Mr. Parveen Singhal (hereinafter referred to as the "Company")
+
+AND
+
+[CREATOR/PRODUCTION HOUSE NAME], a [Proprietorship/Partnership/Company], having its office at [COMPLETE ADDRESS], represented by [REPRESENTATIVE NAME], PAN - [PAN NUMBER] (GST - [GST NUMBER]) (hereinafter referred to as "Creator")
+
+WHEREAS:
+1. Company and Creator both are engaged in the business of production and distribution of films.
+2. Company has engaged Creator to create content in the form of a Film solely for Company's exploitation.
+3. Company shall be the author and the first and exclusive owner of the copyright in the Film, for the entire Territory and in perpetuity.
+
+NOW THIS AGREEMENT WITNESSETH FOLLOWS:
+
+1. DEFINITIONS (1.1-1.17):
+   - Cash Flow Schedule, Creative Elements, Contributors, Delivery Date, Delivery Materials, Delivery Schedule, Film Materials, First Copy, Intellectual Property, Content Creation Budget, Content Creation Schedule, Publicity Materials, Content Creation Services, Revenues, Technical Specifications, Term, Territory
+
+2. ENGAGEMENT (2.1-2.4)
+
+3. CONTENT CREATION SERVICES (3.1-3.12)
+
+4. CONTRIBUTORS AND THEIR AGREEMENTS (4.1-4.3)
+
+5. REVIEW PROCESS
+
+6. CONTENT CREATION SERVICES FEE (6.1-6.8)
+   Fee: INR [AMOUNT]/- plus applicable taxes/GST
+   Penalty: 18% per annum for delays
+
+7. INTELLECTUAL PROPERTY RIGHTS (7.1-7.12)
+   - Work-made-for-hire
+   - NFT, Crypto, Blockchain, Metaverse, web3 rights included
+   - Section 14, 38A, 18(1), 19(4), 19A Copyright Act 1957
+
+8. TERMINATION/SUSPENSION OF SERVICES (8.1-8.4)
+
+9. POST TERMINATION (9.1-9.6)
+   - Interest @ 18% per annum on delayed refunds
+
+10. CREATOR'S REPRESENTATIONS AND WARRANTIES (10.1-10.21)
+    - Anti-bribery/Anti-corruption clause (10.9)
+
+11. INSURANCE
+    - Company as co-payee
+
+12. INDEMNIFICATION
+
+13. NAME AND LIKENESS
+
+14. CREDIT
+
+15. CONFIDENTIALITY
+
+16. MAKING OF FILMS
+
+17. MISCELLANEOUS (17.1-17.10)
+    - Governing Law: India, Delhi courts
+    - Arbitration: Indian Arbitration and Conciliation Act, 1996
+    - Assignment, Amendment, Relationship, Force Majeure, Further Assurance, Severability, Limited Resource, Entire Agreement
+
+ANNEXURES:
+1. Cash Flow Schedule (25%-25%-40%-10%)
+2. Delivery Materials
+3. Detailed Content Creation Budget
+4. Content Creation Schedule
+5. Detailed List of Services
+6. Delivery Schedule
+7. Technical Specifications
+8. Modes, Medium and Formats
+9. Certificate of Authorship
+
+SIGNATURES:
+Creator: ______________________
+Company: ______________________
+
+STAGE Technologies Private Limited`;
+                                      navigator.clipboard.writeText(textData);
+                                      alert('Google Docs opened! Agreement summary copied - paste it (Ctrl+V)');
+                                    }}
+                                    className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-red-50 to-rose-100 border-2 border-red-400 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
+                                  >
+                                    <div className="w-14 h-14 bg-red-500 rounded-xl flex items-center justify-center">
+                                      <span className="text-3xl">📄</span>
                                     </div>
                                     <div className="text-center">
-                                      <div className="h-16 border-b-2 border-slate-400 mb-2"></div>
-                                      <p className="text-sm font-bold text-slate-900">Witness</p>
-                                      <p className="text-xs text-slate-500">[Name & Contact]</p>
+                                      <p className="font-bold text-red-800">Google Docs</p>
+                                      <p className="text-xs text-red-600">Open & Edit Online</p>
+                                    </div>
+                                  </button>
+
+                                  {/* Word Download */}
+                                  <button
+                                    onClick={() => {
+                                      alert('Use "View Full Agreement" button to print/save as PDF for complete document with all 27 pages');
+                                    }}
+                                    className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-400 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
+                                  >
+                                    <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center">
+                                      <span className="text-3xl">📘</span>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="font-bold text-blue-800">Save as PDF</p>
+                                      <p className="text-xs text-blue-600">Print to PDF</p>
+                                    </div>
+                                  </button>
+
+                                  {/* WhatsApp */}
+                                  <button
+                                    onClick={() => {
+                                      const message = "*🎬 STAGE CONTENT CREATION AGREEMENT*\n📝 _OTT Production Contract - 27 Pages_\n\n*Agreement:* STAGE/CCA/____/25-26\n*Date:* [DATE]\n\n*COMPANY:*\nSTAGE Technologies Pvt Ltd\nNew Delhi - 110002\nGSTIN: 07AAICC1279L1ZC\n\n*CREATOR:*\n[CREATOR NAME]\n\n*PROJECT:*\n🎬 Title: [PROJECT NAME]\n🗣️ Language: [REGIONAL]\n📺 Format: [Film/Series]\n\n*BUDGET:* ₹ [AMOUNT]/-\n\n*PAYMENT SCHEDULE:*\n✅ 25% - Upon signing\n✅ 25% - Offline edit approval\n✅ 40% - TC/QC approval\n✅ 10% - 60 days after delivery\n\n*17 CLAUSES:*\n1. Definitions (1.1-1.17)\n2. Engagement (2.1-2.4)\n3. Content Creation Services (3.1-3.12)\n4. Contributors (4.1-4.3)\n5. Review Process\n6. Fees (6.1-6.8)\n7. IP Rights (7.1-7.12)\n8. Termination (8.1-8.4)\n9. Post Termination (9.1-9.6)\n10. Warranties (10.1-10.21)\n11. Insurance\n12. Indemnification\n13. Name & Likeness\n14. Credit\n15. Confidentiality\n16. Making of Films\n17. Miscellaneous (17.1-17.10)\n\n*9 ANNEXURES:*\n📋 A1: Cash Flow Schedule\n📋 A2: Delivery Materials\n📋 A3: Detailed Budget\n📋 A4: Content Creation Schedule\n📋 A5: Services List\n📋 A6: Delivery Schedule\n📋 A7: Technical Specifications\n📋 A8: Modes/Mediums/Formats\n📋 A9: Certificate of Authorship\n\n*KEY PROVISIONS:*\n• Work-for-Hire under Copyright Act 1957\n• NFT/Crypto/Blockchain/Metaverse rights\n• 18% penalty for delays\n• Arbitration: Delhi\n• Anti-bribery clause\n\n📧 _Please review complete document and revert_\n\n🎬 STAGE OTT Platform";
+                                      const whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
+                                      window.open(whatsappUrl, '_blank');
+                                    }}
+                                    className="flex flex-col items-center gap-3 p-4 bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-500 rounded-xl hover:shadow-lg hover:scale-105 transition-all"
+                                  >
+                                    <div className="w-14 h-14 bg-green-600 rounded-xl flex items-center justify-center">
+                                      <span className="text-3xl">💬</span>
+                                    </div>
+                                    <div className="text-center">
+                                      <p className="font-bold text-green-800">WhatsApp</p>
+                                      <p className="text-xs text-green-600">Share Summary</p>
+                                    </div>
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Agreement Preview Card */}
+                              <div className="rounded-2xl shadow-2xl overflow-hidden border-2 border-red-500/30">
+                                {/* Header */}
+                                <div className="bg-gradient-to-r from-slate-900 via-red-900 to-rose-900 p-6 text-center">
+                                  <div className="flex justify-center gap-4 mb-4">
+                                    <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                                      <span className="text-3xl">🎬</span>
+                                    </div>
+                                    <div className="w-14 h-14 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/30">
+                                      <span className="text-3xl">📝</span>
+                                    </div>
+                                  </div>
+                                  <h3 className="text-2xl font-black text-white tracking-wide">CONTENT CREATION AGREEMENT</h3>
+                                  <p className="text-red-300 text-sm mt-1">STAGE OTT Production Contract - Complete 27 Page Template</p>
+                                  <div className="inline-block bg-white/15 backdrop-blur-sm px-4 py-1.5 rounded-full text-white text-xs font-bold mt-3 border border-white/20">
+                                    17 Clauses • 9 Annexures • Copyright Act 1957 Compliant
+                                  </div>
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-6 bg-white">
+                                  <div className="grid grid-cols-2 gap-6 mb-6">
+                                    <div>
+                                      <h4 className="font-bold text-sm text-red-700 mb-2">📋 ALL 17 CLAUSES:</h4>
+                                      <div className="text-xs text-gray-600 space-y-1">
+                                        <p>1. Definitions (1.1-1.17)</p>
+                                        <p>2. Engagement (2.1-2.4)</p>
+                                        <p>3. Content Creation Services (3.1-3.12)</p>
+                                        <p>4. Contributors (4.1-4.3)</p>
+                                        <p>5. Review Process</p>
+                                        <p>6. Fees (6.1-6.8) - 18% penalty</p>
+                                        <p>7. IP Rights (7.1-7.12) - NFT/Crypto</p>
+                                        <p>8. Termination (8.1-8.4)</p>
+                                        <p>9. Post Termination (9.1-9.6)</p>
+                                        <p>10. Warranties (10.1-10.21)</p>
+                                        <p>11. Insurance (Co-payee)</p>
+                                        <p>12. Indemnification</p>
+                                        <p>13. Name & Likeness</p>
+                                        <p>14. Credit</p>
+                                        <p>15. Confidentiality</p>
+                                        <p>16. Making of Films</p>
+                                        <p>17. Miscellaneous (17.1-17.10)</p>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-bold text-sm text-red-700 mb-2">📎 ALL 9 ANNEXURES:</h4>
+                                      <div className="text-xs text-gray-600 space-y-1">
+                                        <p>A1: Cash Flow (25-25-40-10)</p>
+                                        <p>A2: Delivery Materials</p>
+                                        <p>A3: Detailed Budget Table</p>
+                                        <p>A4: Content Creation Schedule</p>
+                                        <p>A5: Services List</p>
+                                        <p>A6: Delivery Schedule</p>
+                                        <p>A7: Technical Specifications</p>
+                                        <p>A8: Modes/Mediums/Formats</p>
+                                        <p>A9: Certificate of Authorship</p>
+                                      </div>
+                                      <h4 className="font-bold text-sm text-red-700 mt-4 mb-2">⚖️ LEGAL PROVISIONS:</h4>
+                                      <div className="text-xs text-gray-600 space-y-1">
+                                        <p>• Copyright Act 1957</p>
+                                        <p>• Section 14, 38A, 18(1), 19(4), 19A</p>
+                                        <p>• Arbitration Act 1996</p>
+                                        <p>• Anti-bribery compliance</p>
+                                        <p>• Delhi jurisdiction</p>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
 
                                 {/* Footer */}
                                 <div className="bg-slate-900 py-3 px-5 text-center">
-                                  <p className="text-slate-400 text-xs">🎬 STAGE OTT Platform • Regional Content Production • NOC Template</p>
+                                  <p className="text-slate-400 text-xs">🎬 STAGE OTT Platform • Complete Content Creation Agreement • Legally Binding</p>
                                 </div>
                               </div>
 
-                              <h4 className="font-bold text-gray-800 mb-4 mt-6">NOC Guidelines</h4>
+                              <h4 className="font-bold text-gray-800 mb-4 mt-6">Agreement Guidelines</h4>
+                            </div>
+                          )}
+
+                          {/* OTT BUDGET GUIDE - Interactive Section */}
+                          {(selectedCat as any).hasOttBudgetGuide && (
+                            <div className="mb-8">
+                              {/* Main Header */}
+                              <div className="bg-gradient-to-br from-amber-900 via-orange-900 to-red-900 border-2 border-amber-500/50 rounded-2xl p-6 mb-6 shadow-2xl">
+                                <div className="flex items-center justify-between mb-4">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg border-2 border-white/20">
+                                      <span className="text-4xl">💰</span>
+                                    </div>
+                                    <div>
+                                      <h3 className="text-2xl font-black text-white">OTT Budget & Producer Margin Guide</h3>
+                                      <p className="text-amber-300 text-sm font-medium">₹40 Lakh Regional Film • Industry Research 2024-25</p>
+                                    </div>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      const budgetGuideHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OTT Budget & Producer Margin Guide - STAGE</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', Arial, sans-serif; background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); min-height: 100vh; padding: 40px; }
+    .container { max-width: 900px; margin: 0 auto; }
+    .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%); border-radius: 20px 20px 0 0; padding: 30px; text-align: center; }
+    .header h1 { color: white; font-size: 28px; font-weight: 900; }
+    .header p { color: rgba(255,255,255,0.9); font-size: 14px; margin-top: 8px; }
+    .main-content { background: white; border-radius: 0 0 20px 20px; padding: 40px; }
+    .section { margin-bottom: 35px; page-break-inside: avoid; }
+    .section-title { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 12px 20px; border-radius: 10px; font-size: 16px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    .budget-box { background: #fffbeb; border: 2px solid #fbbf24; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+    .budget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 2px dashed #fbbf24; }
+    .total-budget { font-size: 24px; font-weight: 900; color: #92400e; }
+    .margin-badge { background: #059669; color: white; padding: 8px 16px; border-radius: 20px; font-weight: 700; }
+    .breakdown-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .breakdown-item { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 15px; }
+    .breakdown-item.highlight { border-color: #f59e0b; background: #fffbeb; }
+    .item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .item-title { font-weight: 700; color: #1f2937; font-size: 14px; }
+    .item-percent { background: #f59e0b; color: white; padding: 4px 12px; border-radius: 15px; font-size: 12px; font-weight: 700; }
+    .item-amount { font-size: 18px; font-weight: 800; color: #059669; margin-bottom: 8px; }
+    .item-details { font-size: 11px; color: #6b7280; line-height: 1.6; }
+    .platform-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .platform-table th { background: linear-gradient(135deg, #1e40af, #1d4ed8); color: white; padding: 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .platform-table td { padding: 12px; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+    .platform-table tr:nth-child(even) { background: #f8fafc; }
+    .platform-name { font-weight: 700; color: #1f2937; display: flex; align-items: center; gap: 8px; }
+    .margin-cell { font-weight: 700; color: #059669; }
+    .amount-cell { color: #1f2937; }
+    .model-box { background: linear-gradient(135deg, #ede9fe, #ddd6fe); border: 2px solid #8b5cf6; border-radius: 12px; padding: 20px; }
+    .model-title { font-weight: 800; color: #5b21b6; font-size: 16px; margin-bottom: 15px; }
+    .model-formula { background: white; border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 15px; }
+    .formula-text { font-size: 18px; font-weight: 700; color: #1f2937; }
+    .model-details { font-size: 13px; color: #4c1d95; line-height: 1.8; }
+    .trends-list { list-style: none; }
+    .trends-list li { display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: #fef2f2; border-radius: 8px; margin-bottom: 10px; font-size: 13px; color: #991b1b; }
+    .trends-icon { font-size: 18px; }
+    .tips-list { list-style: none; }
+    .tips-list li { display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: #ecfdf5; border-radius: 8px; margin-bottom: 10px; font-size: 13px; color: #065f46; }
+    .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb; color: #9ca3af; font-size: 11px; }
+    @media print { body { background: white; padding: 20px; } .container { max-width: 100%; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>💰 OTT Budget & Producer Margin Guide</h1>
+      <p>₹40 Lakh Regional Film Budget Allocation • Industry Research 2024-25 • STAGE OTT Platform</p>
+    </div>
+
+    <div class="main-content">
+      <div class="section">
+        <div class="section-title">📊 ₹40 LAKH REGIONAL FILM - Budget Breakdown</div>
+        <div class="budget-box">
+          <div class="budget-header">
+            <div>
+              <p style="font-size:12px;color:#92400e;font-weight:600;">TOTAL BUDGET</p>
+              <p class="total-budget">₹40,00,000</p>
+            </div>
+            <div style="text-align:right;">
+              <div class="margin-badge">10% Creator Margin = ₹4,00,000</div>
+              <p style="font-size:12px;color:#6b7280;margin-top:8px;">Working Budget: ₹36,00,000</p>
+            </div>
+          </div>
+
+          <div class="breakdown-grid">
+            <div class="breakdown-item highlight">
+              <div class="item-header">
+                <span class="item-title">1️⃣ ABOVE-THE-LINE</span>
+                <span class="item-percent">25-30%</span>
+              </div>
+              <div class="item-amount">₹9,00,000 - ₹10,80,000</div>
+              <div class="item-details">
+                • Director Fee: 8-10% (₹2.88-3.6L)<br>
+                • Script/Story: 3-5% (₹1.08-1.8L)<br>
+                • Lead Cast (2-3): 10-12% (₹3.6-4.32L)<br>
+                • Music Director: 3-4% (₹1.08-1.44L)
+              </div>
+            </div>
+
+            <div class="breakdown-item highlight">
+              <div class="item-header">
+                <span class="item-title">2️⃣ PRODUCTION/BTL</span>
+                <span class="item-percent">40-45%</span>
+              </div>
+              <div class="item-amount">₹14,40,000 - ₹16,20,000</div>
+              <div class="item-details">
+                • Crew Salaries: 12-15% (₹4.32-5.4L)<br>
+                • Camera & Equipment: 8-10% (₹2.88-3.6L)<br>
+                • Location & Set: 6-8% (₹2.16-2.88L)<br>
+                • Art/Props/Costumes: 5-6% (₹1.8-2.16L)<br>
+                • Transport & Catering: 4-5% (₹1.44-1.8L)
+              </div>
+            </div>
+
+            <div class="breakdown-item highlight">
+              <div class="item-header">
+                <span class="item-title">3️⃣ POST-PRODUCTION</span>
+                <span class="item-percent">18-22%</span>
+              </div>
+              <div class="item-amount">₹6,48,000 - ₹7,92,000</div>
+              <div class="item-details">
+                • Editing: 4-5% (₹1.44-1.8L)<br>
+                • Color Grading/DI: 3-4% (₹1.08-1.44L)<br>
+                • Sound Design: 4-5% (₹1.44-1.8L)<br>
+                • BGM/Score: 3-4% (₹1.08-1.44L)<br>
+                • VFX (if needed): 2-3% (₹0.72-1.08L)
+              </div>
+            </div>
+
+            <div class="breakdown-item highlight">
+              <div class="item-header">
+                <span class="item-title">4️⃣ CONTINGENCY & MISC</span>
+                <span class="item-percent">8-10%</span>
+              </div>
+              <div class="item-amount">₹2,88,000 - ₹3,60,000</div>
+              <div class="item-details">
+                • Contingency Fund: 5-7% (₹1.8-2.52L)<br>
+                • Insurance & Permits: 1-2% (₹0.36-0.72L)<br>
+                • Marketing Assets: 1-2% (₹0.36-0.72L)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">🎬 OTT Platform Producer Margins (2024-25)</div>
+        <table class="platform-table">
+          <thead>
+            <tr>
+              <th>Platform</th>
+              <th>Margin %</th>
+              <th>Amount (₹40L Budget)</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="platform-name">📺 Netflix India</td>
+              <td class="margin-cell">10-15%</td>
+              <td class="amount-cell">₹4,00,000 - ₹6,00,000</td>
+              <td>Premium content, strict QC</td>
+            </tr>
+            <tr>
+              <td class="platform-name">📺 Amazon Prime Video</td>
+              <td class="margin-cell">12-18%</td>
+              <td class="amount-cell">₹4,80,000 - ₹7,20,000</td>
+              <td>Best margins, long-term deals</td>
+            </tr>
+            <tr>
+              <td class="platform-name">📺 Disney+ Hotstar</td>
+              <td class="margin-cell">10-15%</td>
+              <td class="amount-cell">₹4,00,000 - ₹6,00,000</td>
+              <td>Regional focus increasing</td>
+            </tr>
+            <tr>
+              <td class="platform-name">📺 Zee5</td>
+              <td class="margin-cell">10-12%</td>
+              <td class="amount-cell">₹4,00,000 - ₹4,80,000</td>
+              <td>Strong regional library</td>
+            </tr>
+            <tr>
+              <td class="platform-name">📺 Sony LIV</td>
+              <td class="margin-cell">10-12%</td>
+              <td class="amount-cell">₹4,00,000 - ₹4,80,000</td>
+              <td>Growing regional slate</td>
+            </tr>
+            <tr>
+              <td class="platform-name">📺 Hoichoi (Bengali)</td>
+              <td class="margin-cell">8-12%</td>
+              <td class="amount-cell">₹3,20,000 - ₹4,80,000</td>
+              <td>Regional leader, volume deals</td>
+            </tr>
+            <tr>
+              <td class="platform-name">📺 Aha (Telugu)</td>
+              <td class="margin-cell">8-10%</td>
+              <td class="amount-cell">₹3,20,000 - ₹4,00,000</td>
+              <td>Telugu exclusive content</td>
+            </tr>
+            <tr>
+              <td class="platform-name">📺 Sun NXT</td>
+              <td class="margin-cell">8-10%</td>
+              <td class="amount-cell">₹3,20,000 - ₹4,00,000</td>
+              <td>South Indian regional</td>
+            </tr>
+            <tr>
+              <td class="platform-name">📺 MX Player</td>
+              <td class="margin-cell">5-8%</td>
+              <td class="amount-cell">₹2,00,000 - ₹3,20,000</td>
+              <td>Lower budgets, AVOD model</td>
+            </tr>
+            <tr style="background:#ecfdf5;">
+              <td class="platform-name" style="color:#059669;"><strong>📺 STAGE OTT</strong></td>
+              <td class="margin-cell"><strong>10% Fixed</strong></td>
+              <td class="amount-cell"><strong>₹4,00,000</strong></td>
+              <td style="color:#059669;"><strong>Regional focus, creator-friendly</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-title">💼 Cost-Plus Model Explained</div>
+        <div class="model-box">
+          <div class="model-title">How OTT Platforms Calculate Producer Fees</div>
+          <div class="model-formula">
+            <p class="formula-text">Production Cost + Fixed % Margin = Total Deal Value</p>
+            <p style="font-size:13px;color:#6b7280;margin-top:8px;">Example: ₹36L Production + 10% (₹4L) Margin = ₹40L Total</p>
+          </div>
+          <div class="model-details">
+            <strong>Key Points:</strong><br>
+            • OTT owns ALL rights for agreed duration (typically 5-7 years, some perpetual)<br>
+            • Regional languages get slightly lower margins (8-12%) vs Hindi (10-18%)<br>
+            • First-time creators: 5-8% | Established: 10-15% | Star creators: 15-25%<br>
+            • Backend/revenue share deals are RARE for new creators<br>
+            • IP Rights fully transfer to OTT platform
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">⚠️ 2024-25 Market Trends</div>
+        <ul class="trends-list">
+          <li><span class="trends-icon">📉</span> Producer margins have DECLINED from 15-20% (2020) to 8-12% (2024)</li>
+          <li><span class="trends-icon">📅</span> OTT platforms preferring shorter exclusivity (1-2 years vs perpetual)</li>
+          <li><span class="trends-icon">🗣️</span> Regional content getting more investment but tighter margins</li>
+          <li><span class="trends-icon">🚫</span> Backend/revenue share deals are rare for new creators</li>
+          <li><span class="trends-icon">🎯</span> Focus on proven IP and sequels over experimental content</li>
+        </ul>
+      </div>
+
+      <div class="section">
+        <div class="section-title">✅ Tips for Maximizing Your Margin</div>
+        <ul class="tips-list">
+          <li><span class="trends-icon">📈</span> Build track record with lower-margin projects first</li>
+          <li><span class="trends-icon">🤝</span> Negotiate multi-project deals for better rates</li>
+          <li><span class="trends-icon">🎵</span> Own music rights separately when possible</li>
+          <li><span class="trends-icon">💪</span> Keep production costs lean to protect actual margin</li>
+          <li><span class="trends-icon">🤝</span> Consider co-production for shared risk & better terms</li>
+        </ul>
+      </div>
+
+      <div class="footer">
+        <p>🎬 STAGE OTT Platform • Regional Content Production • Budget & Margin Guide • Research: 2024-25</p>
+        <p style="margin-top:8px;">Generated from STAGE Creator Portal • www.stageasai.com</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+                                      const printWindow = window.open('', '_blank');
+                                      if (printWindow) {
+                                        printWindow.document.write(budgetGuideHtml);
+                                        printWindow.document.close();
+                                        printWindow.print();
+                                      }
+                                    }}
+                                    className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-bold flex items-center gap-2 border border-white/20"
+                                  >
+                                    📥 Download Complete PDF
+                                  </button>
+                                </div>
+                                <p className="text-amber-200 text-sm leading-relaxed">
+                                  Comprehensive guide covering department-wise budget allocation, OTT platform producer margins (Netflix, Amazon, Hoichoi, Zee5, etc.),
+                                  Cost-Plus model explanation, and current market trends for regional content creators.
+                                </p>
+                              </div>
+
+                              {/* Clickable Section Tabs */}
+                              <div className="bg-white border-2 border-amber-300 rounded-xl p-5 mb-6">
+                                <h4 className="font-bold text-amber-800 mb-4 flex items-center gap-2 text-lg">
+                                  📂 Select Section to View Details
+                                </h4>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                                  {[
+                                    { id: 'allocation', label: '₹40L Budget Allocation', icon: '📊', color: 'from-amber-500 to-orange-600' },
+                                    { id: 'platforms', label: 'OTT Platform Margins', icon: '📺', color: 'from-blue-500 to-indigo-600' },
+                                    { id: 'costplus', label: 'Cost-Plus Model', icon: '💼', color: 'from-purple-500 to-violet-600' },
+                                    { id: 'trends', label: '2024-25 Trends', icon: '📈', color: 'from-red-500 to-rose-600' },
+                                    { id: 'tips', label: 'Creator Tips', icon: '💡', color: 'from-green-500 to-emerald-600' },
+                                  ].map(section => (
+                                    <button
+                                      key={section.id}
+                                      onClick={() => {
+                                        const sectionContent: { [key: string]: string } = {
+                                          allocation: `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>₹40 Lakh Film Budget Allocation - STAGE</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', Arial, sans-serif; background: #f8fafc; padding: 40px; }
+    .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; text-align: center; }
+    .header h1 { color: white; font-size: 26px; font-weight: 900; }
+    .header p { color: rgba(255,255,255,0.9); margin-top: 8px; }
+    .summary { background: #fffbeb; padding: 25px; display: flex; justify-content: space-around; border-bottom: 2px solid #fbbf24; }
+    .summary-item { text-align: center; }
+    .summary-label { font-size: 11px; color: #92400e; text-transform: uppercase; letter-spacing: 1px; }
+    .summary-value { font-size: 24px; font-weight: 900; color: #b45309; margin-top: 5px; }
+    .content { padding: 30px; }
+    .dept-card { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #fbbf24; border-radius: 16px; padding: 25px; margin-bottom: 20px; }
+    .dept-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed #d97706; }
+    .dept-title { font-size: 18px; font-weight: 800; color: #92400e; }
+    .dept-percent { background: #d97706; color: white; padding: 8px 20px; border-radius: 25px; font-weight: 800; }
+    .dept-amount { font-size: 28px; font-weight: 900; color: #059669; margin-bottom: 20px; }
+    .breakdown-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .breakdown-item { background: white; border-radius: 10px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .item-name { font-weight: 600; color: #374151; font-size: 13px; }
+    .item-details { text-align: right; }
+    .item-percent { font-size: 11px; color: #6b7280; }
+    .item-amount { font-weight: 700; color: #059669; font-size: 14px; }
+    .footer { background: #0f172a; padding: 20px; text-align: center; color: #94a3b8; font-size: 11px; }
+    @media print { body { background: white; padding: 10px; } .container { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 ₹40 Lakh Regional Film - Budget Allocation</h1>
+      <p>With 10% Creator Margin • STAGE OTT Standard</p>
+    </div>
+
+    <div class="summary">
+      <div class="summary-item">
+        <p class="summary-label">Total Budget</p>
+        <p class="summary-value">₹40,00,000</p>
+      </div>
+      <div class="summary-item">
+        <p class="summary-label">Creator Margin (10%)</p>
+        <p class="summary-value">₹4,00,000</p>
+      </div>
+      <div class="summary-item">
+        <p class="summary-label">Working Budget</p>
+        <p class="summary-value">₹36,00,000</p>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="dept-card">
+        <div class="dept-header">
+          <span class="dept-title">1️⃣ ABOVE-THE-LINE (ATL)</span>
+          <span class="dept-percent">25-30%</span>
+        </div>
+        <p class="dept-amount">₹9,00,000 - ₹10,80,000</p>
+        <div class="breakdown-grid">
+          <div class="breakdown-item">
+            <span class="item-name">Director Fee</span>
+            <div class="item-details">
+              <p class="item-percent">8-10%</p>
+              <p class="item-amount">₹2,88,000 - ₹3,60,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Script/Story Rights</span>
+            <div class="item-details">
+              <p class="item-percent">3-5%</p>
+              <p class="item-amount">₹1,08,000 - ₹1,80,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Lead Cast (2-3 actors)</span>
+            <div class="item-details">
+              <p class="item-percent">10-12%</p>
+              <p class="item-amount">₹3,60,000 - ₹4,32,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Music Director</span>
+            <div class="item-details">
+              <p class="item-percent">3-4%</p>
+              <p class="item-amount">₹1,08,000 - ₹1,44,000</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dept-card">
+        <div class="dept-header">
+          <span class="dept-title">2️⃣ PRODUCTION / BELOW-THE-LINE (BTL)</span>
+          <span class="dept-percent">40-45%</span>
+        </div>
+        <p class="dept-amount">₹14,40,000 - ₹16,20,000</p>
+        <div class="breakdown-grid">
+          <div class="breakdown-item">
+            <span class="item-name">Crew Salaries (DOP, AD, Sound, Art)</span>
+            <div class="item-details">
+              <p class="item-percent">12-15%</p>
+              <p class="item-amount">₹4,32,000 - ₹5,40,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Camera & Equipment Rental</span>
+            <div class="item-details">
+              <p class="item-percent">8-10%</p>
+              <p class="item-amount">₹2,88,000 - ₹3,60,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Location & Set</span>
+            <div class="item-details">
+              <p class="item-percent">6-8%</p>
+              <p class="item-amount">₹2,16,000 - ₹2,88,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Art, Props & Costumes</span>
+            <div class="item-details">
+              <p class="item-percent">5-6%</p>
+              <p class="item-amount">₹1,80,000 - ₹2,16,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Transportation & Catering</span>
+            <div class="item-details">
+              <p class="item-percent">4-5%</p>
+              <p class="item-amount">₹1,44,000 - ₹1,80,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Makeup & Hair</span>
+            <div class="item-details">
+              <p class="item-percent">2-3%</p>
+              <p class="item-amount">₹72,000 - ₹1,08,000</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dept-card">
+        <div class="dept-header">
+          <span class="dept-title">3️⃣ POST-PRODUCTION</span>
+          <span class="dept-percent">18-22%</span>
+        </div>
+        <p class="dept-amount">₹6,48,000 - ₹7,92,000</p>
+        <div class="breakdown-grid">
+          <div class="breakdown-item">
+            <span class="item-name">Editing</span>
+            <div class="item-details">
+              <p class="item-percent">4-5%</p>
+              <p class="item-amount">₹1,44,000 - ₹1,80,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Color Grading / DI</span>
+            <div class="item-details">
+              <p class="item-percent">3-4%</p>
+              <p class="item-amount">₹1,08,000 - ₹1,44,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Sound Design & Mix</span>
+            <div class="item-details">
+              <p class="item-percent">4-5%</p>
+              <p class="item-amount">₹1,44,000 - ₹1,80,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Background Music / Score</span>
+            <div class="item-details">
+              <p class="item-percent">3-4%</p>
+              <p class="item-amount">₹1,08,000 - ₹1,44,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">VFX (if needed)</span>
+            <div class="item-details">
+              <p class="item-percent">2-3%</p>
+              <p class="item-amount">₹72,000 - ₹1,08,000</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dept-card">
+        <div class="dept-header">
+          <span class="dept-title">4️⃣ CONTINGENCY & MISCELLANEOUS</span>
+          <span class="dept-percent">8-10%</span>
+        </div>
+        <p class="dept-amount">₹2,88,000 - ₹3,60,000</p>
+        <div class="breakdown-grid">
+          <div class="breakdown-item">
+            <span class="item-name">Contingency Fund</span>
+            <div class="item-details">
+              <p class="item-percent">5-7%</p>
+              <p class="item-amount">₹1,80,000 - ₹2,52,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Insurance & Permits</span>
+            <div class="item-details">
+              <p class="item-percent">1-2%</p>
+              <p class="item-amount">₹36,000 - ₹72,000</p>
+            </div>
+          </div>
+          <div class="breakdown-item">
+            <span class="item-name">Marketing Assets (Posters/Promos)</span>
+            <div class="item-details">
+              <p class="item-percent">1-2%</p>
+              <p class="item-amount">₹36,000 - ₹72,000</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      🎬 STAGE OTT Platform • Regional Content Production • Budget Allocation Guide
+    </div>
+  </div>
+</body>
+</html>`,
+                                          platforms: `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OTT Platform Producer Margins - STAGE</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', Arial, sans-serif; background: #f8fafc; padding: 40px; }
+    .container { max-width: 950px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; text-align: center; }
+    .header h1 { color: white; font-size: 26px; font-weight: 900; }
+    .header p { color: rgba(255,255,255,0.9); margin-top: 8px; }
+    .content { padding: 30px; }
+    .platform-card { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 20px 25px; margin-bottom: 15px; transition: all 0.3s; }
+    .platform-card:hover { border-color: #3b82f6; transform: translateX(5px); }
+    .platform-card.stage { background: linear-gradient(135deg, #ecfdf5, #d1fae5); border-color: #10b981; }
+    .platform-info { display: flex; align-items: center; gap: 15px; }
+    .platform-icon { width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .platform-card.stage .platform-icon { background: linear-gradient(135deg, #10b981, #059669); }
+    .platform-name { font-size: 18px; font-weight: 800; color: #1f2937; }
+    .platform-type { font-size: 12px; color: #6b7280; margin-top: 2px; }
+    .margin-section { display: flex; align-items: center; gap: 30px; }
+    .margin-percent { text-align: center; }
+    .margin-label { font-size: 10px; color: #6b7280; text-transform: uppercase; }
+    .margin-value { font-size: 24px; font-weight: 900; color: #059669; }
+    .amount-section { text-align: right; min-width: 180px; }
+    .amount-label { font-size: 10px; color: #6b7280; text-transform: uppercase; }
+    .amount-value { font-size: 18px; font-weight: 800; color: #1f2937; }
+    .notes { font-size: 11px; color: #6b7280; margin-top: 5px; font-style: italic; }
+    .summary-box { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #f59e0b; border-radius: 16px; padding: 25px; margin-top: 20px; }
+    .summary-title { font-weight: 800; color: #92400e; margin-bottom: 15px; font-size: 16px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .summary-item { text-align: center; }
+    .summary-label { font-size: 11px; color: #92400e; }
+    .summary-value { font-size: 20px; font-weight: 900; color: #b45309; }
+    .footer { background: #0f172a; padding: 20px; text-align: center; color: #94a3b8; font-size: 11px; }
+    @media print { body { background: white; padding: 10px; } .container { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📺 OTT Platform Producer Margins (2024-25)</h1>
+      <p>Based on ₹40 Lakh Regional Film Budget • Cost-Plus Model</p>
+    </div>
+
+    <div class="content">
+      <div class="platform-card">
+        <div class="platform-info">
+          <div class="platform-icon">📺</div>
+          <div>
+            <p class="platform-name">Netflix India</p>
+            <p class="platform-type">Global Premium OTT</p>
+          </div>
+        </div>
+        <div class="margin-section">
+          <div class="margin-percent">
+            <p class="margin-label">Margin</p>
+            <p class="margin-value">10-15%</p>
+          </div>
+          <div class="amount-section">
+            <p class="amount-label">On ₹40L Budget</p>
+            <p class="amount-value">₹4,00,000 - ₹6,00,000</p>
+            <p class="notes">Premium content, strict QC</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="platform-card">
+        <div class="platform-info">
+          <div class="platform-icon">📺</div>
+          <div>
+            <p class="platform-name">Amazon Prime Video</p>
+            <p class="platform-type">Global Premium OTT</p>
+          </div>
+        </div>
+        <div class="margin-section">
+          <div class="margin-percent">
+            <p class="margin-label">Margin</p>
+            <p class="margin-value">12-18%</p>
+          </div>
+          <div class="amount-section">
+            <p class="amount-label">On ₹40L Budget</p>
+            <p class="amount-value">₹4,80,000 - ₹7,20,000</p>
+            <p class="notes">Best margins, long-term deals</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="platform-card">
+        <div class="platform-info">
+          <div class="platform-icon">📺</div>
+          <div>
+            <p class="platform-name">Disney+ Hotstar</p>
+            <p class="platform-type">Global + Regional OTT</p>
+          </div>
+        </div>
+        <div class="margin-section">
+          <div class="margin-percent">
+            <p class="margin-label">Margin</p>
+            <p class="margin-value">10-15%</p>
+          </div>
+          <div class="amount-section">
+            <p class="amount-label">On ₹40L Budget</p>
+            <p class="amount-value">₹4,00,000 - ₹6,00,000</p>
+            <p class="notes">Regional focus increasing</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="platform-card">
+        <div class="platform-info">
+          <div class="platform-icon">📺</div>
+          <div>
+            <p class="platform-name">Zee5</p>
+            <p class="platform-type">Indian Multi-language OTT</p>
+          </div>
+        </div>
+        <div class="margin-section">
+          <div class="margin-percent">
+            <p class="margin-label">Margin</p>
+            <p class="margin-value">10-12%</p>
+          </div>
+          <div class="amount-section">
+            <p class="amount-label">On ₹40L Budget</p>
+            <p class="amount-value">₹4,00,000 - ₹4,80,000</p>
+            <p class="notes">Strong regional library</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="platform-card">
+        <div class="platform-info">
+          <div class="platform-icon">📺</div>
+          <div>
+            <p class="platform-name">Hoichoi</p>
+            <p class="platform-type">Bengali Regional OTT</p>
+          </div>
+        </div>
+        <div class="margin-section">
+          <div class="margin-percent">
+            <p class="margin-label">Margin</p>
+            <p class="margin-value">8-12%</p>
+          </div>
+          <div class="amount-section">
+            <p class="amount-label">On ₹40L Budget</p>
+            <p class="amount-value">₹3,20,000 - ₹4,80,000</p>
+            <p class="notes">Regional leader, volume deals</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="platform-card">
+        <div class="platform-info">
+          <div class="platform-icon">📺</div>
+          <div>
+            <p class="platform-name">Aha (Telugu)</p>
+            <p class="platform-type">Telugu Regional OTT</p>
+          </div>
+        </div>
+        <div class="margin-section">
+          <div class="margin-percent">
+            <p class="margin-label">Margin</p>
+            <p class="margin-value">8-10%</p>
+          </div>
+          <div class="amount-section">
+            <p class="amount-label">On ₹40L Budget</p>
+            <p class="amount-value">₹3,20,000 - ₹4,00,000</p>
+            <p class="notes">Telugu exclusive content</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="platform-card">
+        <div class="platform-info">
+          <div class="platform-icon">📺</div>
+          <div>
+            <p class="platform-name">MX Player</p>
+            <p class="platform-type">AVOD Platform</p>
+          </div>
+        </div>
+        <div class="margin-section">
+          <div class="margin-percent">
+            <p class="margin-label">Margin</p>
+            <p class="margin-value">5-8%</p>
+          </div>
+          <div class="amount-section">
+            <p class="amount-label">On ₹40L Budget</p>
+            <p class="amount-value">₹2,00,000 - ₹3,20,000</p>
+            <p class="notes">Lower budgets, AVOD model</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="platform-card stage">
+        <div class="platform-info">
+          <div class="platform-icon">🎬</div>
+          <div>
+            <p class="platform-name">STAGE OTT</p>
+            <p class="platform-type">Regional Content Platform</p>
+          </div>
+        </div>
+        <div class="margin-section">
+          <div class="margin-percent">
+            <p class="margin-label">Margin</p>
+            <p class="margin-value" style="color:#059669;">10% Fixed</p>
+          </div>
+          <div class="amount-section">
+            <p class="amount-label">On ₹40L Budget</p>
+            <p class="amount-value" style="color:#059669;">₹4,00,000</p>
+            <p class="notes" style="color:#059669;">Creator-friendly, transparent</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <p class="summary-title">📊 Quick Summary</p>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <p class="summary-label">Highest Margin</p>
+            <p class="summary-value">Amazon 12-18%</p>
+          </div>
+          <div class="summary-item">
+            <p class="summary-label">Industry Average</p>
+            <p class="summary-value">10-12%</p>
+          </div>
+          <div class="summary-item">
+            <p class="summary-label">Regional Average</p>
+            <p class="summary-value">8-12%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      🎬 STAGE OTT Platform • OTT Platform Producer Margins Guide • Research: 2024-25
+    </div>
+  </div>
+</body>
+</html>`,
+                                          costplus: `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cost-Plus Model Explained - STAGE</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', Arial, sans-serif; background: #f8fafc; padding: 40px; }
+    .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); padding: 30px; text-align: center; }
+    .header h1 { color: white; font-size: 26px; font-weight: 900; }
+    .content { padding: 30px; }
+    .formula-box { background: linear-gradient(135deg, #ede9fe, #ddd6fe); border: 3px solid #8b5cf6; border-radius: 16px; padding: 30px; text-align: center; margin-bottom: 25px; }
+    .formula { font-size: 22px; font-weight: 900; color: #5b21b6; margin-bottom: 15px; }
+    .formula-example { background: white; border-radius: 12px; padding: 20px; }
+    .example-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #c4b5fd; }
+    .example-row:last-child { border: none; font-weight: 800; color: #059669; font-size: 18px; }
+    .section { margin-bottom: 25px; }
+    .section-title { background: #8b5cf6; color: white; padding: 12px 20px; border-radius: 10px; font-weight: 800; margin-bottom: 15px; }
+    .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .info-card { background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 12px; padding: 20px; }
+    .info-title { font-weight: 700; color: #7c3aed; margin-bottom: 8px; }
+    .info-text { font-size: 13px; color: #4c1d95; line-height: 1.6; }
+    .tier-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .tier-table th { background: #7c3aed; color: white; padding: 12px; font-size: 12px; }
+    .tier-table td { padding: 12px; border-bottom: 1px solid #e5e7eb; }
+    .tier-table tr:nth-child(even) { background: #faf5ff; }
+    .footer { background: #0f172a; padding: 20px; text-align: center; color: #94a3b8; font-size: 11px; }
+    @media print { body { background: white; padding: 10px; } .container { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>💼 Cost-Plus Model Explained</h1>
+    </div>
+
+    <div class="content">
+      <div class="formula-box">
+        <p class="formula">Production Cost + Fixed % Margin = Total Deal Value</p>
+        <div class="formula-example">
+          <div class="example-row">
+            <span>Production Cost</span>
+            <span>₹36,00,000</span>
+          </div>
+          <div class="example-row">
+            <span>Producer Margin (10%)</span>
+            <span>+ ₹4,00,000</span>
+          </div>
+          <div class="example-row">
+            <span>Total Deal Value</span>
+            <span>= ₹40,00,000</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">📋 How It Works</div>
+        <div class="info-grid">
+          <div class="info-card">
+            <p class="info-title">1. Budget Submission</p>
+            <p class="info-text">Creator submits detailed production budget with all department-wise costs to OTT platform.</p>
+          </div>
+          <div class="info-card">
+            <p class="info-title">2. Budget Approval</p>
+            <p class="info-text">OTT reviews, negotiates, and approves final production cost after due diligence.</p>
+          </div>
+          <div class="info-card">
+            <p class="info-title">3. Margin Addition</p>
+            <p class="info-text">Fixed percentage (8-18%) added on top of approved production cost as producer fee.</p>
+          </div>
+          <div class="info-card">
+            <p class="info-title">4. Rights Transfer</p>
+            <p class="info-text">In exchange, OTT acquires ALL exploitation rights for agreed duration (5-7 years or perpetual).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">📊 Margin Tiers by Creator Experience</div>
+        <table class="tier-table">
+          <thead>
+            <tr>
+              <th>Creator Tier</th>
+              <th>Typical Margin</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>First-time Creator</strong></td>
+              <td>5-8%</td>
+              <td>Building portfolio, lower negotiating power</td>
+            </tr>
+            <tr>
+              <td><strong>Established Creator</strong></td>
+              <td>10-15%</td>
+              <td>Proven track record, multiple projects</td>
+            </tr>
+            <tr>
+              <td><strong>Star Creator/Director</strong></td>
+              <td>15-25%</td>
+              <td>Known name, guaranteed viewership</td>
+            </tr>
+            <tr>
+              <td><strong>Regional vs Hindi</strong></td>
+              <td>8-12% vs 10-18%</td>
+              <td>Hindi content commands higher margins</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="section-title">⚠️ Important Notes</div>
+        <div class="info-grid">
+          <div class="info-card">
+            <p class="info-title">IP Rights</p>
+            <p class="info-text">OTT owns ALL intellectual property rights. Creator cannot monetize content elsewhere.</p>
+          </div>
+          <div class="info-card">
+            <p class="info-title">No Backend</p>
+            <p class="info-text">Cost-Plus model = No revenue share. Your profit is ONLY the fixed margin.</p>
+          </div>
+          <div class="info-card">
+            <p class="info-title">Budget Scrutiny</p>
+            <p class="info-text">OTT will verify all costs. Inflated budgets will be rejected or reduced.</p>
+          </div>
+          <div class="info-card">
+            <p class="info-title">Quality Standards</p>
+            <p class="info-text">Must meet OTT quality benchmarks. Rework at creator's cost.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      🎬 STAGE OTT Platform • Cost-Plus Model Guide
+    </div>
+  </div>
+</body>
+</html>`,
+                                          trends: `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OTT Market Trends 2024-25 - STAGE</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', Arial, sans-serif; background: #f8fafc; padding: 40px; }
+    .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); padding: 30px; text-align: center; }
+    .header h1 { color: white; font-size: 26px; font-weight: 900; }
+    .content { padding: 30px; }
+    .trend-card { background: #fef2f2; border-left: 4px solid #dc2626; border-radius: 0 12px 12px 0; padding: 20px; margin-bottom: 15px; }
+    .trend-icon { font-size: 24px; margin-bottom: 10px; }
+    .trend-title { font-weight: 800; color: #991b1b; font-size: 16px; margin-bottom: 8px; }
+    .trend-desc { font-size: 14px; color: #7f1d1d; line-height: 1.6; }
+    .comparison-box { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #f59e0b; border-radius: 12px; padding: 25px; margin: 25px 0; }
+    .comparison-title { font-weight: 800; color: #92400e; margin-bottom: 15px; }
+    .comparison-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px dashed #f59e0b; }
+    .comparison-row:last-child { border: none; }
+    .year { font-weight: 700; color: #92400e; }
+    .margin-range { font-size: 20px; font-weight: 900; color: #b45309; }
+    .footer { background: #0f172a; padding: 20px; text-align: center; color: #94a3b8; font-size: 11px; }
+    @media print { body { background: white; padding: 10px; } .container { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📈 OTT Market Trends 2024-25</h1>
+    </div>
+
+    <div class="content">
+      <div class="comparison-box">
+        <p class="comparison-title">📉 Producer Margin Decline Over Years</p>
+        <div class="comparison-row">
+          <span class="year">2019-20</span>
+          <span class="margin-range">18-25%</span>
+        </div>
+        <div class="comparison-row">
+          <span class="year">2021-22</span>
+          <span class="margin-range">15-20%</span>
+        </div>
+        <div class="comparison-row">
+          <span class="year">2023-24</span>
+          <span class="margin-range">10-15%</span>
+        </div>
+        <div class="comparison-row">
+          <span class="year">2024-25</span>
+          <span class="margin-range">8-12%</span>
+        </div>
+      </div>
+
+      <div class="trend-card">
+        <div class="trend-icon">📉</div>
+        <p class="trend-title">Declining Producer Margins</p>
+        <p class="trend-desc">Margins have dropped from 15-20% (2020) to 8-12% (2024). OTT platforms are becoming more cost-conscious and have stronger negotiating positions due to content surplus.</p>
+      </div>
+
+      <div class="trend-card">
+        <div class="trend-icon">📅</div>
+        <p class="trend-title">Shorter Exclusivity Periods</p>
+        <p class="trend-desc">Platforms preferring 1-2 year exclusive windows instead of perpetual rights. This benefits creators who can monetize content later, but initial payments are lower.</p>
+      </div>
+
+      <div class="trend-card">
+        <div class="trend-icon">🗣️</div>
+        <p class="trend-title">Regional Content Boom (But Tighter Margins)</p>
+        <p class="trend-desc">More investment in regional languages (Bengali, Telugu, Tamil, Marathi, etc.) but with stricter budget controls. Volume is up, per-project margins are down.</p>
+      </div>
+
+      <div class="trend-card">
+        <div class="trend-icon">🚫</div>
+        <p class="trend-title">Backend Deals Are Rare</p>
+        <p class="trend-desc">Revenue share/backend deals are almost non-existent for new creators. Only star directors with proven hits can negotiate any backend participation.</p>
+      </div>
+
+      <div class="trend-card">
+        <div class="trend-icon">🎯</div>
+        <p class="trend-title">Focus on Proven IP</p>
+        <p class="trend-desc">Platforms favoring sequels, adaptations, and remakes over original experimental content. Reduces risk but limits opportunities for fresh creators.</p>
+      </div>
+
+      <div class="trend-card">
+        <div class="trend-icon">📱</div>
+        <p class="trend-title">Microdrama/Short Format Rise</p>
+        <p class="trend-desc">Short-form content (5-15 min episodes) gaining traction. Lower budgets, faster production, but also lower creator fees per project.</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      🎬 STAGE OTT Platform • Market Trends Research 2024-25
+    </div>
+  </div>
+</body>
+</html>`,
+                                          tips: `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Creator Tips for Better Margins - STAGE</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', Arial, sans-serif; background: #f8fafc; padding: 40px; }
+    .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
+    .header { background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 30px; text-align: center; }
+    .header h1 { color: white; font-size: 26px; font-weight: 900; }
+    .content { padding: 30px; }
+    .tip-card { background: #ecfdf5; border-left: 4px solid #10b981; border-radius: 0 12px 12px 0; padding: 20px; margin-bottom: 15px; display: flex; gap: 15px; align-items: flex-start; }
+    .tip-number { width: 40px; height: 40px; background: linear-gradient(135deg, #10b981, #059669); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; flex-shrink: 0; }
+    .tip-content { flex: 1; }
+    .tip-title { font-weight: 800; color: #065f46; font-size: 16px; margin-bottom: 8px; }
+    .tip-desc { font-size: 14px; color: #047857; line-height: 1.6; }
+    .pro-tip { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 2px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 25px 0; }
+    .pro-tip-title { font-weight: 800; color: #92400e; margin-bottom: 10px; }
+    .pro-tip-text { font-size: 14px; color: #78350f; line-height: 1.6; }
+    .footer { background: #0f172a; padding: 20px; text-align: center; color: #94a3b8; font-size: 11px; }
+    @media print { body { background: white; padding: 10px; } .container { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>💡 Tips for Maximizing Your Margin</h1>
+    </div>
+
+    <div class="content">
+      <div class="tip-card">
+        <div class="tip-number">1</div>
+        <div class="tip-content">
+          <p class="tip-title">Build Track Record First</p>
+          <p class="tip-desc">Accept lower margins (8-10%) on initial projects to build your portfolio. Once you have 2-3 successful releases, you can negotiate better rates (12-15%).</p>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-number">2</div>
+        <div class="tip-content">
+          <p class="tip-title">Negotiate Multi-Project Deals</p>
+          <p class="tip-desc">Commit to 2-3 projects with the same platform for better per-project margins. Platforms value reliable creators and offer better terms for volume commitments.</p>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-number">3</div>
+        <div class="tip-content">
+          <p class="tip-title">Own Music Rights Separately</p>
+          <p class="tip-desc">If possible, negotiate to retain music rights separately. Music streaming revenue can provide ongoing income beyond the one-time production fee.</p>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-number">4</div>
+        <div class="tip-content">
+          <p class="tip-title">Keep Production Costs Lean</p>
+          <p class="tip-desc">Your actual take-home is Margin minus any cost overruns. Efficient production = higher actual profit. Budget for contingencies but don't overspend.</p>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-number">5</div>
+        <div class="tip-content">
+          <p class="tip-title">Consider Co-Production</p>
+          <p class="tip-desc">Partner with established production houses for larger projects. Shared risk, combined resources, and better negotiating power with platforms.</p>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-number">6</div>
+        <div class="tip-content">
+          <p class="tip-title">Pitch to Multiple Platforms</p>
+          <p class="tip-desc">Don't approach just one platform. Having competing offers gives you leverage. Even if you prefer one platform, alternatives strengthen your negotiation.</p>
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-number">7</div>
+        <div class="tip-content">
+          <p class="tip-title">Focus on Niche Regional Content</p>
+          <p class="tip-desc">Hyper-local stories that resonate with specific audiences are in demand. Less competition means better negotiating position for unique regional content.</p>
+        </div>
+      </div>
+
+      <div class="pro-tip">
+        <p class="pro-tip-title">💎 PRO TIP</p>
+        <p class="pro-tip-text">Always get everything in writing. Verbal commitments mean nothing. Ensure your agreement clearly states: total fee, payment schedule, rights duration, territory, and any backend participation. Consult an entertainment lawyer before signing.</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      🎬 STAGE OTT Platform • Creator Success Tips
+    </div>
+  </div>
+</body>
+</html>`
+                                        };
+                                        const html = sectionContent[section.id];
+                                        const printWindow = window.open('', '_blank');
+                                        if (printWindow) {
+                                          printWindow.document.write(html);
+                                          printWindow.document.close();
+                                          printWindow.print();
+                                        }
+                                      }}
+                                      className={`flex flex-col items-center gap-2 p-4 bg-gradient-to-br ${section.color} rounded-xl text-white hover:scale-105 transition-all shadow-lg`}
+                                    >
+                                      <span className="text-3xl">{section.icon}</span>
+                                      <span className="text-xs font-bold text-center leading-tight">{section.label}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-4 text-center">
+                                  Click any section to view detailed breakdown & download PDF
+                                </p>
+                              </div>
+
+                              {/* Quick Summary Cards */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                <div className="bg-gradient-to-br from-amber-50 to-orange-100 border-2 border-amber-400 rounded-xl p-4">
+                                  <p className="text-xs text-amber-700 font-semibold">TOTAL BUDGET</p>
+                                  <p className="text-2xl font-black text-amber-900">₹40,00,000</p>
+                                  <p className="text-xs text-amber-600 mt-1">Regional Film Standard</p>
+                                </div>
+                                <div className="bg-gradient-to-br from-green-50 to-emerald-100 border-2 border-green-400 rounded-xl p-4">
+                                  <p className="text-xs text-green-700 font-semibold">CREATOR MARGIN</p>
+                                  <p className="text-2xl font-black text-green-800">₹4,00,000</p>
+                                  <p className="text-xs text-green-600 mt-1">10% of Total Budget</p>
+                                </div>
+                                <div className="bg-gradient-to-br from-blue-50 to-indigo-100 border-2 border-blue-400 rounded-xl p-4">
+                                  <p className="text-xs text-blue-700 font-semibold">WORKING BUDGET</p>
+                                  <p className="text-2xl font-black text-blue-800">₹36,00,000</p>
+                                  <p className="text-xs text-blue-600 mt-1">For Production Use</p>
+                                </div>
+                                <div className="bg-gradient-to-br from-purple-50 to-violet-100 border-2 border-purple-400 rounded-xl p-4">
+                                  <p className="text-xs text-purple-700 font-semibold">INDUSTRY AVG MARGIN</p>
+                                  <p className="text-2xl font-black text-purple-800">8-12%</p>
+                                  <p className="text-xs text-purple-600 mt-1">Regional OTT 2024-25</p>
+                                </div>
+                              </div>
+
+                              {/* Department-wise Allocation Visual */}
+                              <div className="bg-white border-2 border-gray-200 rounded-xl p-6 mb-6">
+                                <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                  📊 Department-wise Budget Allocation (₹36L Working Budget)
+                                </h4>
+                                <div className="space-y-4">
+                                  {[
+                                    { name: 'Above-the-Line (Director, Cast, Script, Music)', percent: '25-30%', amount: '₹9-10.8L', color: 'bg-amber-500', width: '27.5%' },
+                                    { name: 'Production/BTL (Crew, Equipment, Location, Art)', percent: '40-45%', amount: '₹14.4-16.2L', color: 'bg-blue-500', width: '42.5%' },
+                                    { name: 'Post-Production (Edit, DI, Sound, BGM, VFX)', percent: '18-22%', amount: '₹6.48-7.92L', color: 'bg-purple-500', width: '20%' },
+                                    { name: 'Contingency & Misc (Buffer, Insurance, Permits)', percent: '8-10%', amount: '₹2.88-3.6L', color: 'bg-gray-500', width: '9%' },
+                                  ].map(dept => (
+                                    <div key={dept.name} className="group">
+                                      <div className="flex justify-between items-center mb-2">
+                                        <span className="text-sm font-medium text-gray-700">{dept.name}</span>
+                                        <div className="flex items-center gap-3">
+                                          <span className="text-sm font-bold text-gray-800">{dept.percent}</span>
+                                          <span className="text-sm font-bold text-green-600">{dept.amount}</span>
+                                        </div>
+                                      </div>
+                                      <div className="h-8 bg-gray-100 rounded-full overflow-hidden">
+                                        <div
+                                          className={`h-full ${dept.color} rounded-full transition-all duration-500 group-hover:brightness-110 flex items-center justify-end pr-3`}
+                                          style={{ width: dept.width }}
+                                        >
+                                          <span className="text-white text-xs font-bold">{dept.percent}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* OTT Platform Margins Table */}
+                              <div className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden mb-6">
+                                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 p-4">
+                                  <h4 className="font-bold text-white flex items-center gap-2">
+                                    📺 OTT Platform Producer Margins (2024-25)
+                                  </h4>
+                                </div>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full">
+                                    <thead className="bg-gray-50">
+                                      <tr>
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Platform</th>
+                                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-600 uppercase">Margin %</th>
+                                        <th className="px-4 py-3 text-right text-xs font-bold text-gray-600 uppercase">On ₹40L Budget</th>
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase">Notes</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                      {[
+                                        { name: 'Netflix India', margin: '10-15%', amount: '₹4-6L', notes: 'Premium content, strict QC', icon: '🔴' },
+                                        { name: 'Amazon Prime Video', margin: '12-18%', amount: '₹4.8-7.2L', notes: 'Best margins, long-term deals', icon: '🔵' },
+                                        { name: 'Disney+ Hotstar', margin: '10-15%', amount: '₹4-6L', notes: 'Regional focus increasing', icon: '🟢' },
+                                        { name: 'Zee5', margin: '10-12%', amount: '₹4-4.8L', notes: 'Strong regional library', icon: '🟣' },
+                                        { name: 'Sony LIV', margin: '10-12%', amount: '₹4-4.8L', notes: 'Growing regional slate', icon: '⚫' },
+                                        { name: 'Hoichoi (Bengali)', margin: '8-12%', amount: '₹3.2-4.8L', notes: 'Regional leader, volume deals', icon: '🟡' },
+                                        { name: 'Aha (Telugu)', margin: '8-10%', amount: '₹3.2-4L', notes: 'Telugu exclusive content', icon: '🟠' },
+                                        { name: 'MX Player', margin: '5-8%', amount: '₹2-3.2L', notes: 'Lower budgets, AVOD model', icon: '⚪' },
+                                      ].map((platform, idx) => (
+                                        <tr key={platform.name} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                          <td className="px-4 py-3 font-medium text-gray-800">
+                                            <span className="mr-2">{platform.icon}</span>{platform.name}
+                                          </td>
+                                          <td className="px-4 py-3 text-center font-bold text-green-600">{platform.margin}</td>
+                                          <td className="px-4 py-3 text-right font-semibold text-gray-800">{platform.amount}</td>
+                                          <td className="px-4 py-3 text-sm text-gray-500">{platform.notes}</td>
+                                        </tr>
+                                      ))}
+                                      <tr className="bg-green-50 border-t-2 border-green-500">
+                                        <td className="px-4 py-3 font-bold text-green-800">
+                                          <span className="mr-2">🎬</span>STAGE OTT
+                                        </td>
+                                        <td className="px-4 py-3 text-center font-black text-green-700">10% Fixed</td>
+                                        <td className="px-4 py-3 text-right font-bold text-green-700">₹4,00,000</td>
+                                        <td className="px-4 py-3 text-sm font-medium text-green-600">Creator-friendly, transparent</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+
+                              <h4 className="font-bold text-gray-800 mb-4 mt-6">Budget Template Guidelines</h4>
+                            </div>
+                          )}
+
+                          {/* DPR Section */}
+                          {(selectedCat as any).hasDPRTemplate && (
+                            <div className="mb-8">
+                              {/* OTT Standard Banner */}
+                              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-5 mb-6">
+                                <div className="flex items-start gap-4">
+                                  <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <span className="text-2xl">✅</span>
+                                  </div>
+                                  <div className="flex-1">
+                                    <h3 className="font-bold text-blue-900 text-lg mb-2">Standard OTT DPR Format</h3>
+                                    <p className="text-blue-700 text-sm mb-3">Industry-standard format used by Netflix, Amazon Prime, Disney+ Hotstar</p>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                                      <div className="bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-medium">✓ Production Details</div>
+                                      <div className="bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-medium">✓ Timing Log</div>
+                                      <div className="bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-medium">✓ Scenes & Pages</div>
+                                      <div className="bg-green-100 text-green-700 px-3 py-1.5 rounded-full font-medium">✓ Camera Setups</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* DPR Form */}
+                              <div className="bg-gray-50 rounded-xl p-6 mb-6">
+                                <div className="flex items-center justify-between mb-6">
+                                  <h3 className="text-xl font-bold text-gray-800">Create Daily Production Report</h3>
+                                  <button
+                                    onClick={() => setCurrentDPR({
+                                      title: '', date: '', dayNumber: '', producer: '', director: '',
+                                      firstShootDate: '', scheduledFinish: '', revisedFinish: '', location: '',
+                                      crewCall: '', rollTime: '', firstShot: '', mealBreakStart: '', mealBreakEnd: '',
+                                      firstShotAfter: '', packup: '', lastPersonOut: '', lastPersonDept: '',
+                                      scriptScenes: '', scriptPages: '', prevScenes: '', prevPages: '',
+                                      todayScenes: '', todayPages: '', totalScenes: '', totalPages: '',
+                                      remainingScenes: '', remainingPages: '',
+                                      prevSetups: '', todaySetups: '', totalSetups: '', remainingSetups: '',
+                                      comments: '', nextDate: '', nextLocation: '', nextCallTime: '', nextScenes: '',
+                                      preparedBy: '', approvedBy: ''
+                                    })}
+                                    className="px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium rounded-lg text-sm"
+                                  >
+                                    ➕ New DPR
+                                  </button>
+                                </div>
+
+                                {/* Production Details */}
+                                <div className="mb-5">
+                                  <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2"><span className="w-6 h-6 bg-amber-500 text-white rounded text-xs flex items-center justify-center">1</span> Production Details</h4>
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Title</label><input type="text" value={currentDPR.title} onChange={(e) => setCurrentDPR({...currentDPR, title: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Project Title" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Date</label><input type="date" value={currentDPR.date} onChange={(e) => setCurrentDPR({...currentDPR, date: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Day #</label><input type="number" value={currentDPR.dayNumber} onChange={(e) => setCurrentDPR({...currentDPR, dayNumber: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="1" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Location</label><input type="text" value={currentDPR.location} onChange={(e) => setCurrentDPR({...currentDPR, location: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Shoot Location" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Producer</label><input type="text" value={currentDPR.producer} onChange={(e) => setCurrentDPR({...currentDPR, producer: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Producer Name" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Director</label><input type="text" value={currentDPR.director} onChange={(e) => setCurrentDPR({...currentDPR, director: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Director Name" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">First Shoot Date</label><input type="date" value={currentDPR.firstShootDate} onChange={(e) => setCurrentDPR({...currentDPR, firstShootDate: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Scheduled Finish</label><input type="date" value={currentDPR.scheduledFinish} onChange={(e) => setCurrentDPR({...currentDPR, scheduledFinish: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" /></div>
+                                  </div>
+                                </div>
+
+                                {/* Timing */}
+                                <div className="mb-5">
+                                  <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2"><span className="w-6 h-6 bg-amber-500 text-white rounded text-xs flex items-center justify-center">2</span> Timing Log</h4>
+                                  <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Crew Call</label><input type="time" value={currentDPR.crewCall} onChange={(e) => setCurrentDPR({...currentDPR, crewCall: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">First Shot</label><input type="time" value={currentDPR.firstShot} onChange={(e) => setCurrentDPR({...currentDPR, firstShot: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Meal Start</label><input type="time" value={currentDPR.mealBreakStart} onChange={(e) => setCurrentDPR({...currentDPR, mealBreakStart: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Meal End</label><input type="time" value={currentDPR.mealBreakEnd} onChange={(e) => setCurrentDPR({...currentDPR, mealBreakEnd: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Packup</label><input type="time" value={currentDPR.packup} onChange={(e) => setCurrentDPR({...currentDPR, packup: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Last Out</label><input type="time" value={currentDPR.lastPersonOut} onChange={(e) => setCurrentDPR({...currentDPR, lastPersonOut: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" /></div>
+                                  </div>
+                                </div>
+
+                                {/* Scenes & Setups */}
+                                <div className="mb-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2"><span className="w-6 h-6 bg-amber-500 text-white rounded text-xs flex items-center justify-center">3</span> Scenes & Pages</h4>
+                                    <div className="bg-white rounded-lg p-3 border">
+                                      <div className="grid grid-cols-3 gap-2 text-xs font-medium text-gray-500 mb-2"><div></div><div className="text-center">Scenes</div><div className="text-center">Pages</div></div>
+                                      {[{l:'Script Total',s:'scriptScenes',p:'scriptPages'},{l:'Shot Today',s:'todayScenes',p:'todayPages'},{l:'Total',s:'totalScenes',p:'totalPages'},{l:'Remaining',s:'remainingScenes',p:'remainingPages'}].map(r=>(
+                                        <div key={r.l} className="grid grid-cols-3 gap-2 mb-1"><div className="text-xs text-gray-600 py-1">{r.l}</div><input type="number" value={(currentDPR as any)[r.s]} onChange={(e)=>setCurrentDPR({...currentDPR,[r.s]:e.target.value})} className="px-2 py-1 border border-gray-200 rounded text-sm text-center" /><input type="number" value={(currentDPR as any)[r.p]} onChange={(e)=>setCurrentDPR({...currentDPR,[r.p]:e.target.value})} className="px-2 py-1 border border-gray-200 rounded text-sm text-center" /></div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2"><span className="w-6 h-6 bg-amber-500 text-white rounded text-xs flex items-center justify-center">4</span> Camera Setups</h4>
+                                    <div className="bg-white rounded-lg p-3 border">
+                                      {[{l:'Previous',k:'prevSetups'},{l:'Today',k:'todaySetups'},{l:'Total',k:'totalSetups'},{l:'Remaining',k:'remainingSetups'}].map(r=>(
+                                        <div key={r.l} className="grid grid-cols-2 gap-2 mb-1"><div className="text-xs text-gray-600 py-1">{r.l}</div><input type="number" value={(currentDPR as any)[r.k]} onChange={(e)=>setCurrentDPR({...currentDPR,[r.k]:e.target.value})} className="px-2 py-1 border border-gray-200 rounded text-sm text-center" /></div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Comments */}
+                                <div className="mb-5">
+                                  <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2"><span className="w-6 h-6 bg-amber-500 text-white rounded text-xs flex items-center justify-center">5</span> Comments / Delays / Solutions</h4>
+                                  <textarea value={currentDPR.comments} onChange={(e) => setCurrentDPR({...currentDPR, comments: e.target.value})} rows={3} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Enter comments, delays, solutions..." />
+                                </div>
+
+                                {/* Next Shoot */}
+                                <div className="mb-5">
+                                  <h4 className="font-bold text-gray-700 mb-3 flex items-center gap-2"><span className="w-6 h-6 bg-amber-500 text-white rounded text-xs flex items-center justify-center">6</span> Next Shoot Details</h4>
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Date</label><input type="date" value={currentDPR.nextDate} onChange={(e) => setCurrentDPR({...currentDPR, nextDate: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Location</label><input type="text" value={currentDPR.nextLocation} onChange={(e) => setCurrentDPR({...currentDPR, nextLocation: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Next Location" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Call Time</label><input type="time" value={currentDPR.nextCallTime} onChange={(e) => setCurrentDPR({...currentDPR, nextCallTime: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" /></div>
+                                    <div><label className="block text-xs font-medium text-gray-500 mb-1">Scenes</label><input type="text" value={currentDPR.nextScenes} onChange={(e) => setCurrentDPR({...currentDPR, nextScenes: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Scene numbers" /></div>
+                                  </div>
+                                </div>
+
+                                {/* Prepared By */}
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div><label className="block text-xs font-medium text-gray-500 mb-1">Prepared By</label><input type="text" value={currentDPR.preparedBy} onChange={(e) => setCurrentDPR({...currentDPR, preparedBy: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Name & Designation" /></div>
+                                  <div><label className="block text-xs font-medium text-gray-500 mb-1">Approved By</label><input type="text" value={currentDPR.approvedBy} onChange={(e) => setCurrentDPR({...currentDPR, approvedBy: e.target.value})} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Production Manager" /></div>
+                                </div>
+                              </div>
+
+                              {/* Share & Export - Google Sheets Style */}
+                              <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-5 mb-6">
+                                <h3 className="text-white font-bold mb-4 flex items-center gap-2">📤 Share & Export (Google Sheets Style)</h3>
+                                <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                                  <button
+                                    onClick={() => {
+                                      const dpr = currentDPR;
+                                      const newDPR = { id: 'dpr-' + Date.now(), title: dpr.title || 'Untitled DPR', data: {...dpr}, createdAt: new Date().toISOString(), sharedWith: [] };
+                                      const updated = [...savedDPRs, newDPR];
+                                      setSavedDPRs(updated);
+                                      localStorage.setItem('saved_dprs', JSON.stringify(updated));
+                                      alert('DPR saved!');
+                                    }}
+                                    className="flex flex-col items-center gap-2 p-3 bg-green-600 hover:bg-green-700 rounded-xl transition-all"
+                                  >
+                                    <span className="text-xl">💾</span>
+                                    <span className="text-white text-xs font-medium">Save</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const dpr = currentDPR;
+                                      // Create Google Sheets compatible CSV
+                                      const csvContent = `DAILY PRODUCTION REPORT\n\nTitle,${dpr.title}\nDate,${dpr.date}\nDay #,${dpr.dayNumber}\nProducer,${dpr.producer}\nDirector,${dpr.director}\nLocation,${dpr.location}\n\nTIMING LOG\nCrew Call,${dpr.crewCall}\nFirst Shot,${dpr.firstShot}\nMeal Break,${dpr.mealBreakStart} - ${dpr.mealBreakEnd}\nPackup,${dpr.packup}\nLast Out,${dpr.lastPersonOut}\n\nSCENES & PAGES\n,Scenes,Pages\nScript Total,${dpr.scriptScenes},${dpr.scriptPages}\nShot Today,${dpr.todayScenes},${dpr.todayPages}\nTotal,${dpr.totalScenes},${dpr.totalPages}\nRemaining,${dpr.remainingScenes},${dpr.remainingPages}\n\nCAMERA SETUPS\nPrevious,${dpr.prevSetups}\nToday,${dpr.todaySetups}\nTotal,${dpr.totalSetups}\nRemaining,${dpr.remainingSetups}\n\nCOMMENTS\n"${dpr.comments}"\n\nNEXT SHOOT\nDate,${dpr.nextDate}\nLocation,${dpr.nextLocation}\nCall Time,${dpr.nextCallTime}\n\nPrepared By,${dpr.preparedBy}\nApproved By,${dpr.approvedBy}`;
+                                      const blob = new Blob([csvContent], { type: 'text/csv' });
+                                      const url = URL.createObjectURL(blob);
+                                      const a = document.createElement('a');
+                                      a.href = url;
+                                      a.download = `DPR_${dpr.title || 'Report'}_Day${dpr.dayNumber || '1'}.csv`;
+                                      a.click();
+                                      alert('CSV downloaded! Open in Google Sheets:\n1. Go to sheets.google.com\n2. File > Import > Upload\n3. Select this CSV file');
+                                    }}
+                                    className="flex flex-col items-center gap-2 p-3 bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all"
+                                  >
+                                    <span className="text-xl">📊</span>
+                                    <span className="text-white text-xs font-medium">Google Sheets</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const dpr = currentDPR;
+                                      const html = `<!DOCTYPE html><html><head><title>DPR - ${dpr.title}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial;padding:30px;max-width:800px;margin:0 auto}h1{text-align:center;font-size:20px;margin-bottom:15px;border-bottom:3px solid #d97706;padding-bottom:8px}.section{margin-bottom:15px;background:#f9fafb;padding:12px;border-radius:6px;border-left:4px solid #d97706}.section-title{font-weight:bold;font-size:12px;color:#d97706;margin-bottom:8px}.row{display:flex;gap:10px;margin-bottom:5px;flex-wrap:wrap}.field{flex:1;min-width:120px}.label{font-size:10px;color:#666}.value{font-size:11px;font-weight:500;border-bottom:1px solid #ddd;padding:3px 0}table{width:100%;border-collapse:collapse;margin:8px 0}th,td{border:1px solid #ddd;padding:5px;text-align:center;font-size:10px}th{background:#f3f4f6}.comments{background:#fff;border:1px solid #ddd;padding:10px;border-radius:6px;min-height:40px;font-size:11px}.signature{display:flex;justify-content:space-between;margin-top:20px}.sig-box{width:45%;text-align:center}.sig-line{border-bottom:1px solid #333;height:30px;margin-bottom:3px}@media print{body{padding:15px}}</style></head><body><h1>📊 DAILY PRODUCTION REPORT</h1><div class="section"><div class="section-title">PRODUCTION DETAILS</div><div class="row"><div class="field"><div class="label">Title</div><div class="value">${dpr.title||'-'}</div></div><div class="field"><div class="label">Date</div><div class="value">${dpr.date||'-'}</div></div><div class="field"><div class="label">Day #</div><div class="value">${dpr.dayNumber||'-'}</div></div><div class="field"><div class="label">Location</div><div class="value">${dpr.location||'-'}</div></div></div><div class="row"><div class="field"><div class="label">Producer</div><div class="value">${dpr.producer||'-'}</div></div><div class="field"><div class="label">Director</div><div class="value">${dpr.director||'-'}</div></div></div></div><div class="section"><div class="section-title">TIMING LOG</div><div class="row"><div class="field"><div class="label">Crew Call</div><div class="value">${dpr.crewCall||'-'}</div></div><div class="field"><div class="label">First Shot</div><div class="value">${dpr.firstShot||'-'}</div></div><div class="field"><div class="label">Meal</div><div class="value">${dpr.mealBreakStart||'-'} - ${dpr.mealBreakEnd||'-'}</div></div><div class="field"><div class="label">Packup</div><div class="value">${dpr.packup||'-'}</div></div></div></div><div class="section"><div class="section-title">SCENES & CAMERA SETUPS</div><table><tr><th></th><th>Scenes</th><th>Pages</th><th>Setups</th></tr><tr><td>Script Total</td><td>${dpr.scriptScenes||'-'}</td><td>${dpr.scriptPages||'-'}</td><td>-</td></tr><tr><td>Shot Today</td><td>${dpr.todayScenes||'-'}</td><td>${dpr.todayPages||'-'}</td><td>${dpr.todaySetups||'-'}</td></tr><tr><td>Total</td><td>${dpr.totalScenes||'-'}</td><td>${dpr.totalPages||'-'}</td><td>${dpr.totalSetups||'-'}</td></tr><tr><td>Remaining</td><td>${dpr.remainingScenes||'-'}</td><td>${dpr.remainingPages||'-'}</td><td>${dpr.remainingSetups||'-'}</td></tr></table></div><div class="section"><div class="section-title">COMMENTS/DELAYS</div><div class="comments">${dpr.comments||'No comments'}</div></div><div class="section"><div class="section-title">NEXT SHOOT</div><div class="row"><div class="field"><div class="label">Date</div><div class="value">${dpr.nextDate||'-'}</div></div><div class="field"><div class="label">Location</div><div class="value">${dpr.nextLocation||'-'}</div></div><div class="field"><div class="label">Call</div><div class="value">${dpr.nextCallTime||'-'}</div></div></div></div><div class="signature"><div class="sig-box"><div class="sig-line"></div><div style="font-size:10px">Prepared: ${dpr.preparedBy||'_____'}</div></div><div class="sig-box"><div class="sig-line"></div><div style="font-size:10px">Approved: ${dpr.approvedBy||'_____'}</div></div></div><p style="text-align:center;margin-top:20px;color:#999;font-size:9px">🎬 STAGE Production Portal</p></body></html>`;
+                                      const blob = new Blob([html], { type: 'text/html' });
+                                      const url = URL.createObjectURL(blob);
+                                      const a = document.createElement('a');
+                                      a.href = url;
+                                      a.download = `DPR_${dpr.title || 'Report'}_Day${dpr.dayNumber || '1'}.html`;
+                                      a.click();
+                                      alert('PDF-ready file downloaded! Open and print as PDF.');
+                                    }}
+                                    className="flex flex-col items-center gap-2 p-3 bg-blue-600 hover:bg-blue-700 rounded-xl transition-all"
+                                  >
+                                    <span className="text-xl">📥</span>
+                                    <span className="text-white text-xs font-medium">Download PDF</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const dpr = currentDPR;
+                                      const html = `<!DOCTYPE html><html><head><title>DPR - ${dpr.title}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial;padding:30px;max-width:800px;margin:0 auto}h1{text-align:center;font-size:20px;margin-bottom:15px;border-bottom:3px solid #d97706;padding-bottom:8px}.section{margin-bottom:15px;background:#f9fafb;padding:12px;border-radius:6px;border-left:4px solid #d97706}.section-title{font-weight:bold;font-size:12px;color:#d97706;margin-bottom:8px}.row{display:flex;gap:10px;margin-bottom:5px;flex-wrap:wrap}.field{flex:1;min-width:120px}.label{font-size:10px;color:#666}.value{font-size:11px;font-weight:500;border-bottom:1px solid #ddd;padding:3px 0}table{width:100%;border-collapse:collapse;margin:8px 0}th,td{border:1px solid #ddd;padding:5px;text-align:center;font-size:10px}th{background:#f3f4f6}.comments{background:#fff;border:1px solid #ddd;padding:10px;border-radius:6px;min-height:40px;font-size:11px}.signature{display:flex;justify-content:space-between;margin-top:20px}.sig-box{width:45%;text-align:center}.sig-line{border-bottom:1px solid #333;height:30px;margin-bottom:3px}</style></head><body><h1>📊 DAILY PRODUCTION REPORT</h1><div class="section"><div class="section-title">PRODUCTION DETAILS</div><div class="row"><div class="field"><div class="label">Title</div><div class="value">${dpr.title||'-'}</div></div><div class="field"><div class="label">Date</div><div class="value">${dpr.date||'-'}</div></div><div class="field"><div class="label">Day #</div><div class="value">${dpr.dayNumber||'-'}</div></div></div><div class="row"><div class="field"><div class="label">Producer</div><div class="value">${dpr.producer||'-'}</div></div><div class="field"><div class="label">Director</div><div class="value">${dpr.director||'-'}</div></div><div class="field"><div class="label">Location</div><div class="value">${dpr.location||'-'}</div></div></div></div><div class="section"><div class="section-title">TIMING</div><div class="row"><div class="field"><div class="label">Crew Call</div><div class="value">${dpr.crewCall||'-'}</div></div><div class="field"><div class="label">First Shot</div><div class="value">${dpr.firstShot||'-'}</div></div><div class="field"><div class="label">Meal</div><div class="value">${dpr.mealBreakStart||'-'} - ${dpr.mealBreakEnd||'-'}</div></div><div class="field"><div class="label">Packup</div><div class="value">${dpr.packup||'-'}</div></div></div></div><div class="section"><div class="section-title">PROGRESS</div><table><tr><th></th><th>Scenes</th><th>Pages</th><th>Setups</th></tr><tr><td>Today</td><td>${dpr.todayScenes||'-'}</td><td>${dpr.todayPages||'-'}</td><td>${dpr.todaySetups||'-'}</td></tr><tr><td>Total</td><td>${dpr.totalScenes||'-'}</td><td>${dpr.totalPages||'-'}</td><td>${dpr.totalSetups||'-'}</td></tr></table></div><div class="section"><div class="section-title">COMMENTS</div><div class="comments">${dpr.comments||'-'}</div></div><div class="section"><div class="section-title">NEXT: ${dpr.nextDate||'-'} at ${dpr.nextLocation||'-'}</div></div><div class="signature"><div class="sig-box"><div class="sig-line"></div><div style="font-size:10px">${dpr.preparedBy||'Prepared By'}</div></div><div class="sig-box"><div class="sig-line"></div><div style="font-size:10px">${dpr.approvedBy||'Approved By'}</div></div></div></body></html>`;
+                                      const w = window.open('', '_blank');
+                                      if (w) { w.document.write(html); w.document.close(); w.print(); }
+                                    }}
+                                    className="flex flex-col items-center gap-2 p-3 bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all"
+                                  >
+                                    <span className="text-xl">🖨️</span>
+                                    <span className="text-white text-xs font-medium">Print</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const dpr = currentDPR;
+                                      const message = `*📊 DAILY PRODUCTION REPORT*\n\n*Title:* ${dpr.title}\n*Date:* ${dpr.date} | *Day:* ${dpr.dayNumber}\n*Location:* ${dpr.location}\n*Producer:* ${dpr.producer}\n*Director:* ${dpr.director}\n\n*⏰ TIMING*\nCrew Call: ${dpr.crewCall}\nFirst Shot: ${dpr.firstShot}\nMeal: ${dpr.mealBreakStart}-${dpr.mealBreakEnd}\nPackup: ${dpr.packup}\n\n*🎬 PROGRESS*\nScenes Today: ${dpr.todayScenes} (${dpr.todayPages} pages)\nSetups Today: ${dpr.todaySetups}\nTotal: ${dpr.totalScenes} scenes\n\n*📝 COMMENTS*\n${dpr.comments||'None'}\n\n*➡️ NEXT SHOOT*\n${dpr.nextDate} | ${dpr.nextLocation}\n\n_Prepared: ${dpr.preparedBy}_\n\n🎬 _STAGE Production Portal_`;
+                                      window.open("https://wa.me/?text=" + encodeURIComponent(message), '_blank');
+                                    }}
+                                    className="flex flex-col items-center gap-2 p-3 bg-green-500 hover:bg-green-600 rounded-xl transition-all"
+                                  >
+                                    <span className="text-xl">💬</span>
+                                    <span className="text-white text-xs font-medium">WhatsApp</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      const dpr = currentDPR;
+                                      const subject = encodeURIComponent(`DPR - ${dpr.title} - Day ${dpr.dayNumber} - ${dpr.date}`);
+                                      const body = encodeURIComponent(`DAILY PRODUCTION REPORT\n\nTitle: ${dpr.title}\nDate: ${dpr.date} | Day: ${dpr.dayNumber}\nLocation: ${dpr.location}\nProducer: ${dpr.producer}\nDirector: ${dpr.director}\n\nTIMING:\nCrew Call: ${dpr.crewCall}\nFirst Shot: ${dpr.firstShot}\nMeal: ${dpr.mealBreakStart} - ${dpr.mealBreakEnd}\nPackup: ${dpr.packup}\n\nPROGRESS:\nScenes Today: ${dpr.todayScenes} (${dpr.todayPages} pages)\nSetups Today: ${dpr.todaySetups}\n\nComments: ${dpr.comments}\n\nNext Shoot: ${dpr.nextDate} at ${dpr.nextLocation}\n\nPrepared by: ${dpr.preparedBy}\n\n---\nSTAGE Production Portal`);
+                                      window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+                                    }}
+                                    className="flex flex-col items-center gap-2 p-3 bg-purple-600 hover:bg-purple-700 rounded-xl transition-all"
+                                  >
+                                    <span className="text-xl">📧</span>
+                                    <span className="text-white text-xs font-medium">Email</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Saved DPRs */}
+                              {savedDPRs.length > 0 && (
+                                <div>
+                                  <h3 className="text-lg font-bold text-gray-800 mb-4">📁 Saved DPRs ({savedDPRs.length})</h3>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {savedDPRs.map(dpr => (
+                                      <div key={dpr.id} className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                          <h4 className="font-bold text-gray-900 text-sm">{dpr.title}</h4>
+                                          <span className="text-xs text-gray-500">{new Date(dpr.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                        <p className="text-xs text-gray-600 mb-3">Day {dpr.data.dayNumber} • {dpr.data.date} • {dpr.data.location}</p>
+                                        <div className="flex gap-2">
+                                          <button onClick={() => setCurrentDPR(dpr.data)} className="flex-1 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-medium rounded-lg">📂 Load</button>
+                                          <button onClick={() => {
+                                            const msg = `*📊 DPR - ${dpr.title}*\nDay ${dpr.data.dayNumber} | ${dpr.data.date}\n${dpr.data.location}\n\nScenes: ${dpr.data.todayScenes} | Setups: ${dpr.data.todaySetups}\n\n_STAGE Portal_`;
+                                            window.open("https://wa.me/?text=" + encodeURIComponent(msg), '_blank');
+                                          }} className="py-1.5 px-2 bg-green-100 hover:bg-green-200 text-green-700 text-xs font-medium rounded-lg">💬</button>
+                                          <button onClick={() => {
+                                            const updated = savedDPRs.filter(d => d.id !== dpr.id);
+                                            setSavedDPRs(updated);
+                                            localStorage.setItem('saved_dprs', JSON.stringify(updated));
+                                          }} className="py-1.5 px-2 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-medium rounded-lg">🗑️</button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Custom Documents Section for Others */}
+                          {(selectedCat as any).hasCustomDocs && (
+                            <div className="mb-8">
+                              {/* Add Document Button */}
+                              <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-lg font-bold text-gray-800">My Saved Documents</h3>
+                                <button
+                                  onClick={() => setShowAddDocModal(true)}
+                                  className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                                >
+                                  <span className="text-xl">➕</span>
+                                  <span>Add New Document</span>
+                                </button>
+                              </div>
+
+                              {/* Add Document Modal */}
+                              {showAddDocModal && (
+                                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                                  <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+                                    <div className="bg-gradient-to-r from-slate-800 to-slate-900 p-5 flex items-center justify-between">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                                          <span className="text-2xl">📝</span>
+                                        </div>
+                                        <div>
+                                          <h3 className="text-xl font-bold text-white">Add New Document</h3>
+                                          <p className="text-slate-300 text-sm">Create and save your document</p>
+                                        </div>
+                                      </div>
+                                      <button
+                                        onClick={() => {
+                                          setShowAddDocModal(false);
+                                          setNewDocName('');
+                                          setNewDocContent('');
+                                        }}
+                                        className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center text-white text-xl"
+                                      >
+                                        ×
+                                      </button>
+                                    </div>
+                                    <div className="p-6">
+                                      <div className="mb-4">
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">Document Name *</label>
+                                        <input
+                                          type="text"
+                                          value={newDocName}
+                                          onChange={(e) => setNewDocName(e.target.value)}
+                                          placeholder="Enter document name..."
+                                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                                        />
+                                      </div>
+                                      <div className="mb-6">
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">Document Content *</label>
+                                        <textarea
+                                          value={newDocContent}
+                                          onChange={(e) => setNewDocContent(e.target.value)}
+                                          placeholder="Write your document content here..."
+                                          rows={12}
+                                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all resize-none"
+                                        />
+                                      </div>
+                                      <div className="flex gap-3">
+                                        <button
+                                          onClick={() => {
+                                            if (newDocName.trim() && newDocContent.trim()) {
+                                              const newDoc = {
+                                                id: 'custom-' + Date.now(),
+                                                name: newDocName.trim(),
+                                                content: newDocContent.trim(),
+                                                createdAt: new Date().toISOString()
+                                              };
+                                              const updatedDocs = [...customDocuments, newDoc];
+                                              setCustomDocuments(updatedDocs);
+                                              localStorage.setItem('custom_documents', JSON.stringify(updatedDocs));
+                                              setShowAddDocModal(false);
+                                              setNewDocName('');
+                                              setNewDocContent('');
+                                              alert('Document saved successfully!');
+                                            } else {
+                                              alert('Please fill in both name and content');
+                                            }
+                                          }}
+                                          className="flex-1 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                                        >
+                                          <span>💾</span> Save Document
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            setShowAddDocModal(false);
+                                            setNewDocName('');
+                                            setNewDocContent('');
+                                          }}
+                                          className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition-all"
+                                        >
+                                          Cancel
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Saved Documents List */}
+                              {customDocuments.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  {customDocuments.map((doc) => (
+                                    <div key={doc.id} className="bg-gradient-to-br from-slate-50 to-gray-100 border-2 border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all">
+                                      <div className="flex items-start justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                                            <span className="text-2xl">📄</span>
+                                          </div>
+                                          <div>
+                                            <h4 className="font-bold text-gray-900">{doc.name}</h4>
+                                            <p className="text-xs text-gray-500">{new Date(doc.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <p className="text-sm text-gray-600 mb-4 line-clamp-3">{doc.content.substring(0, 150)}...</p>
+                                      <div className="flex gap-2">
+                                        <button
+                                          onClick={() => {
+                                            const html = "<!DOCTYPE html><html><head><title>" + doc.name + "</title><style>body{font-family:Arial;padding:40px;max-width:800px;margin:0 auto;white-space:pre-wrap}h1{color:#1e40af;border-bottom:2px solid #1e40af;padding-bottom:10px}@media print{body{padding:20px}}</style></head><body><h1>" + doc.name + "</h1><p>" + doc.content + "</p><p style='margin-top:40px;color:#9ca3af;font-size:12px'>STAGE Production Portal</p></body></html>";
+                                            const printWindow = window.open('', '_blank');
+                                            if (printWindow) {
+                                              printWindow.document.write(html);
+                                              printWindow.document.close();
+                                            }
+                                          }}
+                                          className="flex-1 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium rounded-lg text-sm flex items-center justify-center gap-1"
+                                        >
+                                          👁️ View
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            navigator.clipboard.writeText(doc.name + "\n\n" + doc.content);
+                                            alert('Document copied! Share via WhatsApp or Email.');
+                                          }}
+                                          className="flex-1 py-2 bg-green-100 hover:bg-green-200 text-green-700 font-medium rounded-lg text-sm flex items-center justify-center gap-1"
+                                        >
+                                          📤 Share
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            const message = "*" + doc.name + "*\n\n" + doc.content + "\n\n_Sent via STAGE Portal_";
+                                            const whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(message);
+                                            window.open(whatsappUrl, '_blank');
+                                          }}
+                                          className="py-2 px-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 font-medium rounded-lg text-sm"
+                                        >
+                                          💬
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            if (confirm('Delete this document?')) {
+                                              const updatedDocs = customDocuments.filter(d => d.id !== doc.id);
+                                              setCustomDocuments(updatedDocs);
+                                              localStorage.setItem('custom_documents', JSON.stringify(updatedDocs));
+                                            }
+                                          }}
+                                          className="py-2 px-3 bg-red-100 hover:bg-red-200 text-red-700 font-medium rounded-lg text-sm"
+                                        >
+                                          🗑️
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center">
+                                  <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <span className="text-4xl">📁</span>
+                                  </div>
+                                  <h3 className="text-xl font-bold text-gray-700 mb-2">No Documents Yet</h3>
+                                  <p className="text-gray-500 mb-6">Add your first document to get started. Save production notes, checklists, reports and more.</p>
+                                  <button
+                                    onClick={() => setShowAddDocModal(true)}
+                                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all inline-flex items-center gap-2"
+                                  >
+                                    <span className="text-xl">➕</span>
+                                    <span>Add Your First Document</span>
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           )}
 
@@ -7823,6 +10449,188 @@ _Fill details and share back_`;
             </div>
           )}
         </div>
+
+        {/* Add Project Modal */}
+        {showAddProjectModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="bg-gradient-to-r from-red-600 to-pink-600 text-white p-5 rounded-t-2xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-2xl font-black">➕ Add New Project</h3>
+                    <p className="text-sm opacity-80">Create a new project manually</p>
+                  </div>
+                  <button onClick={() => setShowAddProjectModal(false)} className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center text-xl">×</button>
+                </div>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Project Name *</label>
+                    <input type="text" value={newProject.projectName} onChange={(e) => setNewProject({...newProject, projectName: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none" placeholder="Project Title" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Creator Name *</label>
+                    <input type="text" value={newProject.creator} onChange={(e) => setNewProject({...newProject, creator: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none" placeholder="Creator/Director Name" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Culture/Language</label>
+                    <select value={newProject.culture} onChange={(e) => setNewProject({...newProject, culture: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none">
+                      <option value="">Select</option>
+                      <option value="Haryanvi">Haryanvi</option>
+                      <option value="Bhojpuri">Bhojpuri</option>
+                      <option value="Rajasthani">Rajasthani</option>
+                      <option value="Punjabi">Punjabi</option>
+                      <option value="Marathi">Marathi</option>
+                      <option value="Tamil">Tamil</option>
+                      <option value="Telugu">Telugu</option>
+                      <option value="Hindi">Hindi</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Format</label>
+                    <select value={newProject.format} onChange={(e) => setNewProject({...newProject, format: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none">
+                      <option value="">Select</option>
+                      <option value="Feature Film">Feature Film</option>
+                      <option value="Long Series">Long Series</option>
+                      <option value="Mini Series">Mini Series</option>
+                      <option value="Short Film">Short Film</option>
+                      <option value="Web Series">Web Series</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Genre</label>
+                    <select value={newProject.genre} onChange={(e) => setNewProject({...newProject, genre: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none">
+                      <option value="">Select</option>
+                      <option value="Drama">Drama</option>
+                      <option value="Comedy">Comedy</option>
+                      <option value="Action">Action</option>
+                      <option value="Romance">Romance</option>
+                      <option value="Thriller">Thriller</option>
+                      <option value="Horror">Horror</option>
+                      <option value="Mythology">Mythology</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Total Budget (₹)</label>
+                    <input type="number" value={newProject.totalBudget} onChange={(e) => setNewProject({...newProject, totalBudget: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none" placeholder="e.g. 5000000" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Episodes</label>
+                    <input type="number" value={newProject.episodes} onChange={(e) => setNewProject({...newProject, episodes: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none" placeholder="Number of episodes" />
+                  </div>
+                </div>
+
+                {/* POC Section */}
+                <div className="border-t pt-4 mt-4">
+                  <h4 className="font-bold text-gray-800 mb-3">Production POC (Point of Contact)</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div><input type="text" value={newProject.productionPOC} onChange={(e) => setNewProject({...newProject, productionPOC: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Name" /></div>
+                    <div><input type="tel" value={newProject.productionPOCPhone} onChange={(e) => setNewProject({...newProject, productionPOCPhone: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Phone" /></div>
+                    <div><input type="email" value={newProject.productionPOCEmail} onChange={(e) => setNewProject({...newProject, productionPOCEmail: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Email" /></div>
+                  </div>
+                </div>
+                <div className="border-t pt-4">
+                  <h4 className="font-bold text-gray-800 mb-3">Content POC (Point of Contact)</h4>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div><input type="text" value={newProject.contentPOC} onChange={(e) => setNewProject({...newProject, contentPOC: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Name" /></div>
+                    <div><input type="tel" value={newProject.contentPOCPhone} onChange={(e) => setNewProject({...newProject, contentPOCPhone: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Phone" /></div>
+                    <div><input type="email" value={newProject.contentPOCEmail} onChange={(e) => setNewProject({...newProject, contentPOCEmail: e.target.value})} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Email" /></div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Logline</label>
+                  <input type="text" value={newProject.logline} onChange={(e) => setNewProject({...newProject, logline: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none" placeholder="One-line description of the project" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Synopsis</label>
+                  <textarea value={newProject.synopsis} onChange={(e) => setNewProject({...newProject, synopsis: e.target.value})} rows={3} className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none resize-none" placeholder="Brief synopsis of the project..." />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Language</label>
+                    <input type="text" value={newProject.language} onChange={(e) => setNewProject({...newProject, language: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none" placeholder="e.g. Haryanvi with Hindi subtitles" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Production Company</label>
+                    <input type="text" value={newProject.productionCompany} onChange={(e) => setNewProject({...newProject, productionCompany: e.target.value})} className="w-full px-4 py-2 border-2 border-gray-300 rounded-xl focus:border-red-500 focus:outline-none" placeholder="Production house name" />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      if (!newProject.projectName.trim() || !newProject.creator.trim()) {
+                        alert('Please fill in Project Name and Creator Name');
+                        return;
+                      }
+                      const project = {
+                        id: Date.now(),
+                        projectName: newProject.projectName,
+                        creator: newProject.creator,
+                        culture: newProject.culture || 'Not specified',
+                        format: newProject.format || 'Not specified',
+                        genre: newProject.genre || 'Not specified',
+                        totalBudget: parseInt(newProject.totalBudget) || 0,
+                        episodes: parseInt(newProject.episodes) || 1,
+                        status: 'pending',
+                        submittedDate: new Date().toISOString().split('T')[0],
+                        completeness: 50,
+                        warnings: 0,
+                        productionPOC: newProject.productionPOC,
+                        productionPOCPhone: newProject.productionPOCPhone,
+                        productionPOCEmail: newProject.productionPOCEmail,
+                        contentPOC: newProject.contentPOC,
+                        contentPOCPhone: newProject.contentPOCPhone,
+                        contentPOCEmail: newProject.contentPOCEmail,
+                        logline: newProject.logline,
+                        synopsis: newProject.synopsis,
+                        language: newProject.language,
+                        productionCompany: newProject.productionCompany,
+                        activityLog: [
+                          { date: new Date().toISOString().split('T')[0], time: new Date().toLocaleTimeString(), action: 'Project Created', description: 'Project added manually by admin', user: 'Admin', type: 'create' }
+                        ],
+                        isLocalSubmission: true
+                      };
+                      const updatedSubmissions = [...submissions, project];
+                      setSubmissions(updatedSubmissions);
+                      // Save to localStorage
+                      const existingLocal = JSON.parse(localStorage.getItem('creator_submissions') || '[]');
+                      existingLocal.push({
+                        id: project.id,
+                        creatorName: project.creator,
+                        projectTitle: project.projectName,
+                        ...newProject
+                      });
+                      localStorage.setItem('creator_submissions', JSON.stringify(existingLocal));
+                      setShowAddProjectModal(false);
+                      setNewProject({
+                        projectName: '', creator: '', culture: '', format: '', genre: '',
+                        totalBudget: '', episodes: '', status: 'pending',
+                        productionPOC: '', productionPOCPhone: '', productionPOCEmail: '',
+                        contentPOC: '', contentPOCPhone: '', contentPOCEmail: '',
+                        logline: '', synopsis: '', language: '', productionCompany: ''
+                      });
+                      alert('Project added successfully!');
+                    }}
+                    className="flex-1 py-3 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-bold rounded-xl transition-all"
+                  >
+                    ➕ Add Project
+                  </button>
+                  <button onClick={() => setShowAddProjectModal(false)} className="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition-all">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Add Talent Modal */}
         {showAddTalentModal && (
@@ -11799,12 +14607,18 @@ _Fill details and share back_`;
                               return dateB - dateA;
                             });
 
-                            return activities.length > 0 ? activities.map((activity, index) => (
+                            const totalActivities = activities.length;
+                            return activities.length > 0 ? activities.map((activity: any, index) => (
                               <div key={index} className="flex gap-4 relative">
                                 {/* Timeline Line */}
                                 {index < activities.length - 1 && (
                                   <div className="absolute left-[19px] top-10 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 to-transparent"></div>
                                 )}
+
+                                {/* Serial Number Badge */}
+                                <div className="absolute -left-8 top-2 w-6 h-6 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-full flex items-center justify-center text-white text-xs font-black shadow-lg">
+                                  {totalActivities - index}
+                                </div>
 
                                 {/* Icon */}
                                 <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg ${
@@ -11832,10 +14646,26 @@ _Fill details and share back_`;
 
                                 {/* Content */}
                                 <div className="flex-1 pb-6">
-                                  <div className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/10 transition-all">
+                                  <div className={`border rounded-xl p-4 hover:shadow-lg transition-all ${
+                                    activity.source === 'creator'
+                                      ? 'bg-gradient-to-r from-green-500/10 to-emerald-500/5 border-green-500/30'
+                                      : 'bg-gradient-to-r from-blue-500/10 to-cyan-500/5 border-blue-500/30'
+                                  }`}>
                                     <div className="flex items-center justify-between mb-2">
-                                      <span className="text-white font-bold">{activity.action}</span>
-                                      <span className="text-gray-500 text-xs font-semibold">{activity.date} • {activity.time}</span>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-white font-bold">{activity.action}</span>
+                                        <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                                          activity.source === 'creator'
+                                            ? 'bg-green-500/30 text-green-400 border border-green-500/50'
+                                            : 'bg-blue-500/30 text-blue-400 border border-blue-500/50'
+                                        }`}>
+                                          {activity.source === 'creator' ? '👤 Creator' : '🏢 Admin'}
+                                        </span>
+                                      </div>
+                                      <div className="text-right">
+                                        <div className="text-white text-sm font-bold">{activity.date}</div>
+                                        <div className="text-gray-500 text-xs">{activity.time}</div>
+                                      </div>
                                     </div>
                                     <p className="text-gray-400 text-sm mb-2">{activity.description}</p>
 
@@ -11845,32 +14675,30 @@ _Fill details and share back_`;
                                         <div className="text-xs font-bold text-orange-400 mb-2 flex items-center gap-2">
                                           <span>📝</span> Fields Changed:
                                         </div>
-                                        {activity.changes.map((change: any, idx: number) => (
+                                        {activity.changes.slice(0, 5).map((change: any, idx: number) => (
                                           <div key={idx} className="text-xs py-1 border-b border-white/5 last:border-0">
                                             <span className="text-gray-400 font-semibold">{change.label}:</span>
                                             <div className="flex items-center gap-2 mt-1 ml-4">
                                               <span className="text-red-400 bg-red-500/10 px-2 py-0.5 rounded line-through">
-                                                {String(change.oldValue).substring(0, 40)}{String(change.oldValue).length > 40 ? '...' : ''}
+                                                {String(change.oldValue || '-').substring(0, 30)}{String(change.oldValue || '').length > 30 ? '...' : ''}
                                               </span>
                                               <span className="text-gray-500">→</span>
                                               <span className="text-green-400 bg-green-500/10 px-2 py-0.5 rounded">
-                                                {String(change.newValue).substring(0, 40)}{String(change.newValue).length > 40 ? '...' : ''}
+                                                {String(change.newValue || '-').substring(0, 30)}{String(change.newValue || '').length > 30 ? '...' : ''}
                                               </span>
                                             </div>
                                           </div>
                                         ))}
+                                        {activity.changes.length > 5 && (
+                                          <div className="text-xs text-gray-500 italic">+ {activity.changes.length - 5} more changes</div>
+                                        )}
                                       </div>
                                     )}
 
-                                    <div className="flex items-center gap-2 mt-2">
+                                    <div className="flex items-center gap-2 mt-3">
                                       <span className="text-xs px-2 py-1 bg-white/10 rounded-full text-gray-300 font-semibold">
-                                        By: {activity.user}
+                                        👤 {activity.user}
                                       </span>
-                                      {activity.type === 'edit' && (
-                                        <span className="text-xs px-2 py-1 bg-orange-500/20 rounded-full text-orange-400 font-semibold">
-                                          Creator Edit
-                                        </span>
-                                      )}
                                     </div>
                                   </div>
                                 </div>

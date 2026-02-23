@@ -619,10 +619,118 @@ export default function MyProjectsPage() {
                       </div>
                     )}
 
-                    {/* Status Update History & Activity Log */}
+                    {/* Full Activity Log from localStorage */}
                     <div>
                       <h3 className="text-lg font-black text-white mb-3 flex items-center gap-2">
-                        📋 Activity Log & Admin Comments
+                        📋 Complete Activity Timeline
+                        <span className="text-xs bg-blue-500/30 text-blue-400 px-2 py-1 rounded-full">Live</span>
+                      </h3>
+                      <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                        {(() => {
+                          // Get activity logs from localStorage
+                          const allLogs = typeof window !== 'undefined'
+                            ? JSON.parse(localStorage.getItem('stage_activity_logs') || '{}')
+                            : {};
+                          const projectLogs = allLogs[selectedProject.id] || [];
+
+                          // Also include change history
+                          const changeHistoryLogs = (selectedProject.changeHistory || []).map((change: any) => ({
+                            id: change.id,
+                            action: change.changedBy === 'creator' ? 'Project Updated' : 'Admin Update',
+                            description: change.summary,
+                            type: 'edit',
+                            user: change.changedBy === 'creator' ? (selectedProject.creatorName || 'Creator') : 'Admin',
+                            source: change.changedBy,
+                            date: new Date(change.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+                            time: new Date(change.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
+                            timestamp: change.timestamp,
+                            changes: change.changes,
+                          }));
+
+                          // Combine and sort
+                          const allActivities = [...projectLogs, ...changeHistoryLogs]
+                            .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+                          // Add submission as last entry if no activities
+                          if (allActivities.length === 0 && selectedProject.submitted_at) {
+                            allActivities.push({
+                              id: 'submission',
+                              action: 'Project Submitted',
+                              description: `Project "${selectedProject.projectName}" submitted for review`,
+                              type: 'submit',
+                              user: selectedProject.creatorName || 'Creator',
+                              source: 'creator',
+                              date: new Date(selectedProject.submitted_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+                              time: new Date(selectedProject.submitted_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
+                              timestamp: selectedProject.submitted_at,
+                            });
+                          }
+
+                          const totalLogs = allActivities.length;
+
+                          return allActivities.length > 0 ? allActivities.map((activity: any, idx: number) => (
+                            <div key={activity.id || idx} className={`rounded-xl p-4 border-2 transition-all ${
+                              activity.source === 'creator'
+                                ? 'bg-gradient-to-r from-green-500/10 to-emerald-500/5 border-green-500/30'
+                                : 'bg-gradient-to-r from-blue-500/10 to-cyan-500/5 border-blue-500/30'
+                            }`}>
+                              <div className="flex items-start gap-3">
+                                {/* Serial Number */}
+                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white text-xs font-black shadow-lg flex-shrink-0">
+                                  {totalLogs - idx}
+                                </div>
+                                {/* Icon */}
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                  activity.type === 'submit' ? 'bg-green-500/20 text-green-400' :
+                                  activity.type === 'status' ? 'bg-blue-500/20 text-blue-400' :
+                                  activity.type === 'edit' ? 'bg-orange-500/20 text-orange-400' :
+                                  activity.type === 'feedback' ? 'bg-amber-500/20 text-amber-400' :
+                                  activity.type === 'assign' ? 'bg-purple-500/20 text-purple-400' :
+                                  'bg-gray-500/20 text-gray-400'
+                                }`}>
+                                  <span className="text-lg">
+                                    {activity.type === 'submit' ? '📤' :
+                                     activity.type === 'status' ? '🔄' :
+                                     activity.type === 'edit' ? '✏️' :
+                                     activity.type === 'feedback' ? '💬' :
+                                     activity.type === 'assign' ? '👤' : '📋'}
+                                  </span>
+                                </div>
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                                    <span className="text-white font-bold">{activity.action}</span>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                                      activity.source === 'creator'
+                                        ? 'bg-green-500/30 text-green-400 border border-green-500/50'
+                                        : 'bg-blue-500/30 text-blue-400 border border-blue-500/50'
+                                    }`}>
+                                      {activity.source === 'creator' ? '👤 You' : '🏢 STAGE'}
+                                    </span>
+                                  </div>
+                                  <p className="text-gray-400 text-sm">{activity.description}</p>
+                                  <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                                    <span>{activity.date}</span>
+                                    <span>•</span>
+                                    <span>{activity.time}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )) : (
+                            <div className="text-center py-8 text-gray-500">
+                              <span className="text-4xl mb-2 block">📋</span>
+                              <p>No activity yet</p>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Status Update History & Admin Comments */}
+                    <div>
+                      <h3 className="text-lg font-black text-white mb-3 flex items-center gap-2">
+                        💬 Admin Comments & Notifications
                       </h3>
                       <div className="space-y-3">
                         {/* Current Status */}
