@@ -42,7 +42,13 @@ const STATUS_OPTIONS = [
   { value: 'cancelled', label: 'Cancelled', color: 'bg-red-500' },
 ];
 
-const FORMAT_OPTIONS = ['Feature Film', 'Web Series', 'Short Film', 'Documentary', 'Music Video', 'Ad Film'];
+const FORMAT_OPTIONS = [
+  { value: 'film', label: 'Feature Film' },
+  { value: 'web_series', label: 'Web Series' },
+  { value: 'microdrama', label: 'Microdrama' },
+  { value: 'documentary', label: 'Documentary' },
+  { value: 'other', label: 'Other' },
+];
 const LANGUAGE_OPTIONS = ['Hindi', 'English', 'Tamil', 'Telugu', 'Malayalam', 'Kannada', 'Bengali', 'Marathi', 'Punjabi', 'Gujarati'];
 const PRIORITY_OPTIONS = ['low', 'medium', 'high', 'urgent'];
 
@@ -61,7 +67,7 @@ export default function ProjectsManager() {
     title: '',
     description: '',
     language: 'Hindi',
-    format: 'Feature Film',
+    format: 'film',
     genre: '',
     total_budget: '',
     status: 'draft',
@@ -214,7 +220,7 @@ export default function ProjectsManager() {
       title: '',
       description: '',
       language: 'Hindi',
-      format: 'Feature Film',
+      format: 'film',
       genre: '',
       total_budget: '',
       status: 'draft',
@@ -230,6 +236,11 @@ export default function ProjectsManager() {
 
   const getStatusInfo = (status: string) => {
     return STATUS_OPTIONS.find(s => s.value === status) || STATUS_OPTIONS[0];
+  };
+
+  const getFormatLabel = (format: string) => {
+    const found = FORMAT_OPTIONS.find(f => f.value === format);
+    return found ? found.label : format;
   };
 
   const formatBudget = (amount: number) => {
@@ -385,7 +396,7 @@ export default function ProjectsManager() {
 
                   {/* Format / Language */}
                   <div className="col-span-2 text-sm">
-                    <div className="text-gray-800">{project.format}</div>
+                    <div className="text-gray-800">{getFormatLabel(project.format)}</div>
                     <div className="text-gray-500">{project.language}</div>
                   </div>
 
@@ -496,7 +507,7 @@ export default function ProjectsManager() {
                     onChange={(e) => setFormData({ ...formData, format: e.target.value })}
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-purple-500 outline-none"
                   >
-                    {FORMAT_OPTIONS.map(f => <option key={f} value={f}>{f}</option>)}
+                    {FORMAT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                   </select>
                 </div>
 
