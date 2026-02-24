@@ -7,6 +7,7 @@ import Image from 'next/image';
 import * as XLSX from 'xlsx';
 import InviteCreatorModal from '@/components/InviteCreatorModal';
 import InviteTracker from '@/components/InviteTracker';
+import ProjectsManager from '@/components/ProjectsManager';
 import { supabase } from '@/lib/supabase';
 
 // Projects data - stored in localStorage for persistence
@@ -4510,11 +4511,16 @@ END:VCARD`;
             </div>
           )}
 
-          {/* PROJECTS TAB - Internal Tracking (Separate from Submissions) */}
-          {activeTab === 'projects' && (() => {
-            const filteredProjects = projectsCultureFilter === 'all'
-              ? internalProjects
-              : internalProjects.filter(s => s.culture === projectsCultureFilter);
+          {/* PROJECTS TAB - Database Connected */}
+          {activeTab === 'projects' && (
+            <div className="space-y-6">
+              <ProjectsManager />
+            </div>
+          )}
+
+          {/* OLD PROJECTS TAB CODE - REMOVED, NOW USING ProjectsManager */}
+          {false && (() => {
+            const filteredProjects: any[] = [];
 
             // Budget format
             const formatBudget = (amount: number) => {
@@ -4525,17 +4531,11 @@ END:VCARD`;
             };
 
             const updateProject = (projectId: string | number, field: string, value: string | number) => {
-              const updatedProjects = internalProjects.map(s =>
-                s.id === projectId ? { ...s, [field]: value } : s
-              );
-              setInternalProjects(updatedProjects);
-              localStorage.setItem('stage_internal_projects', JSON.stringify(updatedProjects));
+              console.log('Old code - disabled');
             };
 
             const deleteInternalProject = (projectId: string | number) => {
-              const updatedProjects = internalProjects.filter(s => s.id !== projectId);
-              setInternalProjects(updatedProjects);
-              localStorage.setItem('stage_internal_projects', JSON.stringify(updatedProjects));
+              console.log('Old code - disabled');
             };
 
             // Drag and Drop handlers
