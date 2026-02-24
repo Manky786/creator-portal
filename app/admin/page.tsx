@@ -2619,29 +2619,6 @@ END:VCARD`;
                   <h1 className="text-2xl font-bold text-gray-800">Production Team</h1>
                   <p className="text-gray-500 text-sm">Content Management & Review Platform</p>
                 </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowInviteCreatorModal(true)}
-                    className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2"
-                  >
-                    <span>📨</span>
-                    <span>Invite Creator</span>
-                  </button>
-                  <button
-                    onClick={() => setShowInviteTracker(!showInviteTracker)}
-                    className={`px-5 py-2.5 ${showInviteTracker ? 'bg-purple-700' : 'bg-purple-600 hover:bg-purple-700'} text-white font-semibold rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2`}
-                  >
-                    <span>📋</span>
-                    <span>Sent Invites</span>
-                  </button>
-                  <button
-                    onClick={() => setShowAddProjectModal(true)}
-                    className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm hover:shadow transition-all flex items-center gap-2"
-                  >
-                    <span>+</span>
-                    <span>Add Project</span>
-                  </button>
-                </div>
               </div>
             </div>
 
