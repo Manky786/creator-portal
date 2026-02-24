@@ -10,7 +10,6 @@ interface Invite {
   invite_code: string;
   status: string;
   created_at: string;
-  expires_at: string;
   subject?: string;
   message?: string;
   project_id?: string;
@@ -26,7 +25,7 @@ export default function InviteTracker() {
   const [projects, setProjects] = useState<{[key: string]: Project}>({});
   const [loading, setLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'accepted' | 'expired'>('all');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'accepted'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInvite, setSelectedInvite] = useState<Invite | null>(null);
 
@@ -123,11 +122,8 @@ STAGE Team`;
   };
 
   const getStatusInfo = (invite: Invite) => {
-    const isExpired = new Date(invite.expires_at) < new Date();
     if (invite.status === 'accepted') {
       return { label: 'Accepted', color: 'bg-green-500', textColor: 'text-green-700', bgColor: 'bg-green-50' };
-    } else if (isExpired) {
-      return { label: 'Expired', color: 'bg-red-500', textColor: 'text-red-700', bgColor: 'bg-red-50' };
     } else {
       return { label: 'Pending', color: 'bg-amber-500', textColor: 'text-amber-700', bgColor: 'bg-amber-50' };
     }
@@ -169,7 +165,6 @@ STAGE Team`;
   const filteredInvites = invites.filter(invite => {
     const statusInfo = getStatusInfo(invite);
     const matchesStatus = filterStatus === 'all' ||
-      (filterStatus === 'expired' && statusInfo.label === 'Expired') ||
       (filterStatus === 'accepted' && statusInfo.label === 'Accepted') ||
       (filterStatus === 'pending' && statusInfo.label === 'Pending');
 
@@ -186,7 +181,6 @@ STAGE Team`;
     total: invites.length,
     pending: invites.filter(i => getStatusInfo(i).label === 'Pending').length,
     accepted: invites.filter(i => getStatusInfo(i).label === 'Accepted').length,
-    expired: invites.filter(i => getStatusInfo(i).label === 'Expired').length,
   };
 
   if (loading) {
@@ -200,7 +194,7 @@ STAGE Team`;
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <button
           onClick={() => setFilterStatus('all')}
           className={`p-4 rounded-xl border-2 transition-all ${filterStatus === 'all' ? 'border-purple-500 bg-purple-50' : 'border-gray-200 bg-white hover:border-purple-300'}`}
@@ -221,13 +215,6 @@ STAGE Team`;
         >
           <div className="text-3xl font-black text-green-600">{stats.accepted}</div>
           <div className="text-sm font-medium text-gray-500">Accepted</div>
-        </button>
-        <button
-          onClick={() => setFilterStatus('expired')}
-          className={`p-4 rounded-xl border-2 transition-all ${filterStatus === 'expired' ? 'border-red-500 bg-red-50' : 'border-gray-200 bg-white hover:border-red-300'}`}
-        >
-          <div className="text-3xl font-black text-red-600">{stats.expired}</div>
-          <div className="text-sm font-medium text-gray-500">Expired</div>
         </button>
       </div>
 
@@ -446,15 +433,9 @@ STAGE Team`;
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs font-bold text-gray-500 uppercase mb-1">Sent On</div>
-                  <div className="text-gray-700">{formatDateTime(selectedInvite.created_at)}</div>
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-gray-500 uppercase mb-1">Expires On</div>
-                  <div className="text-gray-700">{formatDateTime(selectedInvite.expires_at)}</div>
-                </div>
+              <div>
+                <div className="text-xs font-bold text-gray-500 uppercase mb-1">Sent On</div>
+                <div className="text-gray-700">{formatDateTime(selectedInvite.created_at)}</div>
               </div>
 
               {selectedInvite.subject && (

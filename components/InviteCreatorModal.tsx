@@ -60,7 +60,6 @@ export default function InviteCreatorModal({
             status: 'pending',
             subject: subject,
             message: message,
-            expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
           });
 
         if (dbError) {
@@ -111,7 +110,6 @@ Click the link below to create your account and get started:
 ${inviteLink}
 
 Your Invite Code: ${inviteCode}
-(Valid for 7 days)
 
 Welcome to STAGE!
 
