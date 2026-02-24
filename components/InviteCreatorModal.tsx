@@ -48,21 +48,23 @@ export default function InviteCreatorModal({
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
       const link = `${baseUrl}/login?invite=${code}`;
 
-      // Save to database
-      try {
-        await supabase
-          .from('creator_invites')
-          .insert({
-            full_name: fullName,
-            email: email,
-            invite_code: code,
-            project_id: projectId || null,
-            status: 'pending',
-            subject: subject,
-            message: message,
-          });
-      } catch (e) {
-        console.log('Database operation skipped');
+      // Save to database via API
+      const response = await fetch('/api/invites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: fullName,
+          email: email,
+          invite_code: code,
+          project_id: projectId || null,
+          subject: subject,
+          message: message,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to create invite');
       }
 
       setInviteCode(code);

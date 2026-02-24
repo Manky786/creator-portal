@@ -23,7 +23,26 @@ function LoginContent() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Check if already logged in
+  // Track invite activity
+  const trackActivity = async (activityType: string, description: string, metadata?: any) => {
+    if (!inviteCode) return;
+    try {
+      await fetch('/api/invites/activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invite_code: inviteCode,
+          activity_type: activityType,
+          description,
+          metadata,
+        }),
+      });
+    } catch (e) {
+      console.log('Activity tracking failed');
+    }
+  };
+
+  // Check if already logged in & track invite link click
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -42,7 +61,15 @@ function LoginContent() {
       }
     };
     checkSession();
-  }, [router]);
+
+    // Track invite link clicked
+    if (inviteCode) {
+      trackActivity('link_clicked', 'Creator clicked the invite link', {
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [router, inviteCode]);
 
   // Google Sign In for Creators
   const handleGoogleSignIn = async () => {
@@ -131,6 +158,9 @@ function LoginContent() {
     setLoading(true);
     setError('');
 
+    // Track signup started
+    trackActivity('signup_started', `${fullName} started the signup process`, { email, fullName });
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -165,10 +195,18 @@ function LoginContent() {
           .from('creator_invites')
           .update({ status: 'accepted', accepted_at: new Date().toISOString() })
           .eq('invite_code', inviteCode.toUpperCase());
+
+        // Track signup completed
+        trackActivity('signup_completed', `${fullName} completed signup successfully`, {
+          email,
+          fullName,
+          userId: data.user.id
+        });
       }
 
       setSuccess('Account created! Please check your email to verify your account.');
     } catch (err: any) {
+      trackActivity('signup_failed', `Signup failed: ${err.message}`, { email, error: err.message });
       setError(err.message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);

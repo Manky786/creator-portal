@@ -21,6 +21,14 @@ interface Project {
   title: string;
 }
 
+interface Activity {
+  id: string;
+  activity_type: string;
+  description: string;
+  metadata?: any;
+  created_at: string;
+}
+
 export default function InviteTracker() {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [projects, setProjects] = useState<{[key: string]: Project}>({});
@@ -30,6 +38,9 @@ export default function InviteTracker() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInvite, setSelectedInvite] = useState<Invite | null>(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(false);
+  const [detailTab, setDetailTab] = useState<'details' | 'activity'>('details');
 
   useEffect(() => {
     fetchInvites();
@@ -54,17 +65,9 @@ export default function InviteTracker() {
 
   const fetchInvites = async () => {
     try {
-      const { data, error } = await supabase
-        .from('creator_invites')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.log('Error fetching invites:', error.message);
-        return;
-      }
-
-      setInvites(data || []);
+      const response = await fetch('/api/invites');
+      const data = await response.json();
+      setInvites(data.invites || []);
     } catch (e) {
       console.log('Failed to fetch invites');
     } finally {
@@ -121,6 +124,45 @@ STAGE Team`;
     const inviteLink = `${baseUrl}/login?invite=${invite.invite_code}`;
     navigator.clipboard.writeText(inviteLink);
     alert('Invite link copied!');
+  };
+
+  const fetchActivities = async (inviteId: string) => {
+    setLoadingActivities(true);
+    try {
+      const response = await fetch(`/api/invites/activity?invite_id=${inviteId}`);
+      const data = await response.json();
+      setActivities(data.activities || []);
+    } catch (e) {
+      console.log('Failed to fetch activities');
+      setActivities([]);
+    } finally {
+      setLoadingActivities(false);
+    }
+  };
+
+  const selectInvite = (invite: Invite) => {
+    setSelectedInvite(invite);
+    setDetailTab('details');
+    fetchActivities(invite.id);
+  };
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'invite_created':
+        return { icon: '📤', color: 'bg-blue-500', label: 'Invite Sent' };
+      case 'link_clicked':
+        return { icon: '🔗', color: 'bg-purple-500', label: 'Link Clicked' };
+      case 'page_viewed':
+        return { icon: '👁️', color: 'bg-indigo-500', label: 'Page Viewed' };
+      case 'signup_started':
+        return { icon: '✏️', color: 'bg-amber-500', label: 'Signup Started' };
+      case 'signup_completed':
+        return { icon: '✅', color: 'bg-green-500', label: 'Signup Completed' };
+      case 'signup_failed':
+        return { icon: '❌', color: 'bg-red-500', label: 'Signup Failed' };
+      default:
+        return { icon: '📋', color: 'bg-gray-500', label: type };
+    }
   };
 
   const getStatusInfo = (invite: Invite) => {
@@ -356,7 +398,7 @@ STAGE Team`;
                       </button>
                     )}
                     <button
-                      onClick={() => setSelectedInvite(invite)}
+                      onClick={() => selectInvite(invite)}
                       className="p-2 text-purple-500 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
                       title="View details"
                     >
@@ -403,7 +445,7 @@ STAGE Team`;
       {selectedInvite && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedInvite(null)}></div>
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
             {/* Header */}
             <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-5">
               <div className="flex items-center justify-between">
@@ -424,70 +466,151 @@ STAGE Team`;
               </div>
             </div>
 
-            {/* Content */}
-            <div className="p-5 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <div className="text-xs font-bold text-gray-500 uppercase mb-1">Invite Code</div>
-                  <div className="font-mono font-black text-xl text-gray-800">{selectedInvite.invite_code}</div>
-                </div>
-                <div className={`rounded-xl p-4 ${getStatusInfo(selectedInvite).bgColor}`}>
-                  <div className="text-xs font-bold text-gray-500 uppercase mb-1">Status</div>
-                  <div className={`font-bold text-xl ${getStatusInfo(selectedInvite).textColor}`}>
-                    {getStatusInfo(selectedInvite).label}
-                  </div>
-                </div>
-              </div>
-
-              {selectedInvite.project_id && projects[selectedInvite.project_id] && (
-                <div className="bg-blue-50 rounded-xl p-4">
-                  <div className="text-xs font-bold text-gray-500 uppercase mb-1">Project</div>
-                  <div className="font-bold text-blue-700">🎬 {projects[selectedInvite.project_id].title}</div>
-                </div>
-              )}
-
-              <div>
-                <div className="text-xs font-bold text-gray-500 uppercase mb-1">Sent On</div>
-                <div className="text-gray-700">{formatDateTime(selectedInvite.created_at)}</div>
-              </div>
-
-              {selectedInvite.subject && (
-                <div>
-                  <div className="text-xs font-bold text-gray-500 uppercase mb-1">Email Subject</div>
-                  <div className="text-gray-700">{selectedInvite.subject}</div>
-                </div>
-              )}
-
-              {selectedInvite.message && (
-                <div>
-                  <div className="text-xs font-bold text-gray-500 uppercase mb-1">Personal Message</div>
-                  <div className="text-gray-600 text-sm bg-gray-50 rounded-lg p-3">{selectedInvite.message}</div>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => copyInviteLink(selectedInvite)}
-                  className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
-                >
-                  Copy Link
-                </button>
-                {getStatusInfo(selectedInvite).label === 'Pending' && (
-                  <button
-                    onClick={() => { resendInvite(selectedInvite); setSelectedInvite(null); }}
-                    className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors"
-                  >
-                    Resend Email
-                  </button>
+            {/* Tabs */}
+            <div className="flex border-b border-gray-200">
+              <button
+                onClick={() => setDetailTab('details')}
+                className={`flex-1 py-3 text-sm font-bold transition-colors ${
+                  detailTab === 'details'
+                    ? 'text-purple-600 border-b-2 border-purple-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Details
+              </button>
+              <button
+                onClick={() => setDetailTab('activity')}
+                className={`flex-1 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${
+                  detailTab === 'activity'
+                    ? 'text-purple-600 border-b-2 border-purple-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Activity Log
+                {activities.length > 0 && (
+                  <span className="bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full text-xs">
+                    {activities.length}
+                  </span>
                 )}
-                <button
-                  onClick={() => { deleteInvite(selectedInvite.id); }}
-                  className="py-2.5 px-4 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-5 space-y-4 overflow-y-auto flex-1">
+              {detailTab === 'details' ? (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-1">Invite Code</div>
+                      <div className="font-mono font-black text-xl text-gray-800">{selectedInvite.invite_code}</div>
+                    </div>
+                    <div className={`rounded-xl p-4 ${getStatusInfo(selectedInvite).bgColor}`}>
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-1">Status</div>
+                      <div className={`font-bold text-xl ${getStatusInfo(selectedInvite).textColor}`}>
+                        {getStatusInfo(selectedInvite).label}
+                      </div>
+                    </div>
+                  </div>
+
+                  {selectedInvite.project_id && projects[selectedInvite.project_id] && (
+                    <div className="bg-blue-50 rounded-xl p-4">
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-1">Project</div>
+                      <div className="font-bold text-blue-700">🎬 {projects[selectedInvite.project_id].title}</div>
+                    </div>
+                  )}
+
+                  <div>
+                    <div className="text-xs font-bold text-gray-500 uppercase mb-1">Sent On</div>
+                    <div className="text-gray-700">{formatDateTime(selectedInvite.created_at)}</div>
+                  </div>
+
+                  {selectedInvite.subject && (
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-1">Email Subject</div>
+                      <div className="text-gray-700">{selectedInvite.subject}</div>
+                    </div>
+                  )}
+
+                  {selectedInvite.message && (
+                    <div>
+                      <div className="text-xs font-bold text-gray-500 uppercase mb-1">Personal Message</div>
+                      <div className="text-gray-600 text-sm bg-gray-50 rounded-lg p-3">{selectedInvite.message}</div>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={() => copyInviteLink(selectedInvite)}
+                      className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
+                    >
+                      Copy Link
+                    </button>
+                    {getStatusInfo(selectedInvite).label === 'Pending' && (
+                      <button
+                        onClick={() => { resendInvite(selectedInvite); setSelectedInvite(null); }}
+                        className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors"
+                      >
+                        Resend Email
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { deleteInvite(selectedInvite.id); }}
+                      className="py-2.5 px-4 bg-red-100 hover:bg-red-200 text-red-700 font-bold rounded-xl transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </>
+              ) : (
+                /* Activity Timeline */
+                <div className="space-y-4">
+                  {loadingActivities ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  ) : activities.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span className="text-2xl">📭</span>
+                      </div>
+                      <p className="text-gray-500 font-medium">No activity yet</p>
+                      <p className="text-gray-400 text-sm">Activity will appear when creator interacts with the invite</p>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      {/* Timeline Line */}
+                      <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+
+                      {/* Activities */}
+                      {activities.map((activity, index) => {
+                        const activityInfo = getActivityIcon(activity.activity_type);
+                        return (
+                          <div key={activity.id} className="relative pl-10 pb-6">
+                            {/* Timeline Dot */}
+                            <div className={`absolute left-2 w-5 h-5 rounded-full ${activityInfo.color} flex items-center justify-center text-xs`}>
+                              <span>{activityInfo.icon}</span>
+                            </div>
+
+                            {/* Content */}
+                            <div className="bg-gray-50 rounded-xl p-4">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <div className="font-bold text-gray-800">{activityInfo.label}</div>
+                                  <div className="text-sm text-gray-600">{activity.description}</div>
+                                </div>
+                              </div>
+                              <div className="text-xs text-gray-400 mt-2">
+                                {formatDateTime(activity.created_at)}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
