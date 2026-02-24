@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import InviteCreatorModal from './InviteCreatorModal';
 
 interface Invite {
   id: string;
@@ -28,6 +29,7 @@ export default function InviteTracker() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'accepted'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedInvite, setSelectedInvite] = useState<Invite | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   useEffect(() => {
     fetchInvites();
@@ -232,15 +234,26 @@ STAGE Team`;
             className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none"
           />
         </div>
-        <button
-          onClick={fetchInvites}
-          className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors flex items-center gap-2"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          Refresh
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={fetchInvites}
+            className="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+          <button
+            onClick={() => setShowInviteModal(true)}
+            className="px-5 py-2.5 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-lg"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Invite Creator
+          </button>
+        </div>
       </div>
 
       {/* Invites List */}
@@ -479,6 +492,13 @@ STAGE Team`;
           </div>
         </div>
       )}
+
+      {/* Invite Creator Modal */}
+      <InviteCreatorModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        onInviteSent={() => fetchInvites()}
+      />
     </div>
   );
 }
