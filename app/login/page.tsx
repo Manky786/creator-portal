@@ -88,6 +88,43 @@ function LoginContent() {
     }
   };
 
+  // Team Signup (STAGE Email - auto admin)
+  const handleTeamSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const fullEmail = email.includes('@') ? email : `${email}@stage.in`;
+
+    // Verify it's a @stage.in email
+    if (!fullEmail.endsWith('@stage.in')) {
+      setError('Only @stage.in emails can register as team members');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: fullEmail,
+        password,
+        options: {
+          data: {
+            full_name: fullName || email.split('@')[0],
+            role: 'admin',
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      setSuccess('Account created! Check your email to verify, then login.');
+    } catch (err: any) {
+      setError(err.message || 'Signup failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Creator Email Signup (for invited creators)
   const handleCreatorSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -354,8 +391,12 @@ function LoginContent() {
           {loginType === 'team' && (
             <div className="space-y-6">
               <div>
-                <h1 className="text-2xl font-bold text-white mb-2">Team Login</h1>
-                <p className="text-gray-400">Access the content review dashboard</p>
+                <h1 className="text-2xl font-bold text-white mb-2">
+                  {isSignup ? 'Join STAGE Team' : 'Team Login'}
+                </h1>
+                <p className="text-gray-400">
+                  {isSignup ? 'Create your admin account' : 'Access the content review dashboard'}
+                </p>
               </div>
 
               {/* Error Message */}
@@ -365,7 +406,27 @@ function LoginContent() {
                 </div>
               )}
 
-              <form onSubmit={handleTeamLogin} className="space-y-4">
+              {/* Success Message */}
+              {success && (
+                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                  <p className="text-green-400 text-sm">{success}</p>
+                </div>
+              )}
+
+              <form onSubmit={isSignup ? handleTeamSignup : handleTeamLogin} className="space-y-4">
+                {isSignup && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Full Name</label>
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Your full name"
+                      required
+                      className="w-full px-4 py-3 bg-[#252525] border border-gray-700 rounded-xl text-white placeholder:text-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none"
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">STAGE Email</label>
                   <div className="relative">
@@ -388,8 +449,9 @@ function LoginContent() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
+                    placeholder={isSignup ? "Create a password" : "Enter your password"}
                     required
+                    minLength={6}
                     className="w-full px-4 py-3 bg-[#252525] border border-gray-700 rounded-xl text-white placeholder:text-gray-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none"
                   />
                 </div>
@@ -398,14 +460,22 @@ function LoginContent() {
                   disabled={loading}
                   className="w-full py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-bold rounded-xl transition-all disabled:opacity-50"
                 >
-                  {loading ? 'Signing in...' : 'Sign In to Dashboard'}
+                  {loading ? 'Please wait...' : (isSignup ? 'Create Admin Account' : 'Sign In to Dashboard')}
                 </button>
               </form>
 
-              {/* Footer */}
+              {/* Toggle Login/Signup */}
               <div className="text-center border-t border-gray-700 pt-4">
-                <p className="text-gray-500 text-sm">For STAGE team members only.</p>
-                <p className="text-gray-400 text-sm">Use your @stage.in email credentials</p>
+                <p className="text-gray-400">
+                  {isSignup ? "Already have an account? " : "New team member? "}
+                  <button
+                    onClick={() => { setIsSignup(!isSignup); setError(''); setSuccess(''); }}
+                    className="text-amber-500 hover:text-amber-400 font-semibold"
+                  >
+                    {isSignup ? 'Sign In' : 'Create Account'}
+                  </button>
+                </p>
+                <p className="text-gray-500 text-xs mt-2">Only @stage.in emails allowed</p>
               </div>
             </div>
           )}
