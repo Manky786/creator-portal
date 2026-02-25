@@ -43,34 +43,32 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    // Build insert data with only defined fields
+    const insertData: any = {
+      project_name: body.project_name || body.projectName,
+      status: body.status || 'pending',
+    };
+
+    // Only add fields if they have values
+    if (body.creator) insertData.creator = body.creator;
+    if (body.culture) insertData.culture = body.culture;
+    if (body.format) insertData.format = body.format;
+    if (body.total_budget || body.totalBudget) insertData.total_budget = parseFloat(body.total_budget) || parseFloat(body.totalBudget) || 0;
+    if (body.episodes) insertData.episodes = parseInt(body.episodes);
+    if (body.duration) insertData.duration = body.duration;
+    if (body.production_poc || body.productionPOC) insertData.production_poc = body.production_poc || body.productionPOC;
+    if (body.production_poc_phone) insertData.production_poc_phone = body.production_poc_phone;
+    if (body.production_poc_email) insertData.production_poc_email = body.production_poc_email;
+    if (body.content_poc) insertData.content_poc = body.content_poc;
+    if (body.content_poc_phone) insertData.content_poc_phone = body.content_poc_phone;
+    if (body.content_poc_email) insertData.content_poc_email = body.content_poc_email;
+    if (body.production_company) insertData.production_company = body.production_company;
+    if (body.notes) insertData.notes = body.notes;
+    if (body.budget_breakdown) insertData.budget_breakdown = body.budget_breakdown;
+
     const { data: project, error } = await supabase
       .from('pipeline_projects')
-      .insert({
-        project_name: body.project_name || body.projectName,
-        creator: body.creator,
-        culture: body.culture,
-        format: body.format,
-        genre: body.genre,
-        total_budget: body.total_budget || body.totalBudget || 0,
-        episodes: body.episodes,
-        status: body.status || 'pending',
-        production_poc: body.production_poc || body.productionPOC,
-        production_poc_phone: body.production_poc_phone || body.productionPOCPhone,
-        production_poc_email: body.production_poc_email || body.productionPOCEmail,
-        content_poc: body.content_poc || body.contentPOC,
-        content_poc_phone: body.content_poc_phone || body.contentPOCPhone,
-        content_poc_email: body.content_poc_email || body.contentPOCEmail,
-        logline: body.logline,
-        synopsis: body.synopsis,
-        language: body.language,
-        production_company: body.production_company || body.productionCompany,
-        notes: body.notes,
-        activity_log: [{
-          action: 'created',
-          timestamp: new Date().toISOString(),
-          details: 'Project added to pipeline'
-        }],
-      })
+      .insert(insertData)
       .select()
       .single();
 

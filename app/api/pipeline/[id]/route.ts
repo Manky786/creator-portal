@@ -68,12 +68,20 @@ export async function PUT(
     if (body.total_budget !== undefined) updateData.total_budget = body.total_budget;
     if (body.totalBudget !== undefined) updateData.total_budget = body.totalBudget;
     if (body.episodes !== undefined) updateData.episodes = body.episodes;
+    if (body.duration !== undefined) updateData.duration = body.duration;
+    if (body.budget_breakdown !== undefined) updateData.budget_breakdown = body.budget_breakdown;
     if (body.status !== undefined) updateData.status = body.status;
     if (body.production_poc !== undefined) updateData.production_poc = body.production_poc;
+    if (body.production_poc_phone !== undefined) updateData.production_poc_phone = body.production_poc_phone;
+    if (body.production_poc_email !== undefined) updateData.production_poc_email = body.production_poc_email;
     if (body.productionPOC !== undefined) updateData.production_poc = body.productionPOC;
+    if (body.content_poc !== undefined) updateData.content_poc = body.content_poc;
+    if (body.content_poc_phone !== undefined) updateData.content_poc_phone = body.content_poc_phone;
+    if (body.content_poc_email !== undefined) updateData.content_poc_email = body.content_poc_email;
     if (body.logline !== undefined) updateData.logline = body.logline;
     if (body.synopsis !== undefined) updateData.synopsis = body.synopsis;
     if (body.language !== undefined) updateData.language = body.language;
+    if (body.production_company !== undefined) updateData.production_company = body.production_company;
     if (body.notes !== undefined) updateData.notes = body.notes;
 
     const { data: project, error } = await supabase
