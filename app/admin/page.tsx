@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'library' | 'projects' | 'documents' | 'invites' | 'invoices'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'library' | 'projects' | 'documents' | 'invites' | 'invoices' | 'reports'>('overview');
   const [showInviteTracker, setShowInviteTracker] = useState(false);
 
   // Check if user is @stage.in admin
@@ -2434,6 +2434,7 @@ END:VCARD`;
                   { id: 'submissions', label: 'Pipeline', icon: '🎯', badge: newSubmissionsCount },
                   { id: 'projects', label: 'Production', icon: '🎬' },
                   { id: 'invoices', label: 'Invoices', icon: '💰' },
+                  { id: 'reports', label: 'Reports', icon: '📈' },
                   { id: 'invites', label: 'Invites', icon: '📨' },
                   { id: 'library', label: 'Talent', icon: '👥' },
                   { id: 'documents', label: 'Docs', icon: '📁' },
@@ -2475,13 +2476,8 @@ END:VCARD`;
             </div>
           </div>
 
-          {/* OVERVIEW TAB - Dashboard Analytics */}
+          {/* OVERVIEW TAB - Original Dashboard */}
           {activeTab === 'overview' && (
-            <DashboardAnalytics />
-          )}
-
-          {/* LEGACY_OVERVIEW_REMOVED */}
-          {false && (
             <>
             {/* Clean Light Theme Container */}
             <div className="min-h-screen bg-gray-50 rounded-2xl -mx-6 -mt-2 px-6 py-6">
@@ -3468,13 +3464,8 @@ END:VCARD`;
             </>
           )}
 
-          {/* SUBMISSIONS/PIPELINE TAB */}
+          {/* SUBMISSIONS/PIPELINE TAB - Original */}
           {activeTab === 'submissions' && (
-            <PipelineManager />
-          )}
-
-          {/* LEGACY_SUBMISSIONS_REMOVED */}
-          {false && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-lg">
                 <div className="flex items-center justify-between">
@@ -4404,6 +4395,17 @@ END:VCARD`;
           {activeTab === 'invoices' && (
             <div className="space-y-6">
               <InvoiceManager />
+            </div>
+          )}
+
+          {/* REPORTS TAB - Annual Reports & Budget Analytics */}
+          {activeTab === 'reports' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Annual Reports & Budget Analytics</h2>
+                <p className="text-gray-500">Track budget by culture, format, and generate annual reports</p>
+              </div>
+              <DashboardAnalytics />
             </div>
           )}
 
