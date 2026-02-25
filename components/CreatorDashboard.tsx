@@ -25,6 +25,7 @@ const STATUS_INFO: { [key: string]: { label: string; color: string; bgColor: str
   draft: { label: 'Draft', color: 'text-gray-600', bgColor: 'bg-gray-100' },
   in_review: { label: 'In Review', color: 'text-blue-600', bgColor: 'bg-blue-100' },
   approved: { label: 'Approved', color: 'text-green-600', bgColor: 'bg-green-100' },
+  locked: { label: 'Locked', color: 'text-orange-600', bgColor: 'bg-orange-100' },
   in_production: { label: 'In Production', color: 'text-purple-600', bgColor: 'bg-purple-100' },
   post_production: { label: 'Post Production', color: 'text-indigo-600', bgColor: 'bg-indigo-100' },
   delivered: { label: 'Delivered', color: 'text-teal-600', bgColor: 'bg-teal-100' },
@@ -33,11 +34,44 @@ const STATUS_INFO: { [key: string]: { label: string; color: string; bgColor: str
   cancelled: { label: 'Cancelled', color: 'text-red-600', bgColor: 'bg-red-100' },
 };
 
+interface Tranche {
+  id: string;
+  project_id: string;
+  tranche_number: number;
+  tranche_name: string;
+  percentage: number;
+  amount: number;
+  milestone: string;
+  status: string;
+  invoice_id?: string;
+}
+
+interface Invoice {
+  id: string;
+  tranche_number: number;
+  status: string;
+  invoice_number?: string;
+  total_amount: number;
+  submitted_at?: string;
+  approved_at?: string;
+  paid_at?: string;
+  payment_reference?: string;
+}
+
 export default function CreatorDashboard() {
   const [user, setUser] = useState<any>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [tranches, setTranches] = useState<Tranche[]>([]);
+  const [projectInvoices, setProjectInvoices] = useState<Invoice[]>([]);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [selectedTranche, setSelectedTranche] = useState<Tranche | null>(null);
+  const [invoiceForm, setInvoiceForm] = useState({
+    invoice_number: '',
+    notes: '',
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     checkAuthAndFetchData();
@@ -64,6 +98,100 @@ export default function CreatorDashboard() {
       setProjects(data.projects || []);
     } catch (e) {
       console.error('Failed to fetch projects');
+    }
+  };
+
+  const fetchProjectTranches = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}/tranches`);
+      const data = await response.json();
+      setTranches(data.tranches || []);
+    } catch (e) {
+      console.error('Failed to fetch tranches');
+      setTranches([]);
+    }
+  };
+
+  const fetchProjectInvoices = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/invoices?project_id=${projectId}`);
+      const data = await response.json();
+      setProjectInvoices(data.invoices || []);
+    } catch (e) {
+      console.error('Failed to fetch invoices');
+      setProjectInvoices([]);
+    }
+  };
+
+  const openProjectDetail = async (project: Project) => {
+    setSelectedProject(project);
+    if (project.status === 'locked' || project.status === 'in_production') {
+      await Promise.all([
+        fetchProjectTranches(project.id),
+        fetchProjectInvoices(project.id),
+      ]);
+    }
+  };
+
+  const openInvoiceSubmit = (tranche: Tranche) => {
+    setSelectedTranche(tranche);
+    setInvoiceForm({ invoice_number: '', notes: '' });
+    setShowInvoiceModal(true);
+  };
+
+  const submitInvoice = async () => {
+    if (!selectedTranche || !selectedProject || !user) return;
+
+    setSubmitting(true);
+    try {
+      const gstAmount = selectedTranche.amount * 0.18;
+      const totalAmount = selectedTranche.amount + gstAmount;
+
+      const response = await fetch('/api/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_id: selectedProject.id,
+          creator_id: user.id,
+          tranche_number: selectedTranche.tranche_number,
+          tranche_name: selectedTranche.tranche_name,
+          percentage: selectedTranche.percentage,
+          amount: selectedTranche.amount,
+          gst_amount: gstAmount,
+          total_amount: totalAmount,
+          invoice_number: invoiceForm.invoice_number,
+          milestone: selectedTranche.milestone,
+          notes: invoiceForm.notes,
+          status: 'submitted',
+          submitted_at: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to submit invoice');
+
+      setShowInvoiceModal(false);
+      setSelectedTranche(null);
+      await fetchProjectInvoices(selectedProject.id);
+      alert('Invoice submitted successfully!');
+    } catch (e) {
+      alert('Failed to submit invoice');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const getTrancheInvoice = (trancheNumber: number) => {
+    return projectInvoices.find(inv => inv.tranche_number === trancheNumber);
+  };
+
+  const getInvoiceStatusColor = (status: string) => {
+    switch (status) {
+      case 'submitted': return 'bg-blue-100 text-blue-700';
+      case 'under_review': return 'bg-amber-100 text-amber-700';
+      case 'approved': return 'bg-green-100 text-green-700';
+      case 'paid': return 'bg-emerald-100 text-emerald-700';
+      case 'rejected': return 'bg-red-100 text-red-700';
+      default: return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -189,7 +317,7 @@ export default function CreatorDashboard() {
                 <div
                   key={project.id}
                   className="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => setSelectedProject(project)}
+                  onClick={() => openProjectDetail(project)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -330,15 +458,139 @@ export default function CreatorDashboard() {
                   <span className="inline-block px-3 py-1 bg-gray-100 rounded-full text-gray-700">{selectedProject.genre}</span>
                 </div>
               )}
+
+              {/* Payment Tranches - Only show for locked projects */}
+              {(selectedProject.status === 'locked' || selectedProject.status === 'in_production') && tranches.length > 0 && (
+                <div className="border-t border-gray-200 pt-6">
+                  <h4 className="text-sm font-bold text-gray-500 uppercase mb-4">Payment Tranches</h4>
+                  <div className="space-y-3">
+                    {tranches.map((tranche) => {
+                      const invoice = getTrancheInvoice(tranche.tranche_number);
+                      return (
+                        <div key={tranche.id} className="bg-gray-50 rounded-xl p-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="font-bold text-gray-800">
+                                {tranche.tranche_number}. {tranche.tranche_name}
+                              </div>
+                              <div className="text-sm text-gray-500">{tranche.milestone}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="font-bold text-gray-800">{formatBudget(tranche.amount)}</div>
+                              <div className="text-xs text-gray-500">{tranche.percentage}%</div>
+                            </div>
+                          </div>
+                          <div className="mt-3 flex items-center justify-between">
+                            {invoice ? (
+                              <div className="flex items-center gap-3">
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${getInvoiceStatusColor(invoice.status)}`}>
+                                  {invoice.status === 'submitted' && 'Submitted'}
+                                  {invoice.status === 'under_review' && 'Under Review'}
+                                  {invoice.status === 'approved' && 'Approved'}
+                                  {invoice.status === 'paid' && 'Paid'}
+                                  {invoice.status === 'rejected' && 'Rejected'}
+                                </span>
+                                {invoice.status === 'paid' && invoice.payment_reference && (
+                                  <span className="text-xs text-gray-500">Ref: {invoice.payment_reference}</span>
+                                )}
+                              </div>
+                            ) : (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); openInvoiceSubmit(tranche); }}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-sm transition-colors"
+                              >
+                                Submit Invoice
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Footer */}
             <div className="border-t border-gray-200 px-6 py-4 bg-gray-50">
               <button
-                onClick={() => setSelectedProject(null)}
+                onClick={() => { setSelectedProject(null); setTranches([]); setProjectInvoices([]); }}
                 className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl transition-colors"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice Submit Modal */}
+      {showInvoiceModal && selectedTranche && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowInvoiceModal(false)}></div>
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="bg-gradient-to-r from-orange-600 to-red-600 px-6 py-4 rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-white">Submit Invoice</h2>
+                  <p className="text-orange-100 text-sm">Tranche {selectedTranche.tranche_number}: {selectedTranche.tranche_name}</p>
+                </div>
+                <button onClick={() => setShowInvoiceModal(false)} className="text-white/80 hover:text-white">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              {/* Amount Summary */}
+              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Base Amount</span>
+                  <span className="font-bold">{formatBudget(selectedTranche.amount)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">GST (18%)</span>
+                  <span className="font-bold">{formatBudget(selectedTranche.amount * 0.18)}</span>
+                </div>
+                <div className="border-t pt-2 flex justify-between">
+                  <span className="font-bold text-gray-700">Total Amount</span>
+                  <span className="font-black text-green-600">{formatBudget(selectedTranche.amount * 1.18)}</span>
+                </div>
+              </div>
+
+              {/* Invoice Number */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Invoice Number</label>
+                <input
+                  type="text"
+                  value={invoiceForm.invoice_number}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, invoice_number: e.target.value })}
+                  placeholder="e.g., INV-2024-001"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:border-red-500 outline-none"
+                />
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
+                <textarea
+                  value={invoiceForm.notes}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, notes: e.target.value })}
+                  rows={3}
+                  placeholder="Any additional notes..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:border-red-500 outline-none resize-none"
+                />
+              </div>
+
+              {/* Submit Button */}
+              <button
+                onClick={submitInvoice}
+                disabled={submitting}
+                className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
+              >
+                {submitting ? 'Submitting...' : 'Submit Invoice for Review'}
               </button>
             </div>
           </div>

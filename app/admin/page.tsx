@@ -8,6 +8,7 @@ import * as XLSX from 'xlsx';
 import InviteCreatorModal from '@/components/InviteCreatorModal';
 import InviteTracker from '@/components/InviteTracker';
 import ProjectsManager from '@/components/ProjectsManager';
+import InvoiceManager from '@/components/InvoiceManager';
 import { supabase } from '@/lib/supabase';
 
 // Projects data - stored in localStorage for persistence
@@ -18,7 +19,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library' | 'projects' | 'documents' | 'invites'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library' | 'projects' | 'documents' | 'invites' | 'invoices'>('overview');
   const [showInviteTracker, setShowInviteTracker] = useState(false);
 
   // Check if user is @stage.in admin
@@ -2505,6 +2506,19 @@ END:VCARD`;
                       <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
                     )}
                   </button>
+                  <button
+                    onClick={() => setActiveTab('invoices')}
+                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
+                      activeTab === 'invoices'
+                        ? 'text-white bg-blue-600 shadow-md'
+                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                    }`}
+                  >
+                    💰 Invoices
+                    {activeTab === 'invoices' && (
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
+                    )}
+                  </button>
                   </nav>
               </div>
               {/* Action Buttons - Mobile Responsive */}
@@ -4515,6 +4529,13 @@ END:VCARD`;
           {activeTab === 'projects' && (
             <div className="space-y-6">
               <ProjectsManager />
+            </div>
+          )}
+
+          {/* INVOICES TAB - Invoice Management */}
+          {activeTab === 'invoices' && (
+            <div className="space-y-6">
+              <InvoiceManager />
             </div>
           )}
 

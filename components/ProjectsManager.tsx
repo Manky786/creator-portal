@@ -34,6 +34,7 @@ const STATUS_OPTIONS = [
   { value: 'draft', label: 'Draft', color: 'bg-gray-500' },
   { value: 'in_review', label: 'In Review', color: 'bg-blue-500' },
   { value: 'approved', label: 'Approved', color: 'bg-green-500' },
+  { value: 'locked', label: 'Locked', color: 'bg-orange-500' },
   { value: 'in_production', label: 'In Production', color: 'bg-purple-500' },
   { value: 'post_production', label: 'Post Production', color: 'bg-indigo-500' },
   { value: 'delivered', label: 'Delivered', color: 'bg-teal-500' },
@@ -59,6 +60,9 @@ export default function ProjectsManager() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [detailProject, setDetailProject] = useState<Project | null>(null);
+  const [lockLoading, setLockLoading] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -193,6 +197,41 @@ export default function ProjectsManager() {
     } catch (err: any) {
       alert(err.message || 'Failed to delete project');
     }
+  };
+
+  const handleLockProject = async (project: Project) => {
+    if (!project.assigned_creator_id) {
+      alert('Cannot lock: Please assign a creator first');
+      return;
+    }
+
+    if (!confirm(`Lock "${project.title}"? This will:\n\n1. Freeze project details\n2. Create payment tranches based on format\n3. Allow invoice submissions\n\nThis action cannot be undone.`)) {
+      return;
+    }
+
+    setLockLoading(true);
+    try {
+      const response = await fetch(`/api/projects/${project.id}/lock`, {
+        method: 'POST',
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+
+      alert(`Project locked successfully!\n\n${data.tranches?.length || 0} payment tranches created.`);
+      setShowDetailModal(false);
+      setDetailProject(null);
+      fetchProjects();
+    } catch (err: any) {
+      alert(err.message || 'Failed to lock project');
+    } finally {
+      setLockLoading(false);
+    }
+  };
+
+  const viewProjectDetails = (project: Project) => {
+    setDetailProject(project);
+    setShowDetailModal(true);
   };
 
   const openEditModal = (project: Project) => {
@@ -417,9 +456,20 @@ export default function ProjectsManager() {
                   {/* Actions */}
                   <div className="col-span-2 flex items-center justify-end gap-2">
                     <button
+                      onClick={() => viewProjectDetails(project)}
+                      className="p-2 text-purple-500 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
+                      title="View details"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                    <button
                       onClick={() => openEditModal(project)}
                       className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
                       title="Edit project"
+                      disabled={project.status === 'locked' || project.status === 'in_production'}
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -429,6 +479,7 @@ export default function ProjectsManager() {
                       onClick={() => handleDeleteProject(project.id)}
                       className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                       title="Delete project"
+                      disabled={project.status === 'locked' || project.status === 'in_production'}
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -644,6 +695,186 @@ export default function ProjectsManager() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Project Detail Modal */}
+      {showDetailModal && detailProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => { setShowDetailModal(false); setDetailProject(null); }}></div>
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-white">{detailProject.title}</h2>
+                  <p className="text-white/80 text-sm">{getFormatLabel(detailProject.format)} • {detailProject.language}</p>
+                </div>
+                <button
+                  onClick={() => { setShowDetailModal(false); setDetailProject(null); }}
+                  className="text-white/80 hover:text-white"
+                >
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
+              {/* Project Info Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="text-xs font-medium text-gray-500 uppercase mb-1">Status</div>
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold text-white ${getStatusInfo(detailProject.status).color}`}>
+                    {getStatusInfo(detailProject.status).label}
+                  </span>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="text-xs font-medium text-gray-500 uppercase mb-1">Budget</div>
+                  <div className="font-bold text-gray-800">{formatBudget(detailProject.total_budget)}</div>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="text-xs font-medium text-gray-500 uppercase mb-1">Priority</div>
+                  <div className="font-semibold text-gray-800 capitalize">{detailProject.priority}</div>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <div className="text-xs font-medium text-gray-500 uppercase mb-1">Genre</div>
+                  <div className="font-semibold text-gray-800">{detailProject.genre || '-'}</div>
+                </div>
+              </div>
+
+              {/* Creator Info */}
+              <div className="bg-gray-50 rounded-xl p-4">
+                <div className="text-xs font-medium text-gray-500 uppercase mb-2">Assigned Creator</div>
+                {detailProject.creator ? (
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold">
+                      {detailProject.creator.full_name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-800">{detailProject.creator.full_name}</div>
+                      <div className="text-sm text-gray-500">{detailProject.creator.email}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-gray-500 italic">No creator assigned yet</div>
+                )}
+              </div>
+
+              {/* Description */}
+              {detailProject.description && (
+                <div>
+                  <div className="text-xs font-medium text-gray-500 uppercase mb-2">Description</div>
+                  <p className="text-gray-700">{detailProject.description}</p>
+                </div>
+              )}
+
+              {/* Payment Tranches Preview */}
+              <div className="border border-orange-200 bg-orange-50 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="text-sm font-bold text-orange-800">Payment Tranches (Format: {getFormatLabel(detailProject.format)})</div>
+                  {detailProject.status === 'locked' && (
+                    <span className="text-xs bg-orange-600 text-white px-2 py-1 rounded-full font-bold">LOCKED</span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {detailProject.format === 'film' && (
+                    <>
+                      <div className="flex justify-between text-sm"><span>1. Signing Amount</span><span className="font-semibold">20% - {formatBudget(detailProject.total_budget * 0.20)}</span></div>
+                      <div className="flex justify-between text-sm"><span>2. Pre-Production</span><span className="font-semibold">30% - {formatBudget(detailProject.total_budget * 0.30)}</span></div>
+                      <div className="flex justify-between text-sm"><span>3. Production Complete</span><span className="font-semibold">30% - {formatBudget(detailProject.total_budget * 0.30)}</span></div>
+                      <div className="flex justify-between text-sm"><span>4. Final Delivery</span><span className="font-semibold">20% - {formatBudget(detailProject.total_budget * 0.20)}</span></div>
+                    </>
+                  )}
+                  {detailProject.format === 'web_series' && (
+                    <>
+                      <div className="flex justify-between text-sm"><span>1. Signing Amount</span><span className="font-semibold">15% - {formatBudget(detailProject.total_budget * 0.15)}</span></div>
+                      <div className="flex justify-between text-sm"><span>2. Pre-Production</span><span className="font-semibold">20% - {formatBudget(detailProject.total_budget * 0.20)}</span></div>
+                      <div className="flex justify-between text-sm"><span>3. 50% Shoot Complete</span><span className="font-semibold">25% - {formatBudget(detailProject.total_budget * 0.25)}</span></div>
+                      <div className="flex justify-between text-sm"><span>4. Shoot Wrapped</span><span className="font-semibold">25% - {formatBudget(detailProject.total_budget * 0.25)}</span></div>
+                      <div className="flex justify-between text-sm"><span>5. Final Delivery</span><span className="font-semibold">15% - {formatBudget(detailProject.total_budget * 0.15)}</span></div>
+                    </>
+                  )}
+                  {detailProject.format === 'microdrama' && (
+                    <>
+                      <div className="flex justify-between text-sm"><span>1. Signing Amount</span><span className="font-semibold">30% - {formatBudget(detailProject.total_budget * 0.30)}</span></div>
+                      <div className="flex justify-between text-sm"><span>2. Production Complete</span><span className="font-semibold">40% - {formatBudget(detailProject.total_budget * 0.40)}</span></div>
+                      <div className="flex justify-between text-sm"><span>3. Final Delivery</span><span className="font-semibold">30% - {formatBudget(detailProject.total_budget * 0.30)}</span></div>
+                    </>
+                  )}
+                  {detailProject.format === 'documentary' && (
+                    <>
+                      <div className="flex justify-between text-sm"><span>1. Signing Amount</span><span className="font-semibold">25% - {formatBudget(detailProject.total_budget * 0.25)}</span></div>
+                      <div className="flex justify-between text-sm"><span>2. Research/Pre-Production</span><span className="font-semibold">25% - {formatBudget(detailProject.total_budget * 0.25)}</span></div>
+                      <div className="flex justify-between text-sm"><span>3. Production Complete</span><span className="font-semibold">30% - {formatBudget(detailProject.total_budget * 0.30)}</span></div>
+                      <div className="flex justify-between text-sm"><span>4. Final Delivery</span><span className="font-semibold">20% - {formatBudget(detailProject.total_budget * 0.20)}</span></div>
+                    </>
+                  )}
+                  {detailProject.format === 'other' && (
+                    <>
+                      <div className="flex justify-between text-sm"><span>1. Signing Amount</span><span className="font-semibold">30% - {formatBudget(detailProject.total_budget * 0.30)}</span></div>
+                      <div className="flex justify-between text-sm"><span>2. Mid-Project</span><span className="font-semibold">40% - {formatBudget(detailProject.total_budget * 0.40)}</span></div>
+                      <div className="flex justify-between text-sm"><span>3. Final Delivery</span><span className="font-semibold">30% - {formatBudget(detailProject.total_budget * 0.30)}</span></div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Lock Project Action */}
+              {detailProject.status === 'approved' && (
+                <div className="border-2 border-dashed border-orange-300 bg-orange-50 rounded-xl p-6 text-center">
+                  <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <h3 className="font-bold text-orange-800 mb-2">Ready to Lock Project?</h3>
+                  <p className="text-sm text-orange-600 mb-4">
+                    Locking will create payment tranches and move project to production. This action cannot be undone.
+                  </p>
+                  <button
+                    onClick={() => handleLockProject(detailProject)}
+                    disabled={lockLoading || !detailProject.assigned_creator_id}
+                    className="px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 flex items-center gap-2 mx-auto"
+                  >
+                    {lockLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Locking...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        Lock Project & Create Tranches
+                      </>
+                    )}
+                  </button>
+                  {!detailProject.assigned_creator_id && (
+                    <p className="text-xs text-red-500 mt-2">Please assign a creator before locking</p>
+                  )}
+                </div>
+              )}
+
+              {/* Already Locked Notice */}
+              {detailProject.status === 'locked' && (
+                <div className="border-2 border-green-300 bg-green-50 rounded-xl p-6 text-center">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <h3 className="font-bold text-green-800 mb-2">Project Locked</h3>
+                  <p className="text-sm text-green-600">
+                    Payment tranches have been created. Creator can now submit invoices for each milestone.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
