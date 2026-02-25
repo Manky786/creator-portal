@@ -2401,205 +2401,63 @@ END:VCARD`;
                   height={45}
                   className="h-8 md:h-12 w-auto"
                 />
-                {/* Desktop Nav */}
-                <nav className="hidden md:flex items-center gap-2">
-                  <button
-                    onClick={() => setActiveTab('overview')}
-                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
-                      activeTab === 'overview'
-                        ? 'text-white bg-blue-600 shadow-md'
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                    }`}
-                  >
-                    Overview
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('submissions')}
-                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
-                      activeTab === 'submissions'
-                        ? 'text-white bg-blue-600 shadow-md'
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                    }`}
-                  >
-                    Submissions
-                    {newSubmissionsCount > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-[10px] font-black text-white border-2 border-white shadow-sm">
-                        {newSubmissionsCount}
-                      </span>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('analytics')}
-                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
-                      activeTab === 'analytics'
-                        ? 'text-white bg-blue-600 shadow-md'
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                    }`}
-                  >
-                    Analytics
-                    {activeTab === 'analytics' && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('budget')}
-                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
-                      activeTab === 'budget'
-                        ? 'text-white bg-blue-600 shadow-md'
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                    }`}
-                  >
-                    Budget
-                    {activeTab === 'budget' && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('library')}
-                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
-                      activeTab === 'library'
-                        ? 'text-white bg-blue-600 shadow-md'
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                    }`}
-                  >
-                    📚 Library
-                    {activeTab === 'library' && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('projects')}
-                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
-                      activeTab === 'projects'
-                        ? 'text-white bg-blue-600 shadow-md'
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                    }`}
-                  >
-                    📊 Projects
-                    {activeTab === 'projects' && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('documents')}
-                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
-                      activeTab === 'documents'
-                        ? 'text-white bg-blue-600 shadow-md'
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                    }`}
-                  >
-                    📁 Docs
-                    {activeTab === 'documents' && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('invites')}
-                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
-                      activeTab === 'invites'
-                        ? 'text-white bg-blue-600 shadow-md'
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                    }`}
-                  >
-                    📨 Invites
-                    {activeTab === 'invites' && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('invoices')}
-                    className={`relative px-4 py-2 text-sm font-bold transition-all rounded-lg ${
-                      activeTab === 'invoices'
-                        ? 'text-white bg-blue-600 shadow-md'
-                        : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                    }`}
-                  >
-                    💰 Invoices
-                    {activeTab === 'invoices' && (
-                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
-                    )}
-                  </button>
-                  </nav>
               </div>
-              {/* Action Buttons - Mobile Responsive */}
-              <div className="flex items-center gap-2 md:gap-4">
-                {/* Edit Access Requests Button */}
+              {/* Right side actions */}
+              <div className="flex items-center gap-3">
                 <button
-                  className="relative p-2 md:p-2.5 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-all"
-                  onClick={() => setShowEditRequestsPanel(!showEditRequestsPanel)}
-                >
-                  <span className="text-lg md:text-2xl">✏️</span>
-                  {pendingEditRequestsCount > 0 && (
-                    <div className="absolute -top-1 -right-1 min-w-[18px] md:min-w-[24px] h-[18px] md:h-6 px-1 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-md animate-pulse">
-                      <span className="text-[10px] md:text-xs font-black text-white">{pendingEditRequestsCount}</span>
-                    </div>
-                  )}
-                </button>
-                {/* Creator Updates Button */}
-                <button
-                  className="relative p-2 md:p-2.5 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-all"
-                  onClick={() => setShowCreatorUpdatesPanel(!showCreatorUpdatesPanel)}
-                  title="Creator Updates & Changes"
-                >
-                  <span className="text-lg md:text-2xl">📝</span>
-                  {adminNotifications.filter(n => !n.read).length > 0 && (
-                    <div className="absolute -top-1 -right-1 min-w-[18px] md:min-w-[24px] h-[18px] md:h-6 px-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md animate-pulse">
-                      <span className="text-[10px] md:text-xs font-black text-white">{adminNotifications.filter(n => !n.read).length}</span>
-                    </div>
-                  )}
-                </button>
-                {/* Notification Bell */}
-                <button
-                  className="relative p-2 md:p-2.5 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-all"
+                  className="relative p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all"
                   onClick={() => setShowNotificationsPanel(!showNotificationsPanel)}
+                  title="Notifications"
                 >
-                  <span className="text-lg md:text-2xl">🔔</span>
+                  <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
                   {newSubmissionsCount > 0 && (
-                    <div className="absolute -top-1 -right-1 min-w-[18px] md:min-w-[24px] h-[18px] md:h-6 px-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md animate-pulse">
-                      <span className="text-[10px] md:text-xs font-black text-white">{newSubmissionsCount}</span>
-                    </div>
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white">
+                      {newSubmissionsCount}
+                    </span>
                   )}
                 </button>
-                {/* Admin Badge - Hidden on mobile */}
-                <div className="hidden md:block bg-blue-50 rounded-lg px-4 py-2 border border-blue-200">
-                  <div className="text-xs text-gray-500">Admin</div>
-                  <div className="text-sm font-bold text-gray-800">STAGE Team</div>
-                </div>
-                <Link href="/" className="text-xs md:text-sm font-bold text-gray-500 hover:text-blue-600">
+                <Link href="/" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors">
                   Exit
                 </Link>
               </div>
             </div>
-            {/* Mobile Navigation Tabs */}
-            <nav className="flex md:hidden items-center gap-1 overflow-x-auto pb-1 hide-scrollbar">
-              {[
-                { id: 'overview', label: '📊 Overview' },
-                { id: 'submissions', label: '📋 Submissions', badge: newSubmissionsCount },
-                { id: 'analytics', label: '📈 Analytics' },
-                { id: 'budget', label: '💰 Budget' },
-                { id: 'library', label: '📚 Library' },
-                { id: 'projects', label: '📊 Projects' },
-                { id: 'documents', label: '📁 Docs' },
-                { id: 'invites', label: '📨 Invites' },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`relative flex-shrink-0 px-3 py-1.5 text-xs font-bold transition-all rounded-lg ${
-                    activeTab === tab.id
-                      ? 'text-white bg-blue-600'
-                      : 'text-gray-600 bg-gray-100'
-                  }`}
-                >
-                  {tab.label}
-                  {tab.badge && tab.badge > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-0.5 bg-blue-500 rounded-full flex items-center justify-center text-[8px] font-black text-white shadow-sm">
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </nav>
+
+            {/* Navigation Tabs - Clean Design */}
+            <div className="border-b border-gray-200">
+              <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-2 -mb-px">
+                {[
+                  { id: 'overview', label: 'Overview', icon: '📊' },
+                  { id: 'projects', label: 'Projects', icon: '🎬' },
+                  { id: 'invoices', label: 'Invoices', icon: '💰' },
+                  { id: 'invites', label: 'Invites', icon: '📨' },
+                  { id: 'submissions', label: 'Submissions', icon: '📋', badge: newSubmissionsCount },
+                  { id: 'analytics', label: 'Analytics', icon: '📈' },
+                  { id: 'budget', label: 'Budget', icon: '💵' },
+                  { id: 'library', label: 'Library', icon: '📚' },
+                  { id: 'documents', label: 'Docs', icon: '📁' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-all ${
+                      activeTab === tab.id
+                        ? 'border-red-500 text-red-600 bg-red-50/50'
+                        : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                    }`}
+                  >
+                    <span>{tab.icon}</span>
+                    <span>{tab.label}</span>
+                    {tab.badge && tab.badge > 0 && (
+                      <span className="ml-1 px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full">
+                        {tab.badge}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </nav>
+            </div>
           </div>
         </header>
 
