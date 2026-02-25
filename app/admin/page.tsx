@@ -19,7 +19,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'analytics' | 'budget' | 'library' | 'projects' | 'documents' | 'invites' | 'invoices'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'library' | 'projects' | 'documents' | 'invites' | 'invoices'>('overview');
   const [showInviteTracker, setShowInviteTracker] = useState(false);
 
   // Check if user is @stage.in admin
@@ -2428,14 +2428,12 @@ END:VCARD`;
             <div className="border-b border-gray-200">
               <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-2 -mb-px">
                 {[
-                  { id: 'overview', label: 'Overview', icon: '📊' },
-                  { id: 'projects', label: 'Projects', icon: '🎬' },
+                  { id: 'overview', label: 'Dashboard', icon: '📊' },
+                  { id: 'submissions', label: 'Pipeline', icon: '🎯', badge: newSubmissionsCount },
+                  { id: 'projects', label: 'Production', icon: '🎬' },
                   { id: 'invoices', label: 'Invoices', icon: '💰' },
                   { id: 'invites', label: 'Invites', icon: '📨' },
-                  { id: 'submissions', label: 'Submissions', icon: '📋', badge: newSubmissionsCount },
-                  { id: 'analytics', label: 'Analytics', icon: '📈' },
-                  { id: 'budget', label: 'Budget', icon: '💵' },
-                  { id: 'library', label: 'Library', icon: '📚' },
+                  { id: 'library', label: 'Talent', icon: '👥' },
                   { id: 'documents', label: 'Docs', icon: '📁' },
                 ].map((tab) => (
                   <button
