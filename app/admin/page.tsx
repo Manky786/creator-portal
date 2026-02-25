@@ -9,6 +9,8 @@ import InviteCreatorModal from '@/components/InviteCreatorModal';
 import InviteTracker from '@/components/InviteTracker';
 import ProjectsManager from '@/components/ProjectsManager';
 import InvoiceManager from '@/components/InvoiceManager';
+import DashboardAnalytics from '@/components/DashboardAnalytics';
+import PipelineManager from '@/components/PipelineManager';
 import { supabase } from '@/lib/supabase';
 
 // Projects data - stored in localStorage for persistence
@@ -2473,8 +2475,13 @@ END:VCARD`;
             </div>
           </div>
 
-          {/* OVERVIEW TAB */}
+          {/* OVERVIEW TAB - Dashboard Analytics */}
           {activeTab === 'overview' && (
+            <DashboardAnalytics />
+          )}
+
+          {/* LEGACY_OVERVIEW_REMOVED */}
+          {false && (
             <>
             {/* Clean Light Theme Container */}
             <div className="min-h-screen bg-gray-50 rounded-2xl -mx-6 -mt-2 px-6 py-6">
@@ -3461,8 +3468,13 @@ END:VCARD`;
             </>
           )}
 
-          {/* SUBMISSIONS TAB */}
+          {/* SUBMISSIONS/PIPELINE TAB */}
           {activeTab === 'submissions' && (
+            <PipelineManager />
+          )}
+
+          {/* LEGACY_SUBMISSIONS_REMOVED */}
+          {false && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-lg">
                 <div className="flex items-center justify-between">
