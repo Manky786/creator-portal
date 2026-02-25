@@ -65,13 +65,6 @@ export default function CreatorDashboard() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [tranches, setTranches] = useState<Tranche[]>([]);
   const [projectInvoices, setProjectInvoices] = useState<Invoice[]>([]);
-  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
-  const [selectedTranche, setSelectedTranche] = useState<Tranche | null>(null);
-  const [invoiceForm, setInvoiceForm] = useState({
-    invoice_number: '',
-    notes: '',
-  });
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     checkAuthAndFetchData();
@@ -130,53 +123,6 @@ export default function CreatorDashboard() {
         fetchProjectTranches(project.id),
         fetchProjectInvoices(project.id),
       ]);
-    }
-  };
-
-  const openInvoiceSubmit = (tranche: Tranche) => {
-    setSelectedTranche(tranche);
-    setInvoiceForm({ invoice_number: '', notes: '' });
-    setShowInvoiceModal(true);
-  };
-
-  const submitInvoice = async () => {
-    if (!selectedTranche || !selectedProject || !user) return;
-
-    setSubmitting(true);
-    try {
-      const gstAmount = selectedTranche.amount * 0.18;
-      const totalAmount = selectedTranche.amount + gstAmount;
-
-      const response = await fetch('/api/invoices', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          project_id: selectedProject.id,
-          creator_id: user.id,
-          tranche_number: selectedTranche.tranche_number,
-          tranche_name: selectedTranche.tranche_name,
-          percentage: selectedTranche.percentage,
-          amount: selectedTranche.amount,
-          gst_amount: gstAmount,
-          total_amount: totalAmount,
-          invoice_number: invoiceForm.invoice_number,
-          milestone: selectedTranche.milestone,
-          notes: invoiceForm.notes,
-          status: 'submitted',
-          submitted_at: new Date().toISOString(),
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to submit invoice');
-
-      setShowInvoiceModal(false);
-      setSelectedTranche(null);
-      await fetchProjectInvoices(selectedProject.id);
-      alert('Invoice submitted successfully!');
-    } catch (e) {
-      alert('Failed to submit invoice');
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -484,7 +430,7 @@ export default function CreatorDashboard() {
                             {invoice ? (
                               <div className="flex items-center gap-3">
                                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${getInvoiceStatusColor(invoice.status)}`}>
-                                  {invoice.status === 'submitted' && 'Submitted'}
+                                  {invoice.status === 'submitted' && 'Invoice Received'}
                                   {invoice.status === 'under_review' && 'Under Review'}
                                   {invoice.status === 'approved' && 'Approved'}
                                   {invoice.status === 'paid' && 'Paid'}
@@ -495,12 +441,12 @@ export default function CreatorDashboard() {
                                 )}
                               </div>
                             ) : (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); openInvoiceSubmit(tranche); }}
-                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-sm transition-colors"
-                              >
-                                Submit Invoice
-                              </button>
+                              <div className="flex items-center gap-2 text-sm text-gray-500">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                Send invoice to accounts@stage.in
+                              </div>
                             )}
                           </div>
                         </div>
@@ -524,78 +470,6 @@ export default function CreatorDashboard() {
         </div>
       )}
 
-      {/* Invoice Submit Modal */}
-      {showInvoiceModal && selectedTranche && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowInvoiceModal(false)}></div>
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="bg-gradient-to-r from-orange-600 to-red-600 px-6 py-4 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-bold text-white">Submit Invoice</h2>
-                  <p className="text-orange-100 text-sm">Tranche {selectedTranche.tranche_number}: {selectedTranche.tranche_name}</p>
-                </div>
-                <button onClick={() => setShowInvoiceModal(false)} className="text-white/80 hover:text-white">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6 space-y-4">
-              {/* Amount Summary */}
-              <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">Base Amount</span>
-                  <span className="font-bold">{formatBudget(selectedTranche.amount)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500">GST (18%)</span>
-                  <span className="font-bold">{formatBudget(selectedTranche.amount * 0.18)}</span>
-                </div>
-                <div className="border-t pt-2 flex justify-between">
-                  <span className="font-bold text-gray-700">Total Amount</span>
-                  <span className="font-black text-green-600">{formatBudget(selectedTranche.amount * 1.18)}</span>
-                </div>
-              </div>
-
-              {/* Invoice Number */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Invoice Number</label>
-                <input
-                  type="text"
-                  value={invoiceForm.invoice_number}
-                  onChange={(e) => setInvoiceForm({ ...invoiceForm, invoice_number: e.target.value })}
-                  placeholder="e.g., INV-2024-001"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:border-red-500 outline-none"
-                />
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
-                <textarea
-                  value={invoiceForm.notes}
-                  onChange={(e) => setInvoiceForm({ ...invoiceForm, notes: e.target.value })}
-                  rows={3}
-                  placeholder="Any additional notes..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:border-red-500 outline-none resize-none"
-                />
-              </div>
-
-              {/* Submit Button */}
-              <button
-                onClick={submitInvoice}
-                disabled={submitting}
-                className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
-              >
-                {submitting ? 'Submitting...' : 'Submit Invoice for Review'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
