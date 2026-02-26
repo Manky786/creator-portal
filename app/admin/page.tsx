@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'library' | 'projects' | 'documents' | 'invites' | 'invoices' | 'reports'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'submissions' | 'pipeline' | 'library' | 'projects' | 'documents' | 'invites' | 'invoices' | 'reports'>('overview');
   const [showInviteTracker, setShowInviteTracker] = useState(false);
 
   // Check if user is @stage.in admin
@@ -2431,7 +2431,8 @@ END:VCARD`;
               <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide px-2 -mb-px">
                 {[
                   { id: 'overview', label: 'Dashboard', icon: '📊' },
-                  { id: 'submissions', label: 'Pipeline', icon: '🎯', badge: newSubmissionsCount },
+                  { id: 'submissions', label: 'Submissions', icon: '📥', badge: newSubmissionsCount },
+                  { id: 'pipeline', label: 'Pipeline', icon: '🎯' },
                   { id: 'projects', label: 'Production', icon: '🎬' },
                   { id: 'invoices', label: 'Invoices', icon: '💰' },
                   { id: 'reports', label: 'Reports', icon: '📈' },
@@ -3464,7 +3465,7 @@ END:VCARD`;
             </>
           )}
 
-          {/* SUBMISSIONS/PIPELINE TAB - Original */}
+          {/* SUBMISSIONS TAB - Creator Submissions */}
           {activeTab === 'submissions' && (
             <div className="space-y-6">
               <div className="bg-white rounded-xl p-5 border-2 border-gray-200 shadow-lg">
@@ -4381,6 +4382,13 @@ END:VCARD`;
                   )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* PIPELINE TAB - Excel-like Tracker */}
+          {activeTab === 'pipeline' && (
+            <div className="space-y-6">
+              <PipelineManager />
             </div>
           )}
 
