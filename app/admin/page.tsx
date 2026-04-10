@@ -270,6 +270,632 @@ const sampleSubmissions: any[] = [
       { name: 'Post Production', startDate: '2026-05-16', endDate: '2026-06-20', status: 'pending' },
       { name: 'Final Delivery', startDate: '2026-06-30', endDate: '2026-06-30', status: 'pending' },
     ],
+  },
+  // ============ DEMO PROJECT 4: GUJARATI GARBA QUEEN ============
+  {
+    id: 4,
+    projectName: 'Gujarati Garba Queen',
+    creator: 'Jignesh Patel',
+    creatorName: 'Jignesh Patel',
+    culture: 'Gujarati',
+    format: 'Binge Series',
+    genre: 'Musical Drama',
+    subGenre: 'Dance Reality',
+    contentRating: 'U/A',
+    language: 'Gujarati',
+    totalBudget: 120000000,
+    episodes: 10,
+    episodeDuration: 45,
+    totalDuration: 450,
+    status: 'approved',
+    submittedAt: '2026-02-18T11:30:00Z',
+    submittedDate: '2026-02-18',
+    officialEmail: 'jignesh.patel@garbaproductions.com',
+    phone: '+91 99887 76655',
+    productionCompany: 'Garba Productions Pvt Ltd',
+    logline: 'A young village girl from Kutch dreams of becoming Gujarat\'s biggest Garba dancer and competes against all odds.',
+    synopsis: 'Gujarati Garba Queen follows Radha, a talented but poor girl from a small village in Kutch. Despite her family\'s financial struggles and society\'s expectations, she dreams of becoming the best Garba dancer in Gujarat. When a prestigious dance competition is announced in Ahmedabad with a grand prize of 1 crore, Radha sees her chance. With help from an eccentric retired dance master and her supportive grandmother, she embarks on a journey that will test her skills, determination, and spirit. Along the way, she faces wealthy rivals, personal tragedies, and discovers that true success comes from staying true to one\'s roots.',
+
+    // Creator KYC Details
+    fatherName: 'Rameshbhai Patel',
+    creatorAge: '42',
+    authorizedSignatory: 'Jignesh R. Patel',
+    panNumber: 'BQZPP4521A',
+    gstNumber: '24BQZPP4521A1ZW',
+    permanentAddress: '42, Swastik Society, Navrangpura, Ahmedabad, Gujarat - 380009',
+    currentAddress: '42, Swastik Society, Navrangpura, Ahmedabad, Gujarat - 380009',
+
+    // Bank Details
+    bankName: 'HDFC Bank',
+    accountNumber: '50100123456789',
+    ifscCode: 'HDFC0001234',
+    accountHolderName: 'Garba Productions Pvt Ltd',
+
+    // POC Details
+    productionPOC: 'Mayank',
+    productionPOCPhone: '+91 98765 11111',
+    productionPOCEmail: 'mayank@stage.in',
+    contentPOC: 'Haidar',
+    contentPOCPhone: '+91 98765 22222',
+    contentPOCEmail: 'haidar@stage.in',
+
+    // Direction Department
+    director: 'Jignesh Patel',
+    directorLink: 'imdb.com/jigneshpatel',
+    associateDirector: 'Ketan Shah',
+    associateDirectorLink: '',
+    assistantDirector1: 'Parth Mehta',
+    assistantDirector1Link: '',
+    assistantDirector2: 'Nisha Desai',
+    assistantDirector2Link: '',
+    showRunner: 'Jignesh Patel',
+    creativeDirector: 'Mamta Thakkar',
+    castingDirector: 'Rashmi Joshi',
+
+    // Production Department
+    headOfProduction: 'Alpesh Modi',
+    executiveProducer: 'Bhavesh Patel',
+    productionController: 'Dinesh Kumar',
+    lineProducer: 'Rakesh Sharma',
+    productionManager: 'Vishal Chauhan',
+    unitProductionManager: 'Amit Soni',
+    locationManager: 'Prakash Vaghela',
+
+    // Writing Department
+    storyBy: 'Jignesh Patel',
+    storyByLink: '',
+    screenplayBy: 'Ketan Shah',
+    screenplayByLink: '',
+    dialoguesBy: 'Mamta Thakkar',
+    dialoguesByLink: '',
+
+    // Camera Department
+    dop: 'Chirantan Das',
+    dopLink: 'imdb.com/chirantandas',
+    firstCameraOperator: 'Ajay Prajapati',
+    cameraOperator: 'Vijay Solanki',
+    focusPuller: 'Rahul Jain',
+    steadicamOperator: 'Deepak Rawat',
+    stillPhotographer: 'Mukesh Photography',
+    btsVideographer: 'Sagar Films',
+
+    // Editing & Post
+    editor: 'Pravin Angre',
+    editorLink: '',
+    onLocationEditor: 'Suresh Patel',
+    colorist: 'ColorLab Studios',
+    coloristLink: '',
+
+    // Sound Department
+    soundRecordist: 'Jayesh Oza',
+    soundRecordistLink: '',
+    soundDesigner: 'Audio Craft Studios',
+    soundDesignerLink: '',
+    foleyArtist: 'Mumbai Foley House',
+    reRecordingMixer: 'Dolby Atmos Studio',
+
+    // Music Department
+    musicComposer: 'Sachin-Jigar',
+    musicComposerLink: 'instagram.com/sachinjigar',
+    bgmComposer: 'Kedar-Bhargav',
+    playbackSinger: 'Aishwarya Majmudar',
+    playbackSingerLink: 'instagram.com/aikiofficial',
+
+    // Art & Design
+    productionDesigner: 'Nirav Gosai',
+    productionDesignerLink: '',
+    artDirector: 'Bharat Nakum',
+    setDesigner: 'Gujarat Art Works',
+
+    // Costume & Makeup
+    costumeDesigner: 'Anju Modi (Chaniya Choli Specialist)',
+    costumeDesignerLink: 'instagram.com/anjumodi',
+    makeupArtist: 'Bhumi Shah',
+    hairStylist: 'Kavita Patel',
+
+    // VFX
+    vfxSupervisor: 'Red Chillies VFX',
+    vfxSupervisorLink: '',
+    diArtist: 'Reliance MediaWorks',
+
+    // Action & Choreography
+    actionDirector: 'Not Required',
+    choreographer: 'Kruti Mahesh (Garba Specialist)',
+    choreographerLink: 'instagram.com/krutimahesh',
+
+    previousProjects: 'Fafda Files (2024), Khaman Dhokla Story (2023), Kem Cho Ahmedabad (2025)',
+    expectedDeliveryDate: '2026-09-15',
+    shootStartDate: '2026-04-10',
+    shootEndDate: '2026-07-20',
+    shootDays: '75',
+
+    // Budget Details
+    budgetCreatorMargin: 12000000,
+    budgetCreatorMarginPercent: 10,
+    budgetInsuranceAmount: 2400000,
+    budgetCelebrityFees: [
+      { name: 'Rashami Desai (Lead Actress)', amount: 15000000 },
+      { name: 'Sachin-Jigar (Music Directors)', amount: 8000000 },
+      { name: 'Falguni Pathak (Guest Appearance)', amount: 5000000 },
+      { name: 'Dharmesh Yelande (Choreographer Cameo)', amount: 3000000 },
+    ],
+    budgetCategories: [
+      { id: 'prod', name: 'Production', icon: '🎬', amount: 25000000, yourPercentage: 20.8, items: [
+        { description: 'Location Fees (Kutch, Ahmedabad, Vadodara)', total: 5000000, noOfDays: 75 },
+        { description: 'Garba Ground Setup (5 locations)', total: 8000000 },
+        { description: 'Equipment Rental (RED Komodo, Lights)', total: 6000000, noOfDays: 75 },
+        { description: 'Set Construction (Village, Dance Academy)', total: 4000000 },
+        { description: 'Props & Decoration (Navratri Theme)', total: 2000000 },
+      ]},
+      { id: 'crew', name: 'Crew & Technicians', icon: '👥', amount: 18000000, yourPercentage: 15, items: [
+        { description: 'Direction Team (5 members)', total: 4000000, noOfDays: 90, noOfPeople: 5 },
+        { description: 'Camera Team (8 members)', total: 5000000, noOfDays: 75, noOfPeople: 8 },
+        { description: 'Sound Team (4 members)', total: 2000000, noOfDays: 75, noOfPeople: 4 },
+        { description: 'Art & Costume Team (12 members)', total: 4000000, noOfDays: 90, noOfPeople: 12 },
+        { description: 'Production Team (10 members)', total: 3000000, noOfDays: 100, noOfPeople: 10 },
+      ]},
+      { id: 'post', name: 'Post Production', icon: '🎞️', amount: 15000000, yourPercentage: 12.5, items: [
+        { description: 'Editing (10 Episodes)', total: 5000000 },
+        { description: 'Color Grading & DI', total: 3000000 },
+        { description: 'VFX (Dance Sequences Enhancement)', total: 4000000 },
+        { description: 'Sound Design & Mix (Dolby Atmos)', total: 2000000 },
+        { description: 'Subtitling (Hindi, English)', total: 1000000 },
+      ]},
+      { id: 'music', name: 'Music & Songs', icon: '🎵', amount: 18000000, yourPercentage: 15, items: [
+        { description: 'Original Songs (8 Garba Numbers)', total: 8000000 },
+        { description: 'Background Score', total: 4000000 },
+        { description: 'Playback Singers', total: 3000000 },
+        { description: 'Music Recording Studio', total: 2000000 },
+        { description: 'Music Rights & Clearances', total: 1000000 },
+      ]},
+      { id: 'costume', name: 'Costume & Wardrobe', icon: '👗', amount: 8000000, yourPercentage: 6.7, items: [
+        { description: 'Chaniya Cholis (200+ pieces)', total: 4000000 },
+        { description: 'Accessories & Jewelry', total: 2000000 },
+        { description: 'Male Costumes (Kediyu)', total: 1500000 },
+        { description: 'Costume Maintenance', total: 500000 },
+      ]},
+      { id: 'misc', name: 'Miscellaneous', icon: '📦', amount: 5600000, yourPercentage: 4.7, items: [
+        { description: 'Travel & Transportation', total: 2000000 },
+        { description: 'Food & Catering (100 crew)', total: 2500000, noOfDays: 75, noOfPeople: 100 },
+        { description: 'Accommodation', total: 800000, noOfDays: 20, noOfRooms: 20 },
+        { description: 'Contingency', total: 300000 },
+      ]},
+    ],
+
+    // Cast Data
+    castData: {
+      primaryCast: [
+        { artistName: 'Rashami Desai', characterName: 'Radha Patel (Lead)', socialMediaLink: 'instagram.com/imaborashami', fee: 15000000 },
+        { artistName: 'Harsh Rajput', characterName: 'Karan Shah (Love Interest)', socialMediaLink: 'instagram.com/harshrajput' },
+        { artistName: 'Supriya Pathak', characterName: 'Dadi (Grandmother)', socialMediaLink: '' },
+      ],
+      secondaryCast: [
+        { artistName: 'Darshan Raval', characterName: 'Himself (Guest Judge)', socialMediaLink: 'instagram.com/darshanravaldz' },
+        { artistName: 'Falguni Pathak', characterName: 'Herself (Grand Finale)', socialMediaLink: 'instagram.com/falaborgunipathak' },
+        { artistName: 'Nimisha Vakharia', characterName: 'Radha\'s Mother', socialMediaLink: '' },
+      ],
+      tertiaryCast: [
+        { artistName: 'Various Background Dancers', characterName: 'Competition Participants', socialMediaLink: '' },
+        { artistName: 'Local Gujarat Actors', characterName: 'Village Characters', socialMediaLink: '' },
+      ],
+    },
+
+    // Technical Specs
+    technicalSpecs: {
+      cameraModel: 'RED Komodo 6K',
+      cameraSetupType: 'Multi-Camera (4 cameras for dance)',
+      resolution: '6K',
+      frameRate: '24fps (120fps for slow-mo dance)',
+      aspectRatio: '2.39:1 Cinemascope',
+      lensTypes: ['Cooke S7/i Full Frame', 'Zeiss Supreme Prime', 'Angenieux EZ Zoom'],
+      cameraOthers: ['DJI Ronin 2', 'Technocrane', 'Jimmy Jib'],
+      lightingEquipment: ['ARRI SkyPanel S60', 'Aputure 600D Pro', 'Astera Titan Tubes', 'Kino Flo'],
+      lightingOthers: ['LED Walls for Garba Nights'],
+      cinematicTools: ['Steadicam', 'Cable Cam for dance sequences'],
+      droneModels: ['DJI Inspire 3', 'DJI Mini 3 Pro'],
+      soundEquipment: ['Sennheiser MKH 416', 'DPA 4017B', 'Sound Devices 888'],
+      soundOthers: ['Wireless Lavs for all dancers'],
+      editingSoftware: 'DaVinci Resolve Studio',
+      colorGrading: 'Baselight',
+      vfxSoftware: 'After Effects, Nuke',
+      deliveryFormat: '4K HDR Dolby Vision',
+    },
+
+    // Content Timeline
+    contentTimeline: {
+      detailedScreenplaySubmission: '2026-03-01',
+      scriptSubmission: '2026-03-15',
+      preProductionStart: '2026-03-20',
+      preProductionEnd: '2026-04-09',
+      preProductionDuration: '20 days',
+      preProductionComments: 'Costume design, location scouting, dance rehearsals',
+      shootStartDate: '2026-04-10',
+      shootEndDate: '2026-07-20',
+      shootDays: '75',
+      principalPhotographyComments: 'Shoot across Kutch, Ahmedabad, and Vadodara',
+      firstCutDate: '2026-08-01',
+      postProductionStart: '2026-07-25',
+      postProductionEnd: '2026-09-05',
+      postProductionDuration: '45 days',
+      postProductionComments: 'Heavy VFX for dance sequences',
+      finalCutQCDate: '2026-09-10',
+      finalDeliveryDate: '2026-09-15',
+      finalDeliveryComments: 'Delivery in 4K HDR Dolby Vision',
+    },
+
+    // Cash Flow Tranches
+    cashFlowTranches: [
+      {
+        name: 'Tranche 1 - Agreement Signing',
+        description: 'Due upon signing of agreement. Payment within 15 days of approved invoice.',
+        percentage: 25,
+        amount: 30000000,
+        status: 'paid',
+        expectedDate: '2026-03-01',
+        paidDate: '2026-03-05',
+      },
+      {
+        name: 'Tranche 2 - Production Start',
+        description: 'Due on first day of principal photography.',
+        percentage: 25,
+        amount: 30000000,
+        status: 'paid',
+        expectedDate: '2026-04-10',
+        paidDate: '2026-04-12',
+      },
+      {
+        name: 'Tranche 3 - Offline Edit Approval',
+        description: 'Due upon approval of offline edit for all 10 episodes.',
+        percentage: 40,
+        amount: 48000000,
+        status: 'pending',
+        expectedDate: '2026-08-15',
+      },
+      {
+        name: 'Tranche 4 - Final Delivery',
+        description: 'Payable 60 days after final TC/QC approval.',
+        percentage: 10,
+        amount: 12000000,
+        status: 'pending',
+        expectedDate: '2026-11-15',
+      },
+    ],
+
+    // Milestones
+    milestones: [
+      { name: 'Pre-Production', startDate: '2026-03-20', endDate: '2026-04-09', status: 'completed' },
+      { name: 'Principal Photography', startDate: '2026-04-10', endDate: '2026-07-20', status: 'in-progress' },
+      { name: 'Post Production', startDate: '2026-07-25', endDate: '2026-09-05', status: 'pending' },
+      { name: 'Final Delivery', startDate: '2026-09-15', endDate: '2026-09-15', status: 'pending' },
+    ],
+
+    // Activity Log
+    activityLog: [
+      { date: '2026-02-18', time: '11:30 AM', action: 'Project Submitted', description: 'Creator submitted project for review', user: 'Jignesh Patel', type: 'submit' },
+      { date: '2026-02-20', time: '03:45 PM', action: 'Under Review', description: 'Project assigned to content team for review', user: 'Haidar', type: 'assign' },
+      { date: '2026-02-25', time: '10:00 AM', action: 'Budget Review', description: 'Finance team reviewed budget breakdown', user: 'Finance Team', type: 'review' },
+      { date: '2026-02-28', time: '02:30 PM', action: 'Approved', description: 'Project approved for production. Congratulations!', user: 'Content Head', type: 'status' },
+      { date: '2026-03-05', time: '11:00 AM', action: 'Tranche 1 Paid', description: 'First payment of ₹3 Cr released', user: 'Finance Team', type: 'payment' },
+    ],
+  },
+  // ============ DEMO PROJECT 5: MARATHI MULGI ============
+  {
+    id: 5,
+    projectName: 'Marathi Mulgi',
+    creator: 'Swapnil Joshi',
+    creatorName: 'Swapnil Joshi',
+    culture: 'Marathi',
+    format: 'Feature Film',
+    genre: 'Women Empowerment Drama',
+    subGenre: 'Social Drama',
+    contentRating: 'U/A',
+    language: 'Marathi',
+    totalBudget: 180000000,
+    episodes: 1,
+    episodeDuration: 150,
+    totalDuration: 150,
+    status: 'in-production',
+    submittedAt: '2026-01-25T09:00:00Z',
+    submittedDate: '2026-01-25',
+    officialEmail: 'swapnil.joshi@marathifilms.com',
+    phone: '+91 99220 33440',
+    productionCompany: 'Everest Entertainment Pvt Ltd',
+    logline: 'A fearless woman from rural Maharashtra fights against powerful politicians to save her village from illegal mining.',
+    synopsis: 'Marathi Mulgi is the powerful story of Savitri, a school teacher from a small village in Vidarbha. When she discovers that powerful politicians are planning illegal mining that will destroy her village and displace thousands, she decides to fight back. Armed with nothing but truth and determination, she takes on the corrupt system. The film follows her journey as she rallies villagers, faces threats, loses loved ones, but ultimately emerges victorious. Inspired by true events, this is a story of courage, sacrifice, and the indomitable spirit of a Marathi woman.',
+
+    // Creator KYC Details
+    fatherName: 'Mohan Joshi',
+    creatorAge: '48',
+    authorizedSignatory: 'Swapnil M. Joshi',
+    panNumber: 'CYZPJ7890B',
+    gstNumber: '27CYZPJ7890B2ZT',
+    permanentAddress: '15, Shivaji Park, Dadar West, Mumbai - 400028',
+    currentAddress: '15, Shivaji Park, Dadar West, Mumbai - 400028',
+
+    // Bank Details
+    bankName: 'Kotak Mahindra Bank',
+    accountNumber: '1234567890123',
+    ifscCode: 'KKBK0000123',
+    accountHolderName: 'Everest Entertainment Pvt Ltd',
+
+    // POC Details
+    productionPOC: 'Sumeet',
+    productionPOCPhone: '+91 98765 33333',
+    productionPOCEmail: 'sumeet@stage.in',
+    contentPOC: 'Mayank',
+    contentPOCPhone: '+91 98765 44444',
+    contentPOCEmail: 'mayank@stage.in',
+
+    // Direction Department
+    director: 'Nagraj Manjule',
+    directorLink: 'imdb.com/nagrajmanjule',
+    associateDirector: 'Nikhil Mahajan',
+    associateDirectorLink: 'imdb.com/nikhilmahajan',
+    assistantDirector1: 'Akash Thosar',
+    assistantDirector1Link: '',
+    assistantDirector2: 'Rinku Rajguru',
+    assistantDirector2Link: '',
+    showRunner: 'Nagraj Manjule',
+    creativeDirector: 'Swapnil Joshi',
+    castingDirector: 'Meghana Jadhav',
+
+    // Production Department
+    headOfProduction: 'Zee Studios',
+    executiveProducer: 'Mangesh Kulkarni',
+    productionController: 'Prasad Oak',
+    lineProducer: 'Sanjay Narvekar',
+    productionManager: 'Umesh Kamat',
+    unitProductionManager: 'Siddharth Jadhav',
+    locationManager: 'Vidarbha Film Unit',
+
+    // Writing Department
+    storyBy: 'Nagraj Manjule',
+    storyByLink: '',
+    screenplayBy: 'Nagraj Manjule & Kshitij Patwardhan',
+    screenplayByLink: '',
+    dialoguesBy: 'Kshitij Patwardhan',
+    dialoguesByLink: '',
+
+    // Camera Department
+    dop: 'Sudhakar Reddy Yakkanti',
+    dopLink: 'imdb.com/sudhakarreddy',
+    firstCameraOperator: 'Prasanna Jit Chauhan',
+    cameraOperator: 'Harshavardhan Gaikwad',
+    focusPuller: 'Satish Shinde',
+    steadicamOperator: 'Amol Wavhal',
+    stillPhotographer: 'Pune Film Archives',
+    btsVideographer: 'Marathi Cinema BTS',
+
+    // Editing & Post
+    editor: 'Jabeen Merchant',
+    editorLink: 'imdb.com/jabeenmerchant',
+    onLocationEditor: 'Pravin Bhosale',
+    colorist: 'Prime Focus',
+    coloristLink: '',
+
+    // Sound Department
+    soundRecordist: 'Anand Krishnamoorthy',
+    soundRecordistLink: '',
+    soundDesigner: 'Shajith Koyeri',
+    soundDesignerLink: 'imdb.com/shajithkoyeri',
+    foleyArtist: 'Yashwant Chakraborty',
+    reRecordingMixer: 'A. Sreekar Prasad',
+
+    // Music Department
+    musicComposer: 'Ajay-Atul',
+    musicComposerLink: 'instagram.com/ajaborayatul',
+    bgmComposer: 'Arijit Singh (Background Score)',
+    playbackSinger: 'Shankar Mahadevan',
+    playbackSingerLink: 'instagram.com/shanaborkaraborahadevan',
+
+    // Art & Design
+    productionDesigner: 'Subrata Chakraborty',
+    productionDesignerLink: '',
+    artDirector: 'Nilesh Wagh',
+    setDesigner: 'Mangesh Dhakde',
+
+    // Costume & Makeup
+    costumeDesigner: 'Sachin Lovalekar',
+    costumeDesignerLink: '',
+    makeupArtist: 'Vikram Gaikwad',
+    hairStylist: 'Priya Patil',
+
+    // VFX
+    vfxSupervisor: 'NY VFXWaala',
+    vfxSupervisorLink: '',
+    diArtist: 'Prime Focus World',
+
+    // Action & Choreography
+    actionDirector: 'Peter Hein',
+    actionDirectorLink: 'imdb.com/peterhein',
+    stuntCoordinator: 'Sham Kaushal',
+    choreographer: 'Ganesh Acharya',
+    choreographerLink: 'instagram.com/ganaboreshaboracharya',
+
+    previousProjects: 'Sairat (2016) - ₹110 Cr Collection, Jhund (2022), Fandry (2013) - National Award',
+    expectedDeliveryDate: '2026-11-01',
+    shootStartDate: '2026-03-01',
+    shootEndDate: '2026-08-15',
+    shootDays: '120',
+
+    // Budget Details
+    budgetCreatorMargin: 18000000,
+    budgetCreatorMarginPercent: 10,
+    budgetInsuranceAmount: 3600000,
+    budgetCelebrityFees: [
+      { name: 'Sai Tamhankar (Lead Actress)', amount: 25000000 },
+      { name: 'Ajay-Atul (Music Directors)', amount: 15000000 },
+      { name: 'Amruta Khanvilkar (Supporting)', amount: 8000000 },
+      { name: 'Jitendra Joshi (Antagonist)', amount: 10000000 },
+      { name: 'Nana Patekar (Special Appearance)', amount: 12000000 },
+    ],
+    budgetCategories: [
+      { id: 'prod', name: 'Production', icon: '🎬', amount: 35000000, yourPercentage: 19.4, items: [
+        { description: 'Location Fees (Vidarbha, Nagpur, Pune)', total: 8000000, noOfDays: 120 },
+        { description: 'Village Set Construction', total: 12000000 },
+        { description: 'Equipment Rental (ARRI Alexa LF)', total: 8000000, noOfDays: 120 },
+        { description: 'Mining Site Recreation', total: 5000000 },
+        { description: 'Props (Tractors, Mining Equipment)', total: 2000000 },
+      ]},
+      { id: 'crew', name: 'Crew & Technicians', icon: '👥', amount: 28000000, yourPercentage: 15.5, items: [
+        { description: 'Direction Team (8 members)', total: 6000000, noOfDays: 150, noOfPeople: 8 },
+        { description: 'Camera Team (12 members)', total: 8000000, noOfDays: 120, noOfPeople: 12 },
+        { description: 'Sound Team (6 members)', total: 4000000, noOfDays: 120, noOfPeople: 6 },
+        { description: 'Art Department (15 members)', total: 6000000, noOfDays: 140, noOfPeople: 15 },
+        { description: 'Production & AD Team', total: 4000000, noOfDays: 150, noOfPeople: 10 },
+      ]},
+      { id: 'post', name: 'Post Production', icon: '🎞️', amount: 22000000, yourPercentage: 12.2, items: [
+        { description: 'Editing (Feature Film)', total: 6000000 },
+        { description: 'Color Grading & DI (Prime Focus)', total: 5000000 },
+        { description: 'VFX (Mining Explosions, Crowds)', total: 7000000 },
+        { description: 'Sound Design & Dolby Atmos Mix', total: 3000000 },
+        { description: 'DCP & Theatrical Masters', total: 1000000 },
+      ]},
+      { id: 'music', name: 'Music & Songs', icon: '🎵', amount: 20000000, yourPercentage: 11.1, items: [
+        { description: 'Original Songs (5 tracks by Ajay-Atul)', total: 10000000 },
+        { description: 'Background Score (Full Feature)', total: 5000000 },
+        { description: 'Playback Singers (Shankar Mahadevan, Arijit)', total: 3000000 },
+        { description: 'Recording & Studios', total: 2000000 },
+      ]},
+      { id: 'costume', name: 'Costume & Art', icon: '👗', amount: 10000000, yourPercentage: 5.5, items: [
+        { description: 'Lead Cast Costumes', total: 4000000 },
+        { description: 'Supporting Cast & Extras (500+)', total: 3000000 },
+        { description: 'Period Costumes (Flashback)', total: 2000000 },
+        { description: 'Costume Maintenance', total: 1000000 },
+      ]},
+      { id: 'action', name: 'Action & Stunts', icon: '💥', amount: 12000000, yourPercentage: 6.7, items: [
+        { description: 'Stunt Team (Peter Hein)', total: 6000000 },
+        { description: 'Safety Equipment & Insurance', total: 2000000 },
+        { description: 'Explosion & Fire Sequences', total: 3000000 },
+        { description: 'Stunt Doubles & Training', total: 1000000 },
+      ]},
+      { id: 'misc', name: 'Miscellaneous', icon: '📦', amount: 13400000, yourPercentage: 7.4, items: [
+        { description: 'Travel & Transportation', total: 4000000 },
+        { description: 'Food & Catering (150 crew x 120 days)', total: 5400000, noOfDays: 120, noOfPeople: 150 },
+        { description: 'Accommodation (Vidarbha Unit)', total: 3000000, noOfDays: 90, noOfRooms: 50 },
+        { description: 'Contingency Fund', total: 1000000 },
+      ]},
+    ],
+
+    // Cast Data
+    castData: {
+      primaryCast: [
+        { artistName: 'Sai Tamhankar', characterName: 'Savitri (Lead)', socialMediaLink: 'instagram.com/saaborietamhankar', fee: 25000000 },
+        { artistName: 'Jitendra Joshi', characterName: 'Minister Patil (Villain)', socialMediaLink: 'instagram.com/jaboreetendra.joshi' },
+        { artistName: 'Nana Patekar', characterName: 'Retired Judge (Mentor)', socialMediaLink: '' },
+        { artistName: 'Amruta Khanvilkar', characterName: 'Savitri\'s Sister', socialMediaLink: 'instagram.com/amaboreutakhanvilkar' },
+      ],
+      secondaryCast: [
+        { artistName: 'Sachin Pilgaonkar', characterName: 'Village Sarpanch', socialMediaLink: '' },
+        { artistName: 'Usha Nadkarni', characterName: 'Savitri\'s Mother', socialMediaLink: '' },
+        { artistName: 'Siddharth Jadhav', characterName: 'Comedy Relief - Driver', socialMediaLink: 'instagram.com/sidabordharthjadhav' },
+        { artistName: 'Sonalee Kulkarni', characterName: 'Journalist Ally', socialMediaLink: 'instagram.com/sonaboraleekulkarni' },
+      ],
+      tertiaryCast: [
+        { artistName: 'Vidarbha Local Actors (100+)', characterName: 'Villagers', socialMediaLink: '' },
+        { artistName: 'Junior Artists (500+)', characterName: 'Crowd Scenes', socialMediaLink: '' },
+      ],
+    },
+
+    // Technical Specs
+    technicalSpecs: {
+      cameraModel: 'ARRI Alexa LF',
+      cameraSetupType: 'Single Camera (Master Shot) + Multi for action',
+      resolution: '4.5K ARRIRAW',
+      frameRate: '24fps (48fps for action)',
+      aspectRatio: '2.39:1 Cinemascope',
+      lensTypes: ['ARRI Signature Prime', 'Zeiss Supreme Prime', 'Angenieux Optimo Zoom'],
+      cameraOthers: ['Steadicam', 'Technocrane 50', 'Russian Arm for car chases'],
+      lightingEquipment: ['ARRI M18', 'ARRI SkyPanel S360', 'Dedo Lights', 'HMI 18K'],
+      lightingOthers: ['Generators for remote locations'],
+      cinematicTools: ['Dana Dolly', 'Slider', 'Jib Arm'],
+      droneModels: ['DJI Inspire 3 (for aerial mining shots)', 'FPV Drones for action'],
+      soundEquipment: ['Sound Devices 970', 'Schoeps CMIT 5U', 'Lectrosonics Wireless'],
+      soundOthers: ['Boom Operators (3)', 'ADR Studio'],
+      editingSoftware: 'Avid Media Composer',
+      colorGrading: 'DaVinci Resolve (Prime Focus)',
+      vfxSoftware: 'Nuke, Houdini for explosions',
+      deliveryFormat: 'DCP 4K, HDR Dolby Vision for OTT',
+    },
+
+    // Content Timeline
+    contentTimeline: {
+      detailedScreenplaySubmission: '2026-01-15',
+      scriptSubmission: '2026-01-25',
+      preProductionStart: '2026-02-01',
+      preProductionEnd: '2026-02-28',
+      preProductionDuration: '28 days',
+      preProductionComments: 'Location recce in Vidarbha, casting finalization, workshop with actors',
+      shootStartDate: '2026-03-01',
+      shootEndDate: '2026-08-15',
+      shootDays: '120',
+      principalPhotographyComments: 'Schedule: Vidarbha (60 days), Nagpur (30 days), Pune (20 days), Mumbai (10 days)',
+      firstCutDate: '2026-09-01',
+      postProductionStart: '2026-08-20',
+      postProductionEnd: '2026-10-20',
+      postProductionDuration: '60 days',
+      postProductionComments: 'Heavy VFX for mining sequences, Dolby Atmos mix at YRF Studios',
+      finalCutQCDate: '2026-10-25',
+      finalDeliveryDate: '2026-11-01',
+      finalDeliveryComments: 'Theatrical release planned for Diwali 2026',
+    },
+
+    // Cash Flow Tranches
+    cashFlowTranches: [
+      {
+        name: 'Tranche 1 - Agreement Signing',
+        description: 'Due upon signing of production agreement. Covers pre-production costs.',
+        percentage: 25,
+        amount: 45000000,
+        status: 'paid',
+        expectedDate: '2026-02-01',
+        paidDate: '2026-02-03',
+      },
+      {
+        name: 'Tranche 2 - Production Start',
+        description: 'Released on Day 1 of principal photography. Covers initial production costs.',
+        percentage: 25,
+        amount: 45000000,
+        status: 'paid',
+        expectedDate: '2026-03-01',
+        paidDate: '2026-03-02',
+      },
+      {
+        name: 'Tranche 3 - Offline Edit Approval',
+        description: 'Due after delivery and approval of locked offline edit with temp sound.',
+        percentage: 40,
+        amount: 72000000,
+        status: 'pending',
+        expectedDate: '2026-09-15',
+      },
+      {
+        name: 'Tranche 4 - Final Delivery + 60 Days',
+        description: 'Final payment 60 days after TC/QC approval and all deliverables received.',
+        percentage: 10,
+        amount: 18000000,
+        status: 'pending',
+        expectedDate: '2027-01-01',
+      },
+    ],
+
+    // Milestones
+    milestones: [
+      { name: 'Pre-Production', startDate: '2026-02-01', endDate: '2026-02-28', status: 'completed' },
+      { name: 'Principal Photography', startDate: '2026-03-01', endDate: '2026-08-15', status: 'in-progress' },
+      { name: 'Post Production', startDate: '2026-08-20', endDate: '2026-10-20', status: 'pending' },
+      { name: 'Final Delivery', startDate: '2026-11-01', endDate: '2026-11-01', status: 'pending' },
+    ],
+
+    // Activity Log
+    activityLog: [
+      { date: '2026-01-25', time: '09:00 AM', action: 'Project Submitted', description: 'Nagraj Manjule submitted project proposal', user: 'Swapnil Joshi', type: 'submit' },
+      { date: '2026-01-26', time: '11:30 AM', action: 'Priority Review', description: 'Flagged as high-priority due to director reputation', user: 'Content Head', type: 'review' },
+      { date: '2026-01-28', time: '03:00 PM', action: 'Budget Review', description: 'Finance team approved ₹18 Cr budget', user: 'CFO', type: 'review' },
+      { date: '2026-01-30', time: '10:00 AM', action: 'Approved', description: 'Project greenlit! Moving to production.', user: 'CEO', type: 'status' },
+      { date: '2026-02-03', time: '02:00 PM', action: 'Tranche 1 Paid', description: 'Initial payment of ₹4.5 Cr released', user: 'Finance', type: 'payment' },
+      { date: '2026-03-02', time: '09:30 AM', action: 'Production Started', description: 'Day 1 of shoot in Vidarbha. Tranche 2 released.', user: 'Production Team', type: 'status' },
+      { date: '2026-03-15', time: '06:00 PM', action: 'Status Update', description: 'First 2 weeks of shoot completed successfully. On schedule.', user: 'Line Producer', type: 'status' },
+    ],
   }
 ];
 

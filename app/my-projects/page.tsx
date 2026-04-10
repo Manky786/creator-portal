@@ -57,10 +57,333 @@ export default function MyProjectsPage() {
   const [requestReason, setRequestReason] = useState('');
   const [grantedEditAccess, setGrantedEditAccess] = useState<string[]>([]);
 
+  // Demo projects to pre-populate if localStorage is empty
+  const demoProjects = [
+    {
+      id: 'demo-gujarati-garba-queen',
+      projectName: 'Gujarati Garba Queen',
+      creatorName: 'Falguni Pathak Productions',
+      productionCompany: 'Navratri Films Pvt Ltd',
+      culture: 'Gujarati',
+      format: 'Binge Series',
+      genre: 'Musical Drama',
+      subGenre: 'Romance',
+      contentRating: 'U/A 13+',
+      estimatedBudget: 120000000,
+      totalDuration: '400',
+      episodes: 10,
+      shootDays: '90',
+      shootStartDate: '2026-04-15',
+      shootEndDate: '2026-07-15',
+      status: 'approved',
+      submitted_at: '2026-02-15T10:30:00.000Z',
+      // KYC Details
+      officialEmail: 'falguni@navratrifilms.com',
+      phone: '+91 98765 43210',
+      panNumber: 'BQZPP4521A',
+      gstNumber: '24BQZPP4521A1ZW',
+      bankName: 'HDFC Bank',
+      accountNumber: '50100123456789',
+      ifscCode: 'HDFC0001234',
+      yearsOfExperience: '25',
+      // Full Crew
+      director: 'Jignesh Patel',
+      dop: 'Chirantan Das',
+      editor: 'Shreya Mehta',
+      musicComposer: 'Sachin-Jigar',
+      soundDesigner: 'Kunal Sharma',
+      productionDesigner: 'Pooja Shetty',
+      costumeDesigner: 'Manish Malhotra',
+      vfxSupervisor: 'RedChillies VFX',
+      // Cast Data
+      castData: {
+        primaryCast: [
+          { artistName: 'Rashami Desai', characterName: 'Radha - Lead Protagonist', fee: 15000000 },
+          { artistName: 'Paras Kalnawat', characterName: 'Karan - Male Lead', fee: 8000000 },
+          { artistName: 'Rupal Patel', characterName: 'Maa - Supporting', fee: 5000000 },
+          { artistName: 'Jamnadas Majethia', characterName: 'Papa - Supporting', fee: 5000000 },
+        ],
+        supportingCast: [
+          { artistName: 'Aashika Bhatia', characterName: 'Meera - Best Friend' },
+          { artistName: 'Helly Shah', characterName: 'Rival - Antagonist' },
+        ]
+      },
+      // Budget Categories
+      budgetCategories: [
+        {
+          id: 'prod',
+          name: 'Production',
+          amount: 25000000,
+          items: [
+            { name: 'Location & Sets', amount: 10000000 },
+            { name: 'Equipment Rental', amount: 8000000 },
+            { name: 'Travel & Logistics', amount: 7000000 },
+          ]
+        },
+        {
+          id: 'crew',
+          name: 'Crew & Technicians',
+          amount: 18000000,
+          items: [
+            { name: 'Director Fee', amount: 5000000 },
+            { name: 'DOP Fee', amount: 3000000 },
+            { name: 'Technical Crew', amount: 10000000 },
+          ]
+        },
+        {
+          id: 'post',
+          name: 'Post Production',
+          amount: 15000000,
+          items: [
+            { name: 'Editing', amount: 4000000 },
+            { name: 'VFX & Graphics', amount: 8000000 },
+            { name: 'Color Grading', amount: 3000000 },
+          ]
+        },
+        {
+          id: 'music',
+          name: 'Music & Sound',
+          amount: 12000000,
+          items: [
+            { name: 'Music Composition', amount: 6000000 },
+            { name: 'Sound Design', amount: 3000000 },
+            { name: 'Playback Singers', amount: 3000000 },
+          ]
+        },
+        {
+          id: 'marketing',
+          name: 'Marketing',
+          amount: 10000000,
+          items: [
+            { name: 'Digital Marketing', amount: 5000000 },
+            { name: 'PR & Events', amount: 3000000 },
+            { name: 'Promotions', amount: 2000000 },
+          ]
+        },
+        {
+          id: 'misc',
+          name: 'Miscellaneous',
+          amount: 7000000,
+          items: [
+            { name: 'Insurance', amount: 3000000 },
+            { name: 'Contingency', amount: 4000000 },
+          ]
+        },
+      ],
+      budgetCelebrityFees: [
+        { name: 'Rashami Desai (Lead Actress)', amount: 15000000 },
+        { name: 'Sachin-Jigar (Music Directors)', amount: 8000000 },
+        { name: 'Paras Kalnawat (Male Lead)', amount: 8000000 },
+        { name: 'Supporting Cast', amount: 10000000 },
+        { name: 'Cameo Appearances', amount: 3000000 },
+      ],
+      // Cash Flow Tranches
+      cashFlowTranches: [
+        { name: 'Tranche 1 - Signing', percentage: 25, amount: 30000000, status: 'paid', gst: 5400000, tds: 3000000, netAmount: 31800000, paidDate: '2026-02-20' },
+        { name: 'Tranche 2 - Pre-Production', percentage: 25, amount: 30000000, status: 'paid', gst: 5400000, tds: 3000000, netAmount: 31800000, paidDate: '2026-03-15' },
+        { name: 'Tranche 3 - Production', percentage: 40, amount: 48000000, status: 'pending', gst: 8640000, tds: 4800000, netAmount: 50880000 },
+        { name: 'Tranche 4 - Delivery', percentage: 10, amount: 12000000, status: 'pending', gst: 2160000, tds: 1200000, netAmount: 12720000 },
+      ],
+      // Technical Specs
+      technicalSpecs: {
+        cameraModel: 'ARRI Alexa Mini LF',
+        cameraSetupType: 'Multi-Camera (4K)',
+        aspectRatio: '16:9',
+        resolution: '4K HDR',
+        audioFormat: 'Dolby Atmos 7.1',
+      },
+      // Timeline
+      contentTimeline: {
+        preProductionDuration: '8 weeks',
+        productionDuration: '12 weeks',
+        postProductionDuration: '10 weeks',
+        finalDeliveryDate: '2026-10-01',
+      },
+      // Activity Log
+      activityLog: [
+        { id: 'act1', action: 'Project Submitted', description: 'Initial submission for review', type: 'submit', user: 'Falguni Pathak Productions', source: 'creator', date: '15 Feb 2026', time: '10:30 AM', timestamp: '2026-02-15T10:30:00.000Z' },
+        { id: 'act2', action: 'Assigned for Review', description: 'Assigned to Mayank for initial review', type: 'assign', user: 'System', source: 'admin', date: '16 Feb 2026', time: '09:00 AM', timestamp: '2026-02-16T09:00:00.000Z' },
+        { id: 'act3', action: 'Documents Verified', description: 'All KYC documents verified', type: 'status', user: 'Mayank', source: 'admin', date: '18 Feb 2026', time: '02:30 PM', timestamp: '2026-02-18T14:30:00.000Z' },
+        { id: 'act4', action: 'Budget Approved', description: 'Budget breakdown approved by finance team', type: 'status', user: 'Finance Team', source: 'admin', date: '20 Feb 2026', time: '11:00 AM', timestamp: '2026-02-20T11:00:00.000Z' },
+        { id: 'act5', action: 'Project Approved', description: 'Project greenlit for production', type: 'status', user: 'Haidar', source: 'admin', date: '22 Feb 2026', time: '04:00 PM', timestamp: '2026-02-22T16:00:00.000Z' },
+      ],
+      lastAdminComment: 'Excellent project! All documentation complete. Approved for production. Tranche 1 & 2 released.',
+    },
+    {
+      id: 'demo-marathi-mulgi',
+      projectName: 'Marathi Mulgi',
+      creatorName: 'Marathi Manoos Productions',
+      productionCompany: 'Sahyadri Films',
+      culture: 'Marathi',
+      format: 'Feature Film',
+      genre: 'Social Drama',
+      subGenre: 'Women Empowerment',
+      contentRating: 'U/A 16+',
+      estimatedBudget: 85000000,
+      totalDuration: '150',
+      episodes: null,
+      shootDays: '60',
+      shootStartDate: '2026-05-01',
+      shootEndDate: '2026-07-01',
+      status: 'in-production',
+      submitted_at: '2026-02-10T14:00:00.000Z',
+      // KYC Details
+      officialEmail: 'production@sahyadrifilms.com',
+      phone: '+91 98765 12345',
+      panNumber: 'CYZPM9876B',
+      gstNumber: '27CYZPM9876B1ZX',
+      bankName: 'Bank of Maharashtra',
+      accountNumber: '60200098765432',
+      ifscCode: 'MAHB0001234',
+      yearsOfExperience: '18',
+      // Full Crew
+      director: 'Nagraj Manjule',
+      dop: 'Sudhakar Reddy Yakkanti',
+      editor: 'Sanjay Shrimali',
+      musicComposer: 'Ajay-Atul',
+      soundDesigner: 'Ganesh Gangadharan',
+      productionDesigner: 'Nitin Desai',
+      costumeDesigner: 'Sachin Lovalekar',
+      vfxSupervisor: 'Prasad Sutar VFX',
+      choreographer: 'Ganesh Acharya',
+      lineProducer: 'Rajesh Mapuskar',
+      executiveProducer: 'Zee Studios',
+      // Cast Data
+      castData: {
+        primaryCast: [
+          { artistName: 'Rinku Rajguru', characterName: 'Archana - Lead Protagonist', fee: 12000000 },
+          { artistName: 'Akash Thosar', characterName: 'Vikram - Male Lead', fee: 8000000 },
+          { artistName: 'Sachin Pilgaonkar', characterName: 'Father', fee: 6000000 },
+          { artistName: 'Supriya Pilgaonkar', characterName: 'Mother', fee: 5000000 },
+        ],
+        supportingCast: [
+          { artistName: 'Siddharth Jadhav', characterName: 'Comic Relief' },
+          { artistName: 'Amruta Khanvilkar', characterName: 'Elder Sister' },
+          { artistName: 'Chinmay Mandlekar', characterName: 'Villain' },
+        ]
+      },
+      // Budget Categories
+      budgetCategories: [
+        {
+          id: 'prod',
+          name: 'Production',
+          amount: 18000000,
+          items: [
+            { name: 'Location Permits', amount: 5000000 },
+            { name: 'Set Construction', amount: 8000000 },
+            { name: 'Equipment', amount: 5000000 },
+          ]
+        },
+        {
+          id: 'talent',
+          name: 'Talent',
+          amount: 31000000,
+          items: [
+            { name: 'Lead Cast', amount: 20000000 },
+            { name: 'Supporting Cast', amount: 8000000 },
+            { name: 'Extras', amount: 3000000 },
+          ]
+        },
+        {
+          id: 'crew',
+          name: 'Crew',
+          amount: 12000000,
+          items: [
+            { name: 'Director', amount: 4000000 },
+            { name: 'DOP & Camera', amount: 3000000 },
+            { name: 'Other Crew', amount: 5000000 },
+          ]
+        },
+        {
+          id: 'post',
+          name: 'Post Production',
+          amount: 10000000,
+          items: [
+            { name: 'Editing', amount: 3000000 },
+            { name: 'VFX', amount: 4000000 },
+            { name: 'DI & Color', amount: 3000000 },
+          ]
+        },
+        {
+          id: 'music',
+          name: 'Music',
+          amount: 8000000,
+          items: [
+            { name: 'Ajay-Atul Composition', amount: 5000000 },
+            { name: 'Playback & Recording', amount: 3000000 },
+          ]
+        },
+        {
+          id: 'misc',
+          name: 'Miscellaneous',
+          amount: 6000000,
+          items: [
+            { name: 'Insurance', amount: 2000000 },
+            { name: 'Contingency', amount: 4000000 },
+          ]
+        },
+      ],
+      budgetCelebrityFees: [
+        { name: 'Rinku Rajguru (Lead)', amount: 12000000 },
+        { name: 'Ajay-Atul (Music)', amount: 5000000 },
+        { name: 'Akash Thosar (Male Lead)', amount: 8000000 },
+        { name: 'Senior Artists', amount: 11000000 },
+      ],
+      // Cash Flow Tranches
+      cashFlowTranches: [
+        { name: 'Tranche 1 - Signing', percentage: 30, amount: 25500000, status: 'paid', gst: 4590000, tds: 2550000, netAmount: 27030000, paidDate: '2026-02-15' },
+        { name: 'Tranche 2 - Start of Production', percentage: 30, amount: 25500000, status: 'paid', gst: 4590000, tds: 2550000, netAmount: 27030000, paidDate: '2026-05-01' },
+        { name: 'Tranche 3 - Mid Production', percentage: 25, amount: 21250000, status: 'processing', gst: 3825000, tds: 2125000, netAmount: 22525000 },
+        { name: 'Tranche 4 - Final Delivery', percentage: 15, amount: 12750000, status: 'pending', gst: 2295000, tds: 1275000, netAmount: 13515000 },
+      ],
+      // Technical Specs
+      technicalSpecs: {
+        cameraModel: 'RED Komodo 6K',
+        cameraSetupType: 'Single Camera (6K)',
+        aspectRatio: '2.39:1 Cinemascope',
+        resolution: '6K',
+        audioFormat: 'Dolby 5.1',
+      },
+      // Timeline
+      contentTimeline: {
+        preProductionDuration: '6 weeks',
+        productionDuration: '8 weeks',
+        postProductionDuration: '8 weeks',
+        finalDeliveryDate: '2026-09-15',
+      },
+      // Activity Log
+      activityLog: [
+        { id: 'act1', action: 'Project Submitted', description: 'Initial submission', type: 'submit', user: 'Marathi Manoos Productions', source: 'creator', date: '10 Feb 2026', time: '02:00 PM', timestamp: '2026-02-10T14:00:00.000Z' },
+        { id: 'act2', action: 'Under Review', description: 'Assigned to review team', type: 'assign', user: 'System', source: 'admin', date: '11 Feb 2026', time: '10:00 AM', timestamp: '2026-02-11T10:00:00.000Z' },
+        { id: 'act3', action: 'Script Approved', description: 'Script cleared by content team', type: 'status', user: 'Sumeet', source: 'admin', date: '13 Feb 2026', time: '03:00 PM', timestamp: '2026-02-13T15:00:00.000Z' },
+        { id: 'act4', action: 'Project Approved', description: 'Project approved for production', type: 'status', user: 'Haidar', source: 'admin', date: '15 Feb 2026', time: '11:00 AM', timestamp: '2026-02-15T11:00:00.000Z' },
+        { id: 'act5', action: 'Agreement Signed', description: 'Legal agreement executed', type: 'status', user: 'Legal Team', source: 'admin', date: '18 Feb 2026', time: '04:00 PM', timestamp: '2026-02-18T16:00:00.000Z' },
+        { id: 'act6', action: 'Production Started', description: 'Shoot commenced in Pune', type: 'status', user: 'Production Team', source: 'admin', date: '01 May 2026', time: '09:00 AM', timestamp: '2026-05-01T09:00:00.000Z' },
+        { id: 'act7', action: 'Tranche 3 Requested', description: 'Mid-production payment requested', type: 'status', user: 'Finance', source: 'creator', date: '25 Jun 2026', time: '02:00 PM', timestamp: '2026-06-25T14:00:00.000Z' },
+      ],
+      lastAdminComment: 'Production going well. 60% shoot completed. Tranche 3 processing. Dailies looking excellent!',
+    },
+  ];
+
   // Load projects and check for status changes
   useEffect(() => {
-    // Load submitted projects from localStorage
-    const submissions = JSON.parse(localStorage.getItem('stage_submissions') || '[]');
+    // Load submitted projects from localStorage - initialize with demo data if empty
+    let submissions = JSON.parse(localStorage.getItem('stage_submissions') || '[]');
+
+    // If no projects exist, initialize with demo projects
+    if (submissions.length === 0) {
+      localStorage.setItem('stage_submissions', JSON.stringify(demoProjects));
+      submissions = demoProjects;
+
+      // Also initialize activity logs for demo projects
+      const activityLogs: Record<string, any[]> = {};
+      demoProjects.forEach(project => {
+        if (project.activityLog) {
+          activityLogs[project.id] = project.activityLog;
+        }
+      });
+      localStorage.setItem('stage_activity_logs', JSON.stringify(activityLogs));
+    }
     const savedNotifications = JSON.parse(localStorage.getItem('stage_notifications') || '[]');
     const savedPreviousStatuses = JSON.parse(localStorage.getItem('stage_previous_statuses') || '{}');
     const savedEditRequests = JSON.parse(localStorage.getItem('stage_edit_requests') || '[]');
